@@ -1,0 +1,242 @@
+<%- include("../../partials/head") %> <%- include("../../partials/bodyStartWithNavBar/") %> <%-
+      include("../../partials/sideNav") %>
+      <div id="layoutSidenav_content">
+        <main>
+          <%- include("../../partials/alertMsg") %>
+            <div class="page-header pb-10 page-header-dark bg-info">
+              <div class="container-fluid">
+                <div class="row align-items-center">
+                  <div class="col">
+                    <div class="page-header-content">
+                      <h1 class="page-header-title fs-md-35 fs-20">
+                        <div class="page-header-icon">
+                          <i class="fad fa-at text-white"></i>
+                        </div>
+                        <span class="text-capitalize"> Full Match Player Detail </span>
+                      </h1>
+                      <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                        Edit Users Team
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-auto mb-md-0 mb-3"></div>
+                </div>
+              </div>
+            </div>
+            <div class="container-fluid mt-n10">
+              <div class="card mb-4">
+                <div class="card-header">Edit User Team</div>
+                <div class="col-md-auto col-12 px-md-3 px-0 text-right">
+                  <button id="submitbtn" type="submit" class="btn btn-sm btn-primary pull-right" form="team1"
+                    onclick="return chakcountOfplayer()">Update</button>
+                  <p id="alertmm"></p>
+                </div>
+
+
+                <div class="card-body">
+                  <input type="hidden" id="challngeid" value="" />
+                  <div class="datatable table-responsive overflow-auto">
+                    <table class="table table-bordered table-striped table-hover text-nowrap" id="user_teams_id"
+                      width="100%" cellspacing="0">
+
+                      <thead>
+                        <tr>
+                          <th>S No.</th>
+                          <th>Player Name</th>
+                          <th>Player Role</th>
+                          <th>Player Credit</th>
+                          <th>team</th>
+                          <th>Player</th>
+                          <th>Cap</th>
+                          <th>V.Cap</th>
+                        </tr>
+                      </thead>
+                      <tfoot>
+                        <tr>
+                          <th>S No.</th>
+                          <th>Player Name</th>
+                          <th>Player Role</th>
+                          <th>Player Credit</th>
+                          <th>team</th>
+                          <th>Player</th>
+                          <th>Cap</th>
+                          <th>V.Cap</th>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </main>
+
+        <%- include("../../partials/footer") %>
+          <script type="text/javascript">
+            $(document).ready(function () {
+              let teamid = <%- JSON.stringify(teamid) %>
+                $.fn.dataTable.ext.errMode = 'none';
+              $('#user_teams_id').DataTable({
+                // 'responsive': false,
+                'bFilter': false,
+                // "processing": true,
+                // "serverSide": true,
+                language: {
+                  zeroRecords: "No records to display",
+                },
+                "ajax": {
+                  "url": `/edit-user-teams-tabled?teamid=${teamid}`,
+                  "dataType": "json",
+                  "type": "POST",
+                },
+                "lengthMenu": [
+                  [50, 1000, 10000],
+                  [50, 1000, 10000]
+                ],
+                columns: [{
+                  data: "count"
+                },
+                {
+                  data: "playerName"
+                },
+                {
+                  data: "playerRole"
+                },
+                {
+                  data: "playerCredit"
+                },
+                {
+                  data: "team"
+                },
+                {
+                  data: "action"
+                }, {
+                  data: "captain"
+                }, {
+                  data: "vicecaptain"
+                }]
+              });
+            });
+
+            function chakcountOfplayer() {
+              var numberOfChecked = $('input[name="playerid"]:checkbox:checked').length;
+              let numberOfcaptain = $('input[name="captain"]:checkbox:checked').length;
+              let numberOfvicecaptain = $('input[name="vicecaptain"]:checkbox:checked').length;
+
+              if (numberOfChecked < 11) {
+                document.getElementById("alertmm").innerHTML = "please select  11 player";
+                $('#submitbtn').attr('disabled', 'disabled');
+                setTimeout(() => {
+                  $('#submitbtn').removeAttr('disabled');
+                }, 10);
+                setTimeout(() => {
+                  $('#alertmm').empty();
+                }, 3000);
+              } else if (numberOfcaptain < 1) {
+                document.getElementById("alertmm").innerHTML = "please select  1 captain";
+                $('#submitbtn').attr('disabled', 'disabled');
+                setTimeout(() => {
+                  $('#submitbtn').removeAttr('disabled');
+                }, 10);
+                setTimeout(() => {
+                  $('#alertmm').empty();
+                }, 3000);
+              } else if (numberOfvicecaptain < 1) {
+                document.getElementById("alertmm").innerHTML = "please select  1 vicecaptain";
+                $('#submitbtn').attr('disabled', 'disabled');
+                setTimeout(() => {
+                  $('#submitbtn').removeAttr('disabled');
+                }, 10);
+                setTimeout(() => {
+                  $('#alertmm').empty();
+                }, 3000);
+              } else {
+                $('#submitbtn').removeAttr('disabled');
+                $('#alertmm').empty();
+                updateuserTeam();
+              };
+            };
+
+            function MaxChecked() {
+              let arr = [];
+              let a = $('input[name="playerid"]:checkbox:checked');
+              let captain = $('input[name="captain"]:checkbox:checked');
+              let vicecaptain = $('input[name="vicecaptain"]:checkbox:checked');
+
+              for (i = 0; i < a.length; i++) {
+                arr.push(a[i].value);
+              };
+
+              if (arr.length > 11) {
+                return false;
+              };
+              if (captain[0]?.value != undefined) {
+                if (arr.includes(captain[0].value) != true) {
+                  captain.prop("checked", false);
+                };
+              };
+              if (vicecaptain[0]?.value != undefined) {
+                if (arr.includes(vicecaptain[0].value) != true) {
+                  vicecaptain.prop("checked", false);
+                };
+              };
+            };
+
+            function MaxCheckedCap() {
+              let arr = [];
+              var a = $('input[name="captain"]:checkbox:checked');
+
+              let chak = $('input[name="playerid"]:checkbox:checked');
+              for (let i = 0; i < chak.length; i++) {
+                arr.push(chak[i].value);
+              };
+              if (arr.includes(a[0].value) != true) {
+                return false;
+              };
+              if (a.length > 1) {
+                return false;
+              };
+            };
+
+            function MaxCheckedViceCap() {
+              let arr = [];
+              var a = $('input[name="vicecaptain"]:checkbox:checked');
+              let chak = $('input[name="playerid"]:checkbox:checked');
+              for (let i = 0; i < chak.length; i++) {
+                arr.push(chak[i].value);
+              };
+              if (arr.includes(a[0].value) != true) {
+                return false;
+              };
+              if (a.length > 1) {
+                return false;
+              };
+            };
+
+            function updateuserTeam() {
+              let teamP = [];
+              let player = $('input[name="playerid"]:checkbox:checked');
+              let captain = $('input[name="captain"]:checkbox:checked');
+              let vicecaptain = $('input[name="vicecaptain"]:checkbox:checked');
+              for (let i = 0; i < 11; i++) {
+                teamP.push(player[i].value);
+              };
+              $.ajax({
+                type: 'post',
+                data: {
+                  players: teamP,
+                  teamId: <%- JSON.stringify(teamid) %>,
+                  captain: captain[0].value,
+                  vicecaptain: vicecaptain[0].value,
+                },
+                url: '/user-team-modified',
+                success: function (data) {
+                  if (data.status == true) {
+                    alert("team update successfully");
+                  } else {
+                    alert("data not update");
+                  };
+                }
+              });
+            };
+          </script>
+      </div>

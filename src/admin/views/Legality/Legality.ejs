@@ -1,0 +1,83 @@
+
+<%- include("../../partials/head") %>
+
+<%- include("../../partials/bodyStartWithNavBar/") %>
+<%- include("../../partials/sideNav") %>
+<%- include("../../partials/alertMsg") %> 
+<div id="layoutSidenav_content">
+<main>
+        <div class="page-header pb-10 page-header-dark bg-info">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="page-header-content">
+                            <h1 class="page-header-title fs-md-35 fs-20">
+                                <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
+                                <span class=" text-capitalize">
+                                       Legality Policy Manager
+                                </span>
+                            </h1>
+                            <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                                Legality Policy
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid mt-n10">
+
+
+<div class="card">
+<div class="card-header"> Legality Policy</div>
+<!-- accept-charset="UTF-8" id="j-forms" -->
+<form method="POST" action="/edit_legality_policy/<%=data ? data._id : '' %>"  class="card-body" >
+
+<div class="sbp-preview">
+    <div class="sbp-preview-content">
+        <div class="row mx-0">
+            <div class="col-12">
+                <div class="form-group my-3">
+                   <label for="legality policy Title*" class="control-label text-bold">Title*</label>
+                   <input required="" placeholder="Enter legality policy Title" class="form-control form-control-solid" name="title" type="text" value="<%=data ? data.title : '' %>" />
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group my-3">
+                   <label for="Legality Policy*" class="control-label text-bold">Description*</label>
+                   <textarea name="description" class="form-control form-control-solid ckeditor" id="Legality Policy*" required="" cols="30" rows="8" placeholder="Enter Legality Policy Description"><%=data ? data.description : '' %></textarea>
+                    <!-- <input required="" placeholder="Enter Category Name" class="form-control form-control-solid" name="name" type="text" /> -->
+                </div>
+            </div>
+            <div class="col-12 text-right mt-4 mb-2">
+                <button type="submit" class=" btn btn-sm btn-success float-right ml-1"><i class="far fa-check-circle"></i>&nbsp;<%=data ? 'Update' : 'Add' %></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+        </div>
+</main>
+<%- include("../../partials/footer") %>
+
+<script>
+  $(window).on('load', function () {
+
+    $('#preloader_admin').hide();
+
+  })
+</script>
+
+
+<script>
+  $(document).ready(function () {
+    if ($('#accordionSidenavPages a').hasClass('active')) {
+      $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
+      $('#accordionSidenavPages a.active').parent().parent().addClass('show');
+      // console.log(id);
+    } else {
+      $('#takeonebar').addClass('slamdown');
+    }
+  });
+</script>

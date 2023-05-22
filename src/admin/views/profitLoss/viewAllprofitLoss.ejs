@@ -1,0 +1,324 @@
+<%- include("../../partials/head") %> <%-
+include("../../partials/bodyStartWithNavBar/") %> <%-
+include("../../partials/sideNav") %>
+<div id="layoutSidenav_content">
+  <main>
+    <%- include("../../partials/alertMsg") %>
+    <div class="page-header pb-10 page-header-dark bg-info">
+      <div class="container-fluid">
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="page-header-content">
+              <h1 class="page-header-title fs-md-35 fs-20">
+                <div class="page-header-icon">
+                  <i class="fad fa-at text-white"></i>
+                </div>
+                <span class="text-capitalize"> Profit Loss Manager </span>
+              </h1>
+              <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                View All Profit & Loss
+              </div>
+            </div>
+          </div>
+          <div class="col-auto mb-md-0 mb-3">
+            <a  href="/insertProfitLossData" class="btn btn-sm btn-light font-weight-bold text-uppercase text-primary float-right"><i class="fa fa-plus"></i>update P/L</a>
+        </div>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid mt-n10">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card mb-3">
+            <div class="card-heading p-3">
+              <form
+                method="GET"
+                action="/view-all-profit-loss"
+                accept-charset="UTF-8"
+              >
+                <div class="sbp-preview position-relative">
+                  <div class="form-group">
+                    <div class="row mx-0">
+                      <div class="col-md-4">
+                        <div class="form-group my-3">
+                          <label for="matchName" class="text-bold"
+                            >Match Name</label
+                          >
+
+                          <input
+                            placeholder="Search By match Name"
+                            id="matchName" value="<%=data.matchName ? data.matchName :'' %>"
+                            class="form-control form-control-solid"
+                            name="matchName"
+                            type="text"
+                          />
+                        </div>
+                      </div>
+
+                      <div class="col-md-4">
+                        <div class="form-group my-3">
+                          <label for="start_date" class="">Start Date</label>
+
+                          <input
+                            class="form-control form-control-solid datetimepickerget"
+                            name="start_date" value="<%=data.start_date ? data.start_date :'' %>"
+                            type="text"
+                            id="start_date"
+                            placeholder="Search by start date"
+                            autocomplete="off"
+                          />
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group my-3">
+                          <label for="end_date" class="">End Date</label>
+
+                          <input
+                            class="form-control form-control-solid datetimepickerget"
+                            name="end_date"
+                            type="text" value="<%=data.end_date ? data.end_date :'' %>"
+                            id="end_date"
+                            placeholder="Search by end date"
+                            autocomplete="off"
+                          />
+                        </div>
+                      </div>
+
+                      <div class="col-12 text-right mt-4 mb-2">
+                        <button
+                          class="btn btn-sm btn-success text-uppercase"
+                          type="submit"
+                        >
+                          <i class="far fa-check-circle"></i>&nbsp;Submit
+                        </button>
+                        <a
+                          href="/view-all-profit-loss"
+                          class="btn btn-sm btn-warning text-uppercase"
+                          type="reset"
+                          ><i class="far fa-undo"></i>&nbsp; Reset</a
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="row w-100 align-items-center mx-0">
+            <div class="col-md col-12 mb-md-0 mb-2 text-md-left text-center">View All Profit & Loss</div>
+            <div class="col-md-auto col-12 px-md-3 px-0 text-center">
+              <form action="/download-all-profit-loss-data-excel" method="get">
+                <div class="form-group" style="display: none;">
+                  <div class="sbp-preview position-relative">
+                    <div class="form-group">
+                      <div class="row mx-0">
+                        <div class="col-md-4">
+                          <div class="form-group my-3">
+                            <label for="matchName" class="text-bold"
+                              >Match Name</label
+                            >
+  
+                            <input
+                              placeholder="Search By match Name"
+                              id="matchName" value="<%=data.matchName ? data.matchName :'' %>"
+                              class="form-control form-control-solid"
+                              name="matchName"
+                              type="text"
+                            />
+                          </div>
+                        </div>
+  
+                        <div class="col-md-4">
+                          <div class="form-group my-3">
+                            <label for="start_date" class="">Start Date</label>
+  
+                            <input
+                              class="form-control form-control-solid datetimepickerget"
+                              name="start_date" value="<%=data.start_date ? data.start_date :'' %>"
+                              type="text"
+                              id="start_date"
+                              placeholder="Search by start date"
+                              autocomplete="off"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group my-3">
+                            <label for="end_date" class="">End Date</label>
+  
+                            <input
+                              class="form-control form-control-solid datetimepickerget"
+                              name="end_date"
+                              type="text" value="<%=data.end_date ? data.end_date :'' %>"
+                              id="end_date"
+                              placeholder="Search by end date"
+                              autocomplete="off"
+                            />
+                          </div>
+                        </div>
+  
+                      </div>
+                    </div>
+                  </div>
+
+
+                  
+                </div>
+                <button type="submit" class="btn btn-secondary text-uppercase btn-sm rounded-pill" font-weight-600="" data-toggle="tooltip" title="" data-original-title="Download All Users Details"><i class="fas fa-download"></i>&nbsp;
+                  Download
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="datatable table-responsive">
+            <table
+              class="table table-bordered table-hover text-nowrap"
+              id="allProfitLoss_datatable"
+              width="100%"
+              cellspacing="0"
+            >
+              <thead>
+                <tr>
+                  <th class="text-center">S.No.</th>
+                  <th class="text-center">Match Name</th>
+                  <th class="text-center">Start Date</th>
+                  <th class="text-center">Invest Amount</th>
+                  <th class="text-center">Winning Amount</th>
+                  <th class="text-center">Refund Amount</th>
+                  <th class="text-center">Affiliate Commission</th>
+                  <!-- <th class="text-center">TDS Bonus</th> -->
+                  <th class="text-center">Profit/Loss</th>
+                  <th class="text-center">Profit/Loss Amount</th>
+                  <!-- <th class="text-center">Action</th> -->
+                </tr>
+              </thead>
+             
+              <tfoot>
+                <tr>
+                  <th class="text-center">S.No.</th>
+                  <th class="text-center">Match Name</th>
+                  <th class="text-center">Start Date</th>
+                  <th class="text-center">Invest Amount</th>
+                  <th class="text-center">Winning Amount</th>
+                  <th class="text-center">Refund Amount</th>
+                  <th class="text-center">Affiliate Commission</th>
+                  <!-- <th class="text-center">TDS Bonus</th> -->
+                  <th class="text-center">Profit/Loss</th>
+                  <th class="text-center">Profit/Loss Amount</th>
+                  <!-- <th class="text-center">Action</th> -->
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <script type="text/javascript">
+        $(document).ready(function () {
+          $.fn.dataTable.ext.errMode = 'none';
+          let matchName = $('#matchName').val();
+          let start_date = $('#start_date').val();
+          let end_date=$('#end_date').val();
+          console.log(matchName,"//",start_date,"//",end_date);
+          $("#allProfitLoss_datatable").DataTable({
+            searching: false,
+            responsive:true,
+            language: {
+              zeroRecords: "No records to display",
+            },
+            ajax: {
+              url: `/view-all-profit-loss-data-table?matchName=${matchName}&start_date=${start_date}&end_date=${end_date}`,
+              type: "post",
+            },
+            lengthMenu: [
+              [10, 25, 50, 100, 1000, 10000],
+              [10, 25, 50, 100, 1000, 10000],
+            ],
+            columns: [
+              {
+                data: "count",
+              },
+              {
+                data: "matchName",
+              },
+              {
+                data: "start_date",
+              },
+              {
+                data: "invested_amount",
+              },
+              {
+                data: "win_amount",
+              },
+              {
+                data: "refund_amount",
+              },
+              {
+                data: "youtuber_bonus",
+              },
+              // {
+              //   data: "TDS_amount",
+              // },
+              {
+                data: "profit_or_loss",
+              },
+              {
+                data: "profit_or_loss_amount",
+              },
+              // {
+              //   data: "action",
+              //   orderable: false,
+              // },
+            ]
+          });
+        
+      });
+      </script>
+    </div>
+  </main>
+  <%- include("../../partials/footer") %>
+
+  <script>
+    $(window).on("load", function () {
+      $("#preloader_admin").hide();
+    });
+  </script>
+  <script>
+    $(document).ready(function () {
+      if ($("#accordionSidenavPages a").hasClass("active")) {
+        $("#accordionSidenavPages a.active")
+          .parent()
+          .parent()
+          .prev("a")
+          .removeClass("collapsed");
+        $("#accordionSidenavPages a.active").parent().parent().addClass("show");
+        // console.log(id);
+      } else {
+        $("#takeonebar").addClass("slamdown");
+      }
+    });
+  </script>
+</div>
+<script type="text/javascript">
+  $.datetimepicker.setLocale('en');
+  $('.datetimepickerget').datetimepicker({
+      lang: 'en',
+      formatDate: 'd.m.Y',
+      step: 5,
+      startDate: new Date()
+  });
+</script>
+<script type="text/javascript">
+  $('.datepicker').datepicker({
+      lang: 'en',
+      formatDate: 'd.m.Y',
+      step: 5,
+  });
+</script>

@@ -1,0 +1,365 @@
+<%- include("../../partials/head") %> <%-
+include("../../partials/bodyStartWithNavBar/") %> <%-
+include("../../partials/sideNav") %>
+<div id="layoutSidenav_content">
+  <main>
+    <%- include("../../partials/alertMsg") %>
+    <div class="page-header pb-10 page-header-dark bg-info">
+      <div class="container-fluid">
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="page-header-content">
+              <h1 class="page-header-title fs-md-35 fs-20">
+                <div class="page-header-icon">
+                  <i class="fad fa-at text-white"></i>
+                </div>
+                <span class="text-capitalize"> Youtuber Manager </span>
+              </h1>
+              <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                View All Youtubers refer Match
+              </div>
+            </div>
+          </div>
+          <div class="col-auto mb-md-0 mb-3">
+            <a
+              href="/add_youtuber"
+              class="btn btn-sm btn-light font-weight-bold text-uppercase text-primary float-right"
+              data-toggle="tooltip"
+              title="Add Youtuber"
+              ><i class="fas fa-plus"></i>&nbsp; Add Youtuber</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid mt-n10">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card mb-3">
+            <div class="card-heading p-3">
+              <form method="get" action="/view_youtuber_refer/<%=youtuber_id %>">
+                <input type="hidden" id="youtuber_id" name="youtuber_id" value="<%=youtuber_id %>" />
+                <div class="sbp-preview position-relative">
+                  <div class="form-group">
+                    <div class="row mx-0">
+                      <div class="col-md-4">
+                        <div class="form-group my-3">
+                          <label for="Start Date" class="text-bold">Start Date</label>
+                          <input value="<%=queryData.start_date? queryData.start_date : '' %>" placeholder="Search By Start Date" id="START" class="form-control datepicker" autocomplete="off" name="start_date" type="text">
+                       
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group my-3">
+                          <label for="End Date" class="text-bold">End Date</label>
+                          <input value="<%=queryData.end_date? queryData.end_date : '' %>" placeholder="Search By End Date" id="END" class="form-control datepicker" autocomplete="off" name="end_date" type="text">
+                        
+                        </div>
+                      </div>
+                      <!-- start sahil overfantasy filtering -->
+                      <div class="col-md-4">
+                        <div class="form-group my-3">
+                          <!-- <form action="view_youtuber_refer" method="get"> -->
+                      <label for="Fantasy Type*" style="color:black;">Fantasy Type*</label>
+                      <% if(fantasy_type){ %>
+                          <select class="form-control form-control-solid " title="Fantasy Type"
+                              id="matchkey_id" data-container="body" name="fantasy_type"
+                              onchange="this.form.submit()">
+                              <!-- <option disabled selected> Fantasy Type </option> -->
+                              <option value="Cricket" <%=fantasy_type=='cricket' ? 'selected' :'' %>
+                                  >Cricket</option>
+                              <option value="overfantasy" <%=fantasy_type=='overfantasy' ? 'selected'
+                                  : '' %>>Overfantasy</option>
+                          </select>
+                          <%}else{%>
+                              <select class="form-control form-control-solid " title="Fantasy Type"
+                                  id="matchkey_id" data-container="body" name="fantasy_type"
+                                  onchange="this.form.submit()">
+                                  <!-- <option disabled selected> Fantasy Type </option> -->
+                                  <option value="Cricket">Cricket</option>
+                                  <option value="overfantasy">Overfantasy</option>
+                              </select>
+                              <%}%>
+                            </div>
+                          </div>
+                        
+
+                      <!-- end sahil overfantasy filtering -->
+                      <div class="col-md-4">
+                   
+
+                      <div class="col-12 text-right mt-4 mb-2">
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-success text-uppercase"
+                        >
+                          <i class="far fa-check-circle"></i>&nbsp; Submit
+                        </button>
+                        <a
+                          href="/view_youtuber"
+                          class="btn btn-sm btn-warning text-uppercase"
+                          ><i class="far fa-undo"></i>&nbsp; Reset</a
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <!-- </form> -->
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">View All Refer code You-tuber</div>
+        <div class="card-body">
+          <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://cdn.datatables.net/v/dt/dt-1.10.16/r-2.2.1/datatables.min.css"
+          />
+          <div class="datatable table-responsive">
+            <form action="/downloadalluserprofitdetails/<%=youtuber_id %>" method="get">
+              <input type="hidden" name="start_date"  value="<%=queryData.start_date? queryData.start_date : '' %>" />
+              <input type="hidden" name="end_date"  value="<%=queryData.end_date? queryData.end_date : '' %>" />
+              <input type="hidden" name="match"  value="<%=queryData.end_date? queryData.end_date : '' %>" />
+              <button type="submit" style="margin-bottom: 5px;" class="btn btn-info"><i class="fa fa-download"></i> Download You-Tuber Users Profit Details</a></button>
+            </form>
+            <table
+              class="table table-bordered table-striped table-hover text-nowrap"
+              id="refer_youtuber_datatable"
+              width="100%"
+              cellspacing="0"
+            >
+              <thead>
+              <th>S.no.</th>
+              <th>Match</th>
+              <th>Entry Fee</th>
+              <th>Winning Amount</th>
+              <th>Maxi.<br>User</th>
+              <th>Promoter<br>Users</th>
+              <th>Joined Users</th>
+              <th>Contest Status</th>
+              <th>Profit per-person<br><sub>(BONUS)</sub></th>
+              <th>Profit per-person<br><sub>(Without BONUS)</sub></th>
+              <th>Promoter<br>user Profit</th>
+              <th>Net Profit</th>
+              <th>User View</th>
+              </thead>
+              <tbody>
+                
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th>S.no.</th>
+                  <th>Match</th>
+                  <th>Entry Fee</th>
+                  <th>Winning Amount</th>
+                  <th>Maxi.<br>User</th>
+                  <th>Promoter<br>Users</th>
+                  <th>Joined Users</th>
+                  <th>Contest Status</th>
+                  <th>Profit per-person<br><sub>(BONUS)</sub></th>
+                  <th>Profit per-person<br><sub>(Without BONUS)</sub></th>
+                  <th>Promoter<br>user Profit</th>
+                  <th>Net Profit</th>
+                  <th>User View</th>
+                </tr>
+              </tfoot>
+              
+            </table>
+          </div>
+        </div>
+      </div>
+      <input type="hidden" name="_token" value="3" id="REFER" >
+      <script
+        type="text/javascript"
+        src="https://cdn.datatables.net/v/dt/dt-1.10.16/r-2.2.1/datatables.min.js"
+      ></script>
+
+      <script type="text/javascript">
+        $(document).ready(function() {    
+          // alert("")
+        var start_date = $('#START').val(); 
+        var end_date = $('#END').val(); 
+        var match = $('#matchkey').val(); 
+        var youtuber_id = $('#youtuber_id').val();
+        var fantasy_type = $('#matchkey_id').val();
+        console.log("--start_date-",start_date,"end_date--",end_date,"--match--",match,"--youtuber_id--",youtuber_id)
+        $.fn.dataTable.ext.errMode = 'none'; 
+            $('#refer_youtuber_datatable').DataTable({
+              language: {
+              zeroRecords: "No records to display",
+            },
+                "ajax":{
+                    "url": '/refer_youtuber_datatable?youtuber_id='+youtuber_id+'&start_date='+start_date+'&end_date='+end_date+'&matchkey='+match+'&fantasy_type='+fantasy_type,
+                    "dataType": "json",
+                    "type": "POST",
+                    },
+                    
+                "columns": [
+                    { "data": "count" },
+                    { "data": "name" },
+                    { "data": "entryfee" },
+                    { "data": "win_amount" },
+                    { "data": "maximum_user" },
+                    { "data": "users" },
+                    { "data": "joinedusers" },
+                    { "data": "status" },
+                    { "data": "per_person_profit_bonus" },
+                    { "data": "per_person_profit" },
+                    { "data": "youtuber_user_profit" },
+                    { "data": "net_profit" },
+                    { "data": "view" }
+                  ]
+            });
+          });
+    </script>
+    </div>
+  </main>
+  <%- include("../../partials/footer") %>
+
+  <script>
+    $(window).on("load", function () {
+      $("#preloader_admin").hide();
+    });
+  </script>
+
+  <script>
+    $("#b1").click(function () {
+      const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+          confirmButton: "btn btn-sm btn-success",
+          cancelButton: "btn btn-sm btn-danger",
+        },
+        buttonsStyling: false,
+      });
+
+      swalWithBootstrapButtons
+        .fire({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "success",
+          showCancelButton: true,
+          confirmButtonText: "Yes, delete it!",
+          cancelButtonText: "No, cancel!",
+          reverseButtons: true,
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            swalWithBootstrapButtons.fire(
+              "Deleted!",
+              "Your file has been deleted.",
+              "success"
+            );
+          } else if (
+            /* Read more about handling dismissals below */
+            result.dismiss === Swal.DismissReason.cancel
+          ) {
+            swalWithBootstrapButtons.fire(
+              "Cancelled",
+              "Your imaginary file is safe :)",
+              "error"
+            );
+          }
+        });
+    });
+  </script>
+
+  <script>
+    $(document).ready(function () {
+      if ($("#accordionSidenavPages a").hasClass("active")) {
+        $("#accordionSidenavPages a.active")
+          .parent()
+          .parent()
+          .prev("a")
+          .removeClass("collapsed");
+        $("#accordionSidenavPages a.active").parent().parent().addClass("show");
+        // console.log(id);
+      } else {
+        $("#takeonebar").addClass("slamdown");
+      }
+    });
+  </script>
+  <script>
+    $("#sortable, #sortable2").sortable();
+  </script>
+  <script>
+    $(".alert").delay(3000).fadeOut();
+  </script>
+
+  <script type="text/javascript">
+    $.datetimepicker.setLocale("en");
+    $(".datetimepickerget").datetimepicker({
+      lang: "en",
+      formatDate: "d.m.Y",
+      step: 5,
+      startDate: new Date(),
+    });
+  </script>
+  <script type="text/javascript">
+    $(".datepicker").datepicker({
+      lang: "en",
+      formatDate: "d.m.Y",
+      step: 5,
+    });
+  </script>
+
+  <script>
+    function isNumberKey(evt) {
+      //var e = evt || window.event;
+
+      var charCode = evt.which ? evt.which : evt.keyCode;
+      if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+        return false;
+      else {
+        var itemdecimal = evt.srcElement.value.split(".");
+        if (itemdecimal.length > 1 && charCode == 46) return false;
+
+        return true;
+      }
+    }
+  </script>
+
+  <script>
+    function delete_sweet_alert(url, msg) {
+      // sweet alert
+      const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+          confirmButton: "btn btn-sm btn-success ml-2",
+          cancelButton: "btn btn-sm btn-danger",
+        },
+        buttonsStyling: false,
+      });
+
+      swalWithBootstrapButtons
+        .fire({
+          title: msg,
+          text: "You won't be able to revert this!",
+          icon: "success",
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          cancelButtonText: "No",
+          reverseButtons: true,
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            swalWithBootstrapButtons.fire("", "Successfully Done", "success");
+
+            window.location.href = url;
+          } else if (
+            /* Read more about handling dismissals below */
+            result.dismiss === Swal.DismissReason.cancel
+          ) {
+            swalWithBootstrapButtons.fire(
+              "Cancelled",
+              "Cancelled successfully :)",
+              "error"
+            );
+            return false;
+          }
+        });
+    }
+  </script>
+</div>

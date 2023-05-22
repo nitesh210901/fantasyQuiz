@@ -1,0 +1,214 @@
+
+<%- include("../../partials/head") %>
+
+<%- include("../../partials/bodyStartWithNavBar") %>
+<%- include("../../partials/sideNav") %>
+<%- include("../../partials/alertMsg") %> 
+<div id="layoutSidenav_content">
+<main>
+    <div class="page-header pb-10 page-header-dark bg-info">
+      <div class="container-fluid">
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="page-header-content">
+              <h1 class="page-header-title fs-md-35 fs-20">
+                <div class="page-header-icon">
+                  <i class="fad fa-at text-white"></i>
+                </div>
+                <span class="text-capitalize">    FAQ Question Manager </span>
+              </h1>
+              <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                View all FAQ Question
+              </div>
+            </div>
+          </div>
+          <div class="col-auto mb-md-0 mb-3">
+            <a
+              href="/add_FAQ_Question_page"
+              class="btn btn-sm btn-light font-weight-bold text-uppercase text-primary text-uppercase"
+              data-toggle="tooltip"
+              title="Add New Contest Category"
+              ><i class="fas fa-plus"></i>&nbsp; Add FAQ Question</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid mt-n10">
+    
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card mb-3">
+            <div class="card-heading p-3">
+              <form method="get" action="/view_all_FAQ_Question_page">
+                <div class="sbp-preview position-relative">
+                  <div class="form-group mb-0">
+                    <div class="row mx-0 align-items-end">
+                      <div class="col-md">
+                        <div class="form-group my-3">
+                          <label for="testimonial Name" class="text-bold"
+                            >FAQ Question </label
+                          >
+                          
+                          <input placeholder="Search By Question" id="question" class="form-control form-control-solid" name="question" type="text" value="<%=obj.question ? obj.question : '' %>"/>
+                          
+                        </div>
+                      </div>
+                      <div class="col-md-auto text-right h-100 mb-3">
+                        <button
+                          type="submit"
+                          class="btn btn-success btn-sm rounded-pill"
+                        >
+                          <i class="far fa-check-circle"></i>&nbsp; Search
+                        </button>
+                        <a
+                          href="/view_all_FAQ_Question_page"
+                          class="btn btn-warning btn-sm rounded-pill"
+                          ><i class="fa fa-undo"></i>&nbsp;Reset</a
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">view All FAQ Question</div>
+        <div class="card-body">
+          <div class="datatable table-responsive">
+            <table
+              class="table table-bordered table-hover text-nowrap"
+              id="FAQQuestionAjaxTable"
+              width="100%"
+              cellspacing="0"
+            >
+              <thead>
+                <tr>
+                  <th>Sno.</th>
+                  <th>Question</th>
+                  <th>Answere</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr>
+                    <th>Sno.</th>
+                    <th>Question</th>
+                    <th>Answere</th>
+                    <th>Action</th>
+                </tr>
+              </tfoot>
+            </table>
+            <!-- <span class="float-right"></span> -->
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript">
+        $(document).ready(function () {
+          let searchQuestion = $("#question").val();
+        //   $.fn.dataTable.ext.errMode = "none";
+          $("#FAQQuestionAjaxTable").DataTable({
+            searching: false,
+            language: {
+              zeroRecords: "No records to display",
+            },
+            ajax: {
+              url: `/faq_question-table?searchQuestion=${searchQuestion}`,
+              type: "post",
+              dataSrc: "data",
+            },
+            lengthMenu: [
+              [10, 25, 50, 100, 1000, 10000],
+              [10, 25, 50, 100, 1000, 10000],
+            ],
+            columns: [
+              {
+                data: "count",
+              },
+              {
+                data: "question",
+              },
+              {
+                data: "answere",
+              },
+              {
+                data: "action",
+                orderable: false,
+              },
+            ],
+          });
+        });
+      </script>
+    </div>
+</main>
+<%- include("../../partials/footer") %>
+
+<script>
+  $(window).on('load', function () {
+
+    $('#preloader_admin').hide();
+
+  })
+</script>
+<script>
+    function delete_sweet_alert(url, msg) {
+      // sweet alert
+      const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+          confirmButton: 'btn btn-sm btn-success ml-2',
+          cancelButton: 'btn btn-sm btn-danger'
+        },
+        buttonsStyling: false
+      })
+
+      swalWithBootstrapButtons.fire({
+        title: msg,
+        text: "You won't be able to revert this!",
+        icon: 'success',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+
+          swalWithBootstrapButtons.fire(
+            '',
+            'Successfully Done',
+            'success'
+          );
+
+          window.location.href = url;
+
+
+        } else if (
+          /* Read more about handling dismissals below */
+          result.dismiss === Swal.DismissReason.cancel
+        ) {
+          swalWithBootstrapButtons.fire(
+            'Cancelled',
+            'Cancelled successfully :)',
+            'error'
+          );
+          return false;
+        }
+      })
+    }
+  </script>
+  <script>
+    $(document).ready(function () {
+      if ($('#accordionSidenavPages a').hasClass('active')) {
+        $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
+        $('#accordionSidenavPages a.active').parent().parent().addClass('show');
+        // console.log(id);
+      } else {
+        $('#takeonebar').addClass('slamdown');
+      }
+    });
+  </script>

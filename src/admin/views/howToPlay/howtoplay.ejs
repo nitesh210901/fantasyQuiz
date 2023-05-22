@@ -1,0 +1,107 @@
+
+<%- include("../../partials/head") %>
+
+<%- include("../../partials/bodyStartWithNavBar/") %>
+<%- include("../../partials/sideNav") %>
+<%- include("../../partials/alertMsg") %> 
+<div id="layoutSidenav_content">
+<main>
+        <div class="page-header pb-10 page-header-dark bg-info">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="page-header-content">
+                            <h1 class="page-header-title fs-md-35 fs-20">
+
+                                <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
+                                <span class=" text-capitalize">
+                                       How to Play manager
+                                </span>
+                            </h1>
+                            <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                                   view how to play page
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid mt-n10">
+
+
+<div class="card">
+<div class="card-header">Privacy Policy</div>
+<!-- accept-charset="UTF-8" id="j-forms" -->
+<form method="POST" action="/edit_how_to_play"  class="card-body" >
+<input type="hidden" name="id" id="id" value="" />
+<div class="sbp-preview">
+    <div class="sbp-preview-content">
+        <div class="row mx-0">
+            <div class="col-12">
+                <div class="form-group my-3">
+                   <label for="category*" class="control-label text-bold">Category*</label>
+                    <select name="category" class="form-control form-control-solid p-1 " id="category" required="">
+                        <option value="" disabled selected>Select Match</option>
+                        <option value="Select A Match" >Select A Match</option>
+                        <option value="Create Your Team" >Create your Team</option>
+                        <option value="Join a Contest" >Join a Contest</option>
+                        <option value="Follow the Live Match" >Follow the Live Match</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group my-3">
+                   <label for="description*" class="control-label text-bold">Description*</label>
+                   <textarea name="description" class="form-control form-control-solid ckeditor" id="description" required="" cols="30" rows="8" placeholder="Enter  Description"></textarea>
+                </div>
+            </div>
+            <div class="col-12 text-right mt-4 mb-2">
+                <button type="submit" class=" btn btn-sm btn-success float-right ml-1"><i class="far fa-check-circle"></i>&nbsp; update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+        </div>
+</main>
+<%- include("../../partials/footer") %>
+
+<script>
+  $(window).on('load', function () {
+
+    $('#preloader_admin').hide();
+
+  })
+</script>
+
+
+<script>
+  $(document).ready(function () {
+    if ($('#accordionSidenavPages a').hasClass('active')) {
+      $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
+      $('#accordionSidenavPages a.active').parent().parent().addClass('show');
+      // console.log(id);
+    } else {
+      $('#takeonebar').addClass('slamdown');
+    }
+  });
+</script>
+<script>
+    $('#category').change(function () {
+     var optionSelected = $("#category :selected").val();
+     $.ajax({
+              type: 'get',
+              url: `/view_selected_category_howtoplay?category=${optionSelected}`,
+              success: function (data) {
+                       if(data.length >0){
+                        CKEDITOR.instances['description'].setData(data[0].description);
+                           $('#id').val(data[0]._id)
+                        }else{
+                            CKEDITOR.instances['description'].setData("");
+                            $('#id').val("")
+                        }
+                       }
+                     });
+             });
+</script>

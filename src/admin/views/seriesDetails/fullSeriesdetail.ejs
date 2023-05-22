@@ -1,0 +1,328 @@
+<%- include("../..//partials/head") %>
+
+  <%- include("../../partials/bodyStartWithNavBar") %>
+    <%- include("../../partials/sideNav") %>
+    <link rel="stylesheet" href="https://cdn.datatables.net/colreorder/1.6.1/css/colReorder.dataTables.min.css"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.0/css/responsive.dataTables.min.css"/>
+      <div id="layoutSidenav_content">
+        <main>
+
+          <div class="page-header pb-10 page-header-dark bg-info">
+            <div class="container-fluid">
+              <div class="row align-items-center">
+                <div class="col">
+                  <div class="page-header-content">
+                    <h1 class="page-header-title fs-md-35 fs-20">
+
+                      <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
+                      <span class=" text-capitalize">
+                        Full Series Detail
+                      </span>
+                    </h1>
+                    <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                      View Series Detail
+                    </div>
+                  </div>
+                </div>
+                <div class="col-auto mb-md-0 mb-3">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="container-fluid mt-n10">
+
+            <div class="row">
+              <div class="col-md-12">
+                <div class="card mb-3">
+                  <div class="card-heading p-3">
+                    <form method="get" action="/seriesDetails">
+                      <div class="sbp-preview position-relative">
+                        <div class="form-group">
+                          <div class="row mx-0">
+                            <div class="col-md-12">
+                              <div class="form-group my-3">
+                                <label for="Fantasy Type*" style="color:black;">Fantasy Type*</label>
+                                                                <% if(fantasy_type){ %>
+                                                                    <select class="form-control form-control-solid " title="Fantasy Type"
+                                                                        id="matchkey_id" data-container="body" name="fantasy_type"
+                                                                        onchange="this.form.submit()">
+                                                                        <!-- <option disabled selected> Fantasy Type </option> -->
+                                                                        <option value="Cricket" <%=fantasy_type=='cricket' ? 'selected' :'' %>
+                                                                            >Cricket</option>
+                                                                        <option value="overfantasy" <%=fantasy_type=='overfantasy' ? 'selected'
+                                                                            : '' %>>Overfantasy</option>
+                                                                    </select>
+                                                                    <%}else{%>
+                                                                        <select class="form-control form-control-solid " title="Fantasy Type"
+                                                                            id="matchkey_id" data-container="body" name="fantasy_type"
+                                                                            onchange="this.form.submit()">
+                                                                            <!-- <option disabled selected> Fantasy Type </option> -->
+                                                                            <option value="Cricket">Cricket</option>
+                                                                            <option value="overfantasy">Overfantasy</option>
+                                                                        </select>
+                                                                        <%}%>
+
+                                <label for="Select Series" class="text-bold">Select Series</label>
+                                <select class="form-control selectpicker show-tick" data-container="body"
+                                  data-live-search="true" title="Select Series" data-hide-disabled="true" name="matchid"
+                                  id="fullseries" onchange="this.form.submit()">
+                                  <option value="" disabled>Select Series</option>
+                                  <% for(let key of seriesData) {%>
+                                    <% if(matchId) {%>
+                                      <option value="<%=key._id %>" <%=matchId==key._id ? 'selected' : '' %>><%=key.name
+                                          %>
+                                      </option>
+                                      <%}else{ %>
+                                        <option value="<%=key._id %>">
+                                          <%=key.name %>
+                                        </option>
+                                        <% }%>
+                                          <% }%>
+                                </select>
+                                <% if(matchId) {%>
+                                  <input type="hidden" name="selectedSer" value="<%=matchId %>" />
+                                  <%}else{ %>
+                                    <input type="hidden" name="selectedSer" value="" />
+                                    <% }%>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="card mb-4">
+              <div class="card-header">
+                <div class="row w-100 align-items-center mx-0">
+                  <div class="col-md col-12 mb-md-0 mb-2 text-md-left text-center">View All Series</div>
+
+                  <div class="col-md-auto col-12 px-md-3 px-0 text-center">
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                      <button id="btn-show-all-children" class="btn btn-sm text-uppercase btn-success"
+                        type="button">Expand All</button>
+                      <button id="btn-hide-all-children" class="btn btn-sm text-uppercase btn-danger"
+                        type="button">Collapse All</button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              <div class="card-body">
+
+                <div class="datatable table-responsive w-100" id="changeDisplay" style="display: none;">
+                  <table class="table table-bordered table-striped table-hover text-nowrap" id="dataTabless"
+                    width="100%" cellspacing="0" >
+                    <thead>
+                      <tr>
+                        <th>Sno.</th>
+                        <th>Match Name</th>
+                        <th>First Team</th>
+                        <th>Second Team</th>
+                        <th>Match Key</th>
+                        <th>Series Name</th>
+                        <th>Match Format</th>
+                        <th>Start Date</th>
+                        <th>Match Status</th>
+                        <th>Launch Status</th>
+                        <th>Final Status</th>
+                        <th>Squad Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th>Sno.</th>
+                        <th>Match Name</th>
+                        <th>First Team</th>
+                        <th>Second Team</th>
+                        <th>Match Key</th>
+                        <th>Series Name</th>
+                        <th>Match Format</th>
+                        <th>Start Date</th>
+                        <th>Match Status</th>
+                        <th>Launch Status</th>
+                        <th>Final Status</th>
+                        <th>Squad Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </tfoot>
+                   
+                  </table>
+
+                </div>
+              </div>
+            </div>
+            <style>
+              .dataTables_info, .dataTables_length {
+                  display: none;
+              }
+          </style>
+            
+
+
+          
+          </div>
+        </main>
+        
+        <script src="https://cdn.datatables.net/colreorder/1.6.1/js/dataTables.colReorder.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.4.0/js/dataTables.responsive.min.js"></script>
+        <script>
+          let selectedSeries = $("input[name=selectedSer]").val();
+          let fantasy_type=$('#matchkey_id').val();
+          console.log("selectedSeries.....", selectedSeries);
+          if (selectedSeries) {
+            $('#changeDisplay').removeAttr("style");
+            $('#dataTabless').DataTable({
+              // serverSide: true,
+              'responsive': true,
+              colReorder: true,
+              'searching': false,
+              "processing": false,
+              language: {
+              zeroRecords: "No records to display",
+            },
+              ajax: {
+                url: `/getFullSeriesDataTable?seriesId=${selectedSeries}&fantasy_type=${fantasy_type}`,
+                type: 'post',
+                dataSrc: 'data',
+              },
+              "lengthMenu": [
+                    [10, 25, 50, 100, 1000, 10000],
+                    [10, 25, 50, 100, 1000, 10000]
+                ],
+
+              columns: [{
+                data: "count"
+              }, {
+                data: "name"
+              }, {
+                data: "team1Id"
+              }, {
+                data: "team2Id"
+              }, {
+                data: "real_matchkey"
+              }, {
+                data: "series"
+              }, {
+                data: "format"
+              }, {
+                data: "start_date"
+              }, {
+                data: "status"
+              }, {
+                data: "launch_status"
+              }, {
+                data: "final_status"
+              }, {
+                data: "squadstatus"
+              }, {
+                data: "action",
+              }]
+            })
+          }
+
+        </script>
+        <script>
+               $('#item_list').removeClass('d-none');
+               $('#boxx').removeClass('d-none');
+               $("#item_list").html(data);
+        </script>
+      
+
+        <%- include("../../partials/footer") %>
+
+          <script>
+
+            $(window).on('load', function () {
+
+              $('#preloader_admin').hide();
+
+            })
+          </script>
+          
+
+  
+
+
+
+
+
+          <script>
+            $(document).ready(function () {
+
+              if ($('#accordionSidenavPages a').hasClass('active')) {
+                $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
+                $('#accordionSidenavPages a.active').parent().parent().addClass('show');
+                // console.log(id);
+              } else {
+                $('#takeonebar').addClass('slamdown');
+              }
+            });
+
+          </script>
+         
+         <script>
+          $(document).ready(function () {
+            // var table = $('#dataTabless').DataTable({
+            //   'responsive': true,
+            //   // pagination:false
+            // });
+      
+            // Handle click on "Expand All" button
+            $('#btn-show-all-children').on('click', function () {
+              // Expand row details
+              table.rows(':not(.parent)').nodes().to$().find('td:first-child').trigger('click');
+            });
+      
+            // Handle click on "Collapse All" button
+            $('#btn-hide-all-children').on('click', function () {
+              // Collapse row details
+              table.rows('.parent').nodes().to$().find('td:first-child').trigger('click');
+            });
+          });
+        </script>
+
+    <script>
+    function set_item(item){
+      usersarry.push(item);
+      $("#uservalues").val(usersarry);
+      $("#selectusers").val('');
+          $('#item_list').addClass('d-none');
+      var gettext = $('#userid'+item).html();
+      $("#showusers").append('<div class="col-md-6" id="showuserseses">'+gettext+'</div>');
+          $('#boxx').addClass('d-none');
+        }
+        function deletediv(e,item){
+            usersarry.splice( usersarry.indexOf(item), 1 );
+            $("#uservalues").val(usersarry);
+            // e.parentNode.parentNode.remove(e.parentNode);
+            $('#showuserseses').remove();
+        }
+        $(function(){
+          $(document).click(function(){
+              $('#box').addClass('d-none'); //hide the button
+              //$('#boxx').hide(); //hide the button
+            });
+        });
+  </script>
+ 
+
+
+
+
+
+
+
+
+
+        
+
+          
+         

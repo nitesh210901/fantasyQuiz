@@ -1,0 +1,15 @@
+*.jpg
+*.png
+*.jpeg
+node_modules
+*-lock.json
+.env
+.env.local
+.env.staging
+.env_docker
+Dockerfile-Admin
+Dockerfile-Api
+Dockerfile-Cron
+dbdata
+docker-compose.yml
+log-config

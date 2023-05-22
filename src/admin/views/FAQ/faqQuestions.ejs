@@ -1,0 +1,85 @@
+
+<%- include("../../partials/head") %>
+
+<%- include("../../partials/bodyStartWithNavBar") %>
+<%- include("../../partials/sideNav") %>
+<%- include("../../partials/alertMsg") %> 
+<div id="layoutSidenav_content">
+<main>
+        <div class="page-header pb-10 page-header-dark bg-info">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="page-header-content">
+                            <h1 class="page-header-title fs-md-35 fs-20">
+
+                                <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
+                                <span class=" text-capitalize">
+                                       FAQ manager
+                                </span>
+                            </h1>
+                            <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                                   Add FAQ  Question
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid mt-n10">
+
+
+<div class="card">
+<div class="card-header">FAQ Question</div>
+<!-- accept-charset="UTF-8" id="j-forms" -->
+<form method="POST" action="/add_FAQ_Question_data"  class="card-body" >
+
+<div class="sbp-preview">
+    <div class="sbp-preview-content">
+        <div class="row mx-0">
+
+            <div class="col-12">
+                <div class="form-group my-3">
+                   <label for="question*" class="control-label text-bold">Question*</label>
+                   <textarea name="question" class="form-control form-control-solid " id="" required="" cols="30" rows="3" placeholder="Enter Question"></textarea>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group my-3">
+                   <label for="*" class="control-label text-bold">Answer*</label>
+                   <textarea name="answer" class="form-control form-control-solid " id="" required="" cols="30" rows="8" placeholder="Enter Answer"></textarea>
+                </div>
+            </div>
+         
+            <div class="col-12 text-right mt-4 mb-2">
+                <button type="submit" class=" btn btn-sm btn-success float-right ml-1"><i class="far fa-check-circle"></i>&nbsp; Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+        </div>
+</main>
+<%- include("../../partials/footer") %>
+
+<script>
+  $(window).on('load', function () {
+
+    $('#preloader_admin').hide();
+
+  })
+</script>
+
+
+<script>
+  $(document).ready(function () {
+    if ($('#accordionSidenavPages a').hasClass('active')) {
+      $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
+      $('#accordionSidenavPages a.active').parent().parent().addClass('show');
+      // console.log(id);
+    } else {
+      $('#takeonebar').addClass('slamdown');
+    }
+  });
+</script>

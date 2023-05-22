@@ -1,0 +1,150 @@
+<%- include("../../partials/head") %> <%-
+include("../../partials/bodyStartWithNavBar/") %> <%-
+include("../../partials/sideNav") %>
+<div id="layoutSidenav_content">
+  <main>
+    <%- include("../../partials/alertMsg") %>
+    <div class="page-header pb-10 page-header-dark bg-info">
+      <div class="container-fluid">
+        <div class="row align-items-center">
+          <div class="col">
+            <div class="page-header-content">
+              <h1 class="page-header-title fs-md-35 fs-20">
+                <div class="page-header-icon">
+                  <i class="fad fa-at text-white"></i>
+                </div>
+                <span class="text-capitalize"> Full Series Detail </span>
+              </h1>
+              <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                View Users Team
+              </div>
+            </div>
+          </div>
+          <div class="col-auto mb-md-0 mb-3"></div>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid mt-n10">
+      <div class="card mb-4">
+        <div class="card-header">View User Team</div>
+        <div class="card-body">
+          <script>
+            $(window).on("load", function () {
+              var success = "";
+              var danger = "";
+              var error = "";
+              var warning = "";
+
+              if (success) {
+                $("#toastBasic4").toast("show");
+              }
+
+              if (danger || error) {
+                $("#toastBasic3").toast("show");
+              }
+
+              if (warning) {
+                $("#toastBasic2").toast("show");
+              }
+            });
+          </script>
+
+          <input type="hidden" id="challngeid" value="" />
+          <div class="datatable table-responsive overflow-auto">
+            <table
+              class="table table-bordered table-striped table-hover text-nowrap"
+              id="user_teams_id"
+              width="100%"
+              cellspacing="0"
+            >
+              <input
+                type="hidden"
+                id="teamid"
+                name="teamid"
+                value="<%= teamid %>"
+              />
+              <thead>
+                <tr>
+                  <th data-toggle="tooltip" title="Series Number">#</th>
+                  <th>Match key</th>
+                  <th data-toggle="tooltip" title="Team Number">T. No.</th>
+                  <th>Players</th>
+                  <th>Captain</th>
+                  <th>Vice Captain</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tfoot>
+                <tr>
+                  <th data-toggle="tooltip" title="Series Number">#</th>
+                  <th>Match key</th>
+                  <th data-toggle="tooltip" title="Team Number">T. No.</th>
+                  <th>Players</th>
+                  <th>Captain</th>
+                  <th>Vice Captain</th>
+                  <th>Action</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include("../../partials/footer") %>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      let teamid = $("#teamid").val();
+      $.fn.dataTable.ext.errMode = 'none';
+      $('#user_teams_id').DataTable({
+        // 'responsive': false,
+        'bFilter': false,
+        // "processing": true,
+        // "serverSide": true,
+        language: {
+          zeroRecords: "No records to display",
+        },
+        "ajax": {
+          "url": `/user-teams-tabled?teamid=${teamid}`,
+          "dataType": "json",
+          "type": "POST",
+        },
+        "lengthMenu": [
+          [10, 25, 50, 100, 1000, 10000],
+          [10, 25, 50, 100, 1000, 10000]
+        ],
+        "columns": [
+            {
+                data: "count",
+              },
+              {
+                data: "matchKey",
+              },
+              {
+                data: "teamNumber",
+              },
+              {
+                data: "players",
+              },
+              {
+                data: "captain",
+              },
+              {
+                data: "viceCaptain",
+              },
+              {
+                data:"action"
+              }
+        ]
+
+      });
+
+    });
+  </script>
+  <script>
+    $(window).on("load", function () {
+      $("#preloader_admin").hide();
+    });
+  </script>
+</div>

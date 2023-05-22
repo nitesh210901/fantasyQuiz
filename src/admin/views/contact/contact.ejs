@@ -1,0 +1,112 @@
+
+<%- include("../../partials/head") %>
+
+<%- include("../../partials/bodyStartWithNavBar/") %>
+<%- include("../../partials/sideNav") %>
+<%- include("../../partials/alertMsg") %> 
+<div id="layoutSidenav_content">
+<main>
+        <div class="page-header pb-10 page-header-dark bg-info">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="page-header-content">
+                            <h1 class="page-header-title fs-md-35 fs-20">
+
+                                <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
+                                <span class=" text-capitalize">
+                                       Contact Manager
+                                </span>
+                            </h1>
+                            <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                                Contact
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid mt-n10">
+
+
+<div class="card">
+<div class="card-header">Contact</div>
+<!-- accept-charset="UTF-8" id="j-forms" -->
+<form method="POST" action="/edit_Contact/<%=data ? data._id : '' %>"  class="card-body" >
+
+<div class="sbp-preview">
+    <div class="sbp-preview-content">
+        <div class="row mx-0">
+            <div class="col-12">
+                <div class="form-group my-3">
+                   <label for="Email*" class="control-label text-bold">Email Address*</label>
+                    <input required="" placeholder="Enter Email address" class="form-control form-control-solid" name="email" type="email" value="<%=data ? data.email : '' %>" />
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group my-3">
+                   <label for="phone*" class="control-label text-bold">Phone Number*</label>
+                    <input type="text" placeholder="1234567890" class="form-control form-control-solid" pattern="[789][0-9]{9}" onkeypress="return isNumberKey(event);" name="phone"   value="<%=data ? data.phone : '' %>" required />
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group my-3">
+                   <label for="contact Address*" class="control-label text-bold">Contact Address*</label>
+                   <textarea name="address" class="form-control form-control-solid" id="contact Address" required="" cols="30" rows="5" placeholder="Enter Contact Address"><%=data ? data.address : '' %></textarea>
+                    <!-- <input required="" placeholder="Enter Category Name" class="form-control form-control-solid" name="name" type="text" /> -->
+                </div>
+            </div>
+            <div class="col-12 text-right mt-4 mb-2">
+                <button type="submit" class=" btn btn-sm btn-success float-right ml-1"><i class="far fa-check-circle"></i>&nbsp;<%=data ? 'Update' : 'Add' %></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+        </div>
+</main>
+<%- include("../../partials/footer") %>
+
+<script>
+  $(window).on('load', function () {
+
+    $('#preloader_admin').hide();
+
+  })
+</script>
+
+
+<script>
+  $(document).ready(function () {
+    if ($('#accordionSidenavPages a').hasClass('active')) {
+      $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
+      $('#accordionSidenavPages a.active').parent().parent().addClass('show');
+      // console.log(id);
+    } else {
+      $('#takeonebar').addClass('slamdown');
+    }
+  });
+</script>
+
+
+<script>
+    function isNumberKey(evt){
+        //var e = evt || window.event;
+    console.log("----evt",evt)
+       var charCode = (evt.which) ? evt.which : evt.keyCode
+        if (charCode != 46 && charCode > 31
+       && (charCode < 48 || charCode > 57))
+    
+       return  false;
+    else {
+           var itemdecimal = evt.srcElement.value.split('.');
+           if (itemdecimal.length > 1 && charCode == 46){
+              return  false ;
+            }
+    
+          return  true;
+      }
+    }
+    
+    </script>
