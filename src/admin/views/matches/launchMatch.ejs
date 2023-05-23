@@ -42,13 +42,13 @@
                                                 class="fad fa-rocket"></i>&nbsp; Unlaunch Match</a>
                                     <% }%>
                                     <%
-                                        if(launcMatchData[0].fantasy_type=="Cricket"&&launcMatchData[0].isoverfantasy!=1)
+                                        if(launcMatchData[0].fantasy_type=="Cricket"&&launcMatchData[0].isQuiz!=1)
                                         {%>
                                         
-                                        <a href="/overfantasy/<%= data.findMatchDetails._id %>"
+                                        <a href="/quiz/<%= data.findMatchDetails._id %>"
                                             class="btn text-uppercase font-weight-bold btn-sm btn-success"
-                                            data-toggle="tooltip" title="Overfantasy"><i
-                                            class="fad fa-rocket"></i>&nbsp;Over Fantasy</a>
+                                            data-toggle="tooltip" title="Quiz"><i
+                                            class="fad fa-rocket"></i>&nbsp;Quiz</a>
                                         <%}%>
                                 </div>
                             </div>

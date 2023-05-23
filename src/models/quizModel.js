@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 let quizSchema = new Schema({
+    matchkey_id: {
+        type : mongoose.Types.ObjectId
+    },
     question: {
         type: String,
         default:""
