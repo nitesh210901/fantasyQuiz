@@ -55,7 +55,7 @@ class matchServices {
         try {
             let matchId = req.params.id;
             const getMatch = await listMatchModel.findOne({ _id: mongoose.Types.ObjectId(matchId) });
-            let saveMatch = '';
+            let saveMatch
             if (getMatch.format != "t20") {
                 return {
                     status: false,
@@ -69,15 +69,13 @@ class matchServices {
                     message: `..quiz already exists..`
                 }
             } else {
-
-                await listMatchModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(matchId) }, { isQuiz: 1 })
-
-                let obj2 = { ...getMatch._doc, _id: undefined, cricketid: getMatch._id }
-                obj2['fantasy_type'] = 'quiz';
-                obj2['launch_status'] = 'launched';
+                saveMatch = await listMatchModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(matchId) }, { isQuiz: 1 },{new:true})
+                // let obj2 = { ...getMatch._doc, _id: undefined, cricketid: getMatch._id }
+                // obj2['fantasy_type'] = 'quiz';
+                // obj2['launch_status'] = 'launched';
                 // let datainsert = await listMatchModel.create(getMatch);
-                let datainsert = new listMatchModel(obj2);
-                saveMatch = await datainsert.save();
+                // let datainsert = new listMatchModel(obj2);
+                // saveMatch = await datainsert.save();
                 //var saveMatch=datainsert
             }
             if (saveMatch) {
