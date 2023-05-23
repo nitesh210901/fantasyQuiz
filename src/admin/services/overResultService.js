@@ -47,7 +47,6 @@ class overResultServices {
             overInformations: this.overInformations.bind(this),
             getScoresUpdates: this.getScoresUpdates.bind(this),
             updatePointInOverPoint: this.updatePointInOverPoint.bind(this)
-
         }
     }
     // getscoreupdate
