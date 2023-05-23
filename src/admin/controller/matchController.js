@@ -31,8 +31,8 @@ class matchController {
             launchMatchPlayerUpdateData: this.launchMatchPlayerUpdateData.bind(this),
             matchPlayerDelete: this.matchPlayerDelete.bind(this),
             unlaunchMatch: this.unlaunchMatch.bind(this),
-            //sahil overfantasy
-            overfantasy: this.overfantasy.bind(this),
+            //sahil quiz
+            quiz: this.quiz.bind(this),
 
         }
     }
@@ -322,9 +322,9 @@ class matchController {
 
 
 // sahil overfantsy work
-async overfantasy(req, res, next) {
+async quiz(req, res, next) {
     try {
-        const updatelistmatch = await matchServices.overfantasy(req);
+        const updatelistmatch = await matchServices.quiz(req);
         if (updatelistmatch.status) {
             req.flash('success', updatelistmatch.message);
             res.redirect(`/launch-match/${req.params.id}`);

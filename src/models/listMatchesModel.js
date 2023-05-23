@@ -92,7 +92,7 @@ let listmatchSchema = new mongoose.Schema({
     second_inning_status: {
         type: Number
     },
-    isoverfantasy: {
+    isQuiz: {
         type: Number
     },
     tosswinner_team: {

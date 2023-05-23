@@ -22,7 +22,7 @@
                                     </div>
                                 </div>
                                 <div class="col-auto mb-md-0 mb-3">
-                                    <a href="/view-quiz" class="btn btn-sm  btn-sm rounded-pill btn-light font-weight-bold text-primary float-right"><i class="fad fa-eye"></i>&nbsp; View All Quiz</a>
+                                    <a href="/view_quiz" class="btn btn-sm  btn-sm rounded-pill btn-light font-weight-bold text-primary float-right"><i class="fad fa-eye"></i>&nbsp; View All Quiz</a>
                                 </div>
                             </div>
                         </div>
@@ -39,6 +39,22 @@
                                         <div class="sbp-preview">
                                             <div class="sbp-preview-content p-2">
                                                 <div class="row mx-0">
+                                                    <div class="col-md">
+                                                        <div class="form-group my-3">
+                                                            <!-- over fantasy start -->
+                                                            <label for="Fantasy Type*" style="color:black;">Match*</label>
+                                                            
+                                                            <% if(typeof listmatch !=="undefined" && listmatch){%>
+                                                                    <select class="form-control form-control-solid " title="Fantasy Type" id="matchkey_id" data-container="body" name="matchkey_id">
+                                                                        <% for(let match of listmatch){%>
+                                                                        <option value="<%= match._id %>"><%= match.name%></option>
+                                                                        <%}%>
+                                                                    </select>
+                                                            <%}%>
+                                                                    
+                                                        </div>
+                                                    </div>
+
                                                     <div class="col-12">
                                                         <div class="form-group my-3">
                                                             <label for="job-title">Question*</label>

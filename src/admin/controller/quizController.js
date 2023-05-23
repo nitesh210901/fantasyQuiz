@@ -2,7 +2,7 @@ const moment = require("moment");
 
 const quizModel = require("../../models/quizModel");
 const quizServices = require('../services/quizService');
-
+const listMatchModel = require("../../models/listMatchesModel");
 class quizController {
   constructor() {
     return {
@@ -19,12 +19,14 @@ class quizController {
 
 
   async AddQuizPage(req, res, next) {
-    try {
+      try {
+          const listmatch = await listMatchModel.find({ isQuiz: 1 })    
       res.locals.message = req.flash();
       res.render("quiz/add_quiz", {
         sessiondata: req.session.data,
         data: undefined,
         msg: undefined,
+        listmatch: listmatch
       });
     } catch (error) {
       // next(error);

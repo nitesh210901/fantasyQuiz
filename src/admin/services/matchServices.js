@@ -38,7 +38,7 @@ class matchServices {
             unlaunchMatch: this.unlaunchMatch.bind(this),
             getUser: this.getUser.bind(this),
             //sahil overfantasy
-            overfantasy: this.overfantasy.bind(this),
+            quiz: this.quiz.bind(this),
         }
     }
 
@@ -51,7 +51,7 @@ class matchServices {
         }
     }
     //sahil overfantasy
-    async overfantasy(req) {
+    async quiz(req) {
         try {
             let matchId = req.params.id;
             const getMatch = await listMatchModel.findOne({ _id: mongoose.Types.ObjectId(matchId) });
@@ -63,41 +63,33 @@ class matchServices {
                 }
             }
 
-            if (getMatch.fantasy_type == "overfantasy") {
+            if (getMatch.fantasy_type == "quiz") {
                 return {
                     status: false,
-                    message: `..Over Fantasy already exists..`
+                    message: `..quiz already exists..`
                 }
             } else {
 
-                // let obj2 = Object.create(getMatch);
-                // obj2.cricketid=getMatch._id;
-                // obj2._id=undefined
-                //delete obj2._id;
-                console.log("getMatch", getMatch)
-                await listMatchModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(matchId) }, { isoverfantasy: 1 })
+                await listMatchModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(matchId) }, { isQuiz: 1 })
 
                 let obj2 = { ...getMatch._doc, _id: undefined, cricketid: getMatch._id }
-                obj2['fantasy_type'] = 'overfantasy';
+                obj2['fantasy_type'] = 'quiz';
                 obj2['launch_status'] = 'launched';
-                console.log("dataasdf", obj2)
                 // let datainsert = await listMatchModel.create(getMatch);
                 let datainsert = new listMatchModel(obj2);
-                console.log("saveMatchs" + datainsert)
                 saveMatch = await datainsert.save();
-                console.log("saveMatch" + saveMatch)
                 //var saveMatch=datainsert
             }
             if (saveMatch) {
                 return {
                     status: true,
-                    message: `${getMatch.name} Match Overfantasy Status is true successfully..`
+                    message: `${getMatch.name} Match quiz Status is true successfully..`
                 }
 
             } else {
                 return {
                     status: false,
-                    message: `..Match Overfantasy Status not change..`
+                    message: `..Match quiz Status not change..`
                 }
             }
         } catch (error) {

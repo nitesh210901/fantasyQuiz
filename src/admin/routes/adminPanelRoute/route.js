@@ -489,7 +489,7 @@ router.get("/deletequiz", auth,  QuizController.deletequiz);
 router.get("/listMatches", cricketApiController.listOfMatches_entity);
 router.get("/importPlayers/:matchkey", cricketApiController.fetchPlayerByMatch_entity);
 // overfantasy sahil
-router.get('/overfantasy/:id', auth,matchController.overfantasy);
+router.get('/quiz/:id', auth,matchController.quiz);
 router.get("/overfantacy/update_results_of_matches",overResultController.overupdate_results_of_matches);
 //router.get('/overfantasy/overInformations', auth, OverFantasyController.overInformations);
 module.exports = router;
