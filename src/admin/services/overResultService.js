@@ -2,8 +2,8 @@ const moment = require('moment');
 const axios = require("axios")
 const listMatches = require('../../models/listMatchesModel');
 const teamModel = require('../../models/teamModel');
-const overMatchModel = require('../../models/overmatches');
-const overpointsModel = require('../../models/overpoints');
+const quizmatches = require('../../models/quizmatches');
+const quizpoints = require('../../models/quizpoints');
 const JoinTeamModel = require('../../models/JoinTeamModel');
 const overfanatsycontroller = require('../controller/cricketApiController');
 const mongoose = require('mongoose');
@@ -358,11 +358,11 @@ class overResultServices {
                     if(totalOverDetails.length>0){
                         for(let tover of totalOverDetails){
                             // console.log('tover',tover);
-                            let checkResult = await overMatchModel.findOne({over:tover.over,matchkey:index._id,teamid:tover.teamid});
+                            let checkResult = await quizmatches.findOne({over:tover.over,matchkey:index._id,teamid:tover.teamid});
                             if(!checkResult){
-                                await overMatchModel.create(tover);
+                                await quizmatches.create(tover);
                             }else{
-                                await overMatchModel.updateOne(
+                                await quizmatches.updateOne(
                                     { _id: mongoose.Types.ObjectId(checkResult._id) },
                                     {
                                     $set: tover,
@@ -383,7 +383,7 @@ class overResultServices {
 
     async updatePointInOverPoint(matchkey) {
         try{
-            let getResult = await overMatchModel.find({matchkey:matchkey});
+            let getResult = await quizmatches.find({matchkey:matchkey});
             if(getResult.length>0){
                 for(let result of getResult){
                     let totalpoint = 0,
@@ -429,19 +429,19 @@ class overResultServices {
                         "teamid": result.teamid,
                         "total_points":totalpoint
                     }
-                    let checkResult = await overpointsModel.findOne({matchkey:result.matchkey,resultmatch_id:result._id});
+                    let checkResult = await quizpoints.findOne({matchkey:result.matchkey,resultmatch_id:result._id});
                     if(!checkResult){
                         over.resultmatch_id= result._id;
-                        await overpointsModel.create(over);
+                        await quizpoints.create(over);
                     }else{
-                        await overpointsModel.updateOne(
+                        await quizpoints.updateOne(
                             { _id: mongoose.Types.ObjectId(checkResult._id) },
                             {
                                 $set: over,
                             }
                         );
                     }
-                    await overMatchModel.updateOne(
+                    await quizmatches.updateOne(
                         { _id: mongoose.Types.ObjectId(result._id) },
                         {
                             $set: {

@@ -5,7 +5,7 @@ const seriesModel = require("../../models/addSeriesModel");
 const listMatchesModel = require("../../models/listMatchesModel");
 const matchChallengersModel = require("../../models/matchChallengersModel");
 const resultMatchModel = require("../../models/resultMatchModel");
-const overMatchModel = require("../../models/overmatches");
+const quizmatches = require("../../models/quizmatches");
 const resultPointModel = require("../../models/resultPointModel");
 
 const joinedLeaugeModel = require("../../models/JoinLeaugeModel");
@@ -629,11 +629,11 @@ class resultController {
           }
         }
       ];
-      overMatchModel.countDocuments(condition).exec((err, rows) => {
+      quizmatches.countDocuments(condition).exec((err, rows) => {
         let totalFiltered = rows;
         let data = [];
         let count = 1;
-        overMatchModel.aggregate(condition).exec((err, rows1) => {
+        quizmatches.aggregate(condition).exec((err, rows1) => {
           rows1.forEach(async (doc) => {
             data.push({
               teamName: doc.team.short_name,
