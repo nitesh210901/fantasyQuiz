@@ -1,27 +1,27 @@
 const matchServices = require('../services/matchServices');
 const listMatchesModel = require('../../models/listMatchesModel');
-const overfantasyServices = require('../services/overFantasyServices');
+const quizfantasyServices = require('../services/quizFantasyServices');
 class matchController {
     constructor() {
         return {
             
-            overfantasy_getmatchlist: this.overfantasy_getmatchlist.bind(this),
-            overfantasy_Newjoinedmatches: this.overfantasy_Newjoinedmatches.bind(this),
-            OverfantasyAllCompletedMatches: this.OverfantasyAllCompletedMatches.bind(this),
-            overfantasy_createTeam: this.overfantasy_createTeam.bind(this),
-            overGetMyTeams: this.overGetMyTeams.bind(this),
-            overInformations: this.overInformations.bind(this),
-            overviewTeam: this.overviewTeam.bind(this),
-            overlivematches:this.overlivematches.bind(this)
+            quiz_getmatchlist: this.quiz_getmatchlist.bind(this),
+            quiz_Newjoinedmatches: this.quiz_Newjoinedmatches.bind(this),
+            quizAllCompletedMatches: this.quizAllCompletedMatches.bind(this),
+            quizCreateTeam: this.quizCreateTeam.bind(this),
+            quizGetMyTeams: this.quizGetMyTeams.bind(this),
+            quizInformations: this.quizInformations.bind(this),
+            quizViewTeam: this.quizViewTeam.bind(this),
+            quizLivematches:this.quizLivematches.bind(this)
             
         }
     }
 
-    async overfantasy_getmatchlist(req, res, next) {
+    async quiz_getmatchlist(req, res, next) {
         try {
-            const upcomingMatches = await overfantasyServices.overfantasy_getmatchlist(req);
+            const upcomingMatches = await quizfantasyServices.quiz_getmatchlist(req);
             // console.log(`upcomingMatches`, upcomingMatches);
-            const joinedMatches = await overfantasyServices.latestJoinedMatches(req);
+            const joinedMatches = await quizfantasyServices.latestJoinedMatches(req);
             // console.log("joinedMatches_-----------------",joinedMatches)
 
             let final = {
@@ -39,26 +39,26 @@ class matchController {
         }
     }
 
-    async overfantasy_Newjoinedmatches(req, res, next) {
+    async quiz_Newjoinedmatches(req, res, next) {
         try {
-            const data = await overfantasyServices.overfantasy_Newjoinedmatches(req);
+            const data = await quizfantasyServices.quiz_Newjoinedmatches(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             console.log(error);
         }
     }
-    async OverfantasyAllCompletedMatches(req, res, next) {
+    async quizAllCompletedMatches(req, res, next) {
         try {
-            const data = await overfantasyServices.OverfantasyAllCompletedMatches(req);
+            const data = await quizfantasyServices.quizAllCompletedMatches(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);
         }
     }
 
-    async overfantasy_createTeam(req,res,next){
+    async quizCreateTeam(req,res,next){
         try {
-            const data = await overfantasyServices.overfantasy_createTeam(req);
+            const data = await quizfantasyServices.quizCreateTeam(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);
@@ -66,33 +66,33 @@ class matchController {
     }
     
 
-    async overInformations(req,res,next){
+    async quizInformations(req,res,next){
         try {
-            const data = await overfantasyServices.overInformations(req);
+            const data = await quizfantasyServices.quizInformations(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);
         }
     }
-    async overviewTeam(req,res,next){
+    async quizViewTeam(req,res,next){
         try {
-            const data = await overfantasyServices.overviewTeam(req);
+            const data = await quizfantasyServices.quizViewTeam(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);
         }
     }
-    async overlivematches(req,res,next){
+    async quizLivematches(req,res,next){
         try {
-            const data = await overfantasyServices.overlivematches(req);
+            const data = await quizfantasyServices.quizLivematches(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);
         }
     }
-    async overGetMyTeams(req, res, next) {
+    async quizGetMyTeams(req, res, next) {
         try {
-            const data = await overfantasyServices.overGetMyTeams(req);
+            const data = await quizfantasyServices.quizGetMyTeams(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {

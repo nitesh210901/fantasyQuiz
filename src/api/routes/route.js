@@ -8,7 +8,7 @@ const MatchController = require('../controller/matchController');
 const ContestController = require('../controller/ContestController');
 const webController=require("../controller/webController");
 const CronJob = require('../services/cronJobServices');
-const OverFantasyController=require("../controller/overFantasyController")
+const quizFantasyController=require("../controller/quizFantasyController")
 
 const auth = require('../../middlewares/apiauth');
 
@@ -330,22 +330,22 @@ router.get("/matchplayerimport/:matchkey",cricketcontrollerfun.fetchPlayerByMatc
 //overfantasy
 
 // Get All Upcoming Mathes
-router.get('/overfantasy/getMatchList', auth, OverFantasyController.overfantasy_getmatchlist);
+router.get('/overfantasy/getMatchList', auth, quizFantasyController.quiz_getmatchlist);
 
 // User Joiend latest 5 Upcoming
-router.get('/overfantasy/newJoinedMatches', auth, OverFantasyController.overfantasy_Newjoinedmatches);
+router.get('/overfantasy/newJoinedMatches', auth, quizFantasyController.quiz_Newjoinedmatches);
 
 // User Joiend all completed matches
-router.get('/overfantasy/allCompletedMatches', auth, OverFantasyController.OverfantasyAllCompletedMatches);
+router.get('/overfantasy/allCompletedMatches', auth, quizFantasyController.quizAllCompletedMatches);
  
 //over Join team
-router.post('/overfantasy/createTeam', auth, OverFantasyController.overfantasy_createTeam);
+router.post('/overfantasy/createTeam', auth, quizFantasyController.quizCreateTeam);
 
 // User All Over Teams of the match
-router.get('/overfantasy/getMyTeams', auth, OverFantasyController.overGetMyTeams);
-//router.get('/overfantasy/overInformations', auth, OverFantasyController.overInformations);
-router.get('/overfantasy/viewTeam', auth, OverFantasyController.overviewTeam);
-router.get('/overfantasy/livematches', auth, OverFantasyController.overlivematches);
+router.get('/overfantasy/getMyTeams', auth, quizFantasyController.quizGetMyTeams);
+//router.get('/overfantasy/overInformations', auth, quizFantasyController.overInformations);
+router.get('/overfantasy/viewTeam', auth, quizFantasyController.quizViewTeam);
+router.get('/overfantasy/livematches', auth, quizFantasyController.quizLivematches);
 
 
 
