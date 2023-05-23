@@ -329,23 +329,23 @@ router.get("/matchplayerimport/:matchkey",cricketcontrollerfun.fetchPlayerByMatc
 //over fantasy work by sahil
 //overfantasy
 
-// Get All Upcoming Mathes
-router.get('/overfantasy/getMatchList', auth, quizFantasyController.quiz_getmatchlist);
+// Get All questions list 
+router.get('/quiz/get-question-list', auth, quizFantasyController.getQuestionList);
 
 // User Joiend latest 5 Upcoming
-router.get('/overfantasy/newJoinedMatches', auth, quizFantasyController.quiz_Newjoinedmatches);
+// router.get('/quiz/newJoinedMatches', auth, quizFantasyController.quiz_Newjoinedmatches);
 
-// User Joiend all completed matches
-router.get('/overfantasy/allCompletedMatches', auth, quizFantasyController.quizAllCompletedMatches);
+// // User Joiend all completed matches
+// router.get('/quiz/allCompletedMatches', auth, quizFantasyController.quizAllCompletedMatches);
  
-//over Join team
-router.post('/overfantasy/createTeam', auth, quizFantasyController.quizCreateTeam);
+// //over Join team
+// router.post('/quiz/createTeam', auth, quizFantasyController.quizCreateTeam);
 
-// User All Over Teams of the match
-router.get('/overfantasy/getMyTeams', auth, quizFantasyController.quizGetMyTeams);
-//router.get('/overfantasy/overInformations', auth, quizFantasyController.overInformations);
-router.get('/overfantasy/viewTeam', auth, quizFantasyController.quizViewTeam);
-router.get('/overfantasy/livematches', auth, quizFantasyController.quizLivematches);
+// // User All Over Teams of the match
+// router.get('/quiz/getMyTeams', auth, quizFantasyController.quizGetMyTeams);
+// //router.get('/quiz/overInformations', auth, quizFantasyController.overInformations);
+// router.get('/quiz/viewTeam', auth, quizFantasyController.quizViewTeam);
+// router.get('/quiz/livematches', auth, quizFantasyController.quizLivematches);
 
 
 
