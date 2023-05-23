@@ -2064,7 +2064,6 @@ let sk=0;
     async createMyTeam(req) {
         try {
             const { matchkey, teamnumber, players, captain, vicecaptain } = req.body;
-            console.log("teamnumber"+teamnumber)
             const playerArray = players.split(','),
                 playerObjectIdArray = [];
             if (playerArray.length < 11) {
