@@ -23,16 +23,8 @@ let JoinTeamSchema = new Schema({
         default: 0
     },
 
-    overs: [{
-        over: {
-            type: Number,
-            default: 0
-        },
-        MegaOver: {
-            type: Number,
-            default: 0
-        },
-        inning: {
+    quiz: [{
+        questions: {
             type: Number,
             default: 0
         },

@@ -14,18 +14,10 @@ let JoinTeamSchema = new Schema({
         type: Number,
         default: 0
     },
-    overs: [{
-        over: {
+    quiz: [{
+        questions: {
           type: Number,
           default:0
-        },
-        MegaOver: {
-            type: Number,
-            default:0
-        },
-        inning: {
-            type: Number,
-            default:0
         },
         points: {
             type: Number,

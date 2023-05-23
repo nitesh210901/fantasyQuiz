@@ -8,20 +8,15 @@ require('../../models/challengersModel');
 require('../../models/playerModel');
 require('../../models/teamModel');
 const matchchallengesModel = require('../../models/matchChallengersModel');
-const overMatchModel = require('../../models/overmatches');
-const overpointsModel = require('../../models/overpoints');
+const overMatchModel = require('../../models/quizmatches');
+const overpointsModel = require('../../models/quizpoints');
 const listMatchesModel = require('../../models/listMatchesModel');
-const SeriesModel = require('../../models/addSeriesModel');
 const matchPlayersModel = require('../../models/matchPlayersModel');
 const JoinLeaugeModel = require('../../models/JoinLeaugeModel');
 const playerModel = require("../../models/playerModel");
 const JoinTeamModel = require('../../models/JoinTeamModel');
-const matchrunModel = require('../../models/matchRunModel');
-const EntityApiController = require('../../admin/controller/cricketApiController');
 const userModel = require("../../models/userModel");
 const constant = require('../../config/const_credential');
-const NOTIFICATION_TEXT = require('../../config/notification_text');
-const { deleteOne } = require('../../models/matchChallengersModel');
 const Redis = require('../../utils/redis');
 // ------over fantasy---
 //const JoinTeamModel = require("../../models/overJoinedTeam");
@@ -30,16 +25,16 @@ class overfantasyServices {
     constructor() {
         return {
 
-            overfantasy_getmatchlist: this.overfantasy_getmatchlist.bind(this),
+            quizGetmatchlist: this.quizGetmatchlist.bind(this),
             latestJoinedMatches: this.latestJoinedMatches.bind(this),
-            OverfantasyAllCompletedMatches: this.OverfantasyAllCompletedMatches.bind(this),
-            overfantasy_createTeam: this.overfantasy_createTeam.bind(this),
-            overGetMyTeams: this.overGetMyTeams.bind(this),
-            overInformations: this.overInformations.bind(this),
-            overfantasy_Newjoinedmatches: this.overfantasy_Newjoinedmatches.bind(this),
-            overviewTeam: this.overviewTeam.bind(this),
+            quizAllCompletedMatches: this.quizAllCompletedMatches.bind(this),
+            quizCreateTeam: this.quizCreateTeam.bind(this),
+            quizGetMyTeams: this.quizGetMyTeams.bind(this),
+            quizInformations: this.quizInformations.bind(this),
+            quizNewjoinedmatches: this.quizNewjoinedmatches.bind(this),
+            quizViewTeam: this.quizViewTeam.bind(this),
             updateIsViewedForBoatTeam: this.updateIsViewedForBoatTeam.bind(this),
-            overlivematches: this.overlivematches.bind(this),
+            quizLivematches: this.quizLivematches.bind(this),
             pointcount: this.pointcount.bind(this)
 
         }
@@ -255,7 +250,7 @@ class overfantasyServices {
                 joinedcontest: { $ifNull: ['$count', 0] },
                 team1Id: '$match.team1Id',
                 team2Id: '$match.team2Id',
-                
+
             }
         });
         const JoiendMatches = await JoinLeaugeModel.aggregate(aggPipe);
@@ -263,7 +258,7 @@ class overfantasyServices {
         return JoiendMatches;
     }
 
-    async overfantasy_getmatchlist() {
+    async quizGetmatchlist() {
         try {
             let matchpipe = [];
             let date = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -372,14 +367,14 @@ class overfantasyServices {
         }
     }
 
-    async overfantasy_Newjoinedmatches(req) {
+    async quizNewjoinedmatches(req) {
         const aggPipe = [];
         aggPipe.push({
             $match: {
                 userid: mongoose.Types.ObjectId(req.user._id),
             },
         });
-        console.log('req.user._id',req.user._id);
+        console.log('req.user._id', req.user._id);
         aggPipe.push({
             $group: {
                 _id: '$matchkey',
@@ -603,7 +598,7 @@ class overfantasyServices {
         }
     }
 
-    async OverfantasyAllCompletedMatches(req) {
+    async quizAllCompletedMatches(req) {
         try {
             console.log("----------req.user._id--------------", req.user._id)
             const aggPipe = [];
@@ -898,7 +893,7 @@ class overfantasyServices {
         const pointcounts = await overMatchModel.find({ matchkey: matchkey, teamid: teamid })
         //  console.log("pointcounts",pointcounts.length)
         //pointcounts=JSON.parse(pointcounts)
-       const jointeam = await JoinTeamModel.findOne({ matchkey: matchkey })
+        const jointeam = await JoinTeamModel.findOne({ matchkey: matchkey })
         for await (let item of pointcounts) {
             //pointcounts.forEach( async(item)=>{
             totalpoint = 0;
@@ -921,22 +916,22 @@ class overfantasyServices {
             await overpointsModel.updateOne({ matchkey: matchkey, teamid: teamid, over: item.over }, { total_points: totalpoint });
 
             //await JoinTeamModel.updateMany({matchkey:matchkey,teamid:teamid,over:item.over},{total_points:totalpoint})
-            
-          
+
+
             console.log("item.over" + item.over, "totalpoint", totalpoint)
-            for(let ele of (jointeam.overs || [])){
-                if (ele.teamid == teamid && ele.over == item.over &&ele.MegaOver == 1) {
-                    ele.points = 2*totalpoint;
+            for (let ele of (jointeam.overs || [])) {
+                if (ele.teamid == teamid && ele.over == item.over && ele.MegaOver == 1) {
+                    ele.points = 2 * totalpoint;
                     console.log("item.over", ele.over, "totalpoint", totalpoint)
                 }
-               else if (ele.teamid == teamid && ele.over == item.over ) {
+                else if (ele.teamid == teamid && ele.over == item.over) {
                     ele.points = totalpoint;
                     console.log("item.over", ele.over, "totalpoint", totalpoint)
                 }
             }
             //console.log("jointeam.overs"+arr)
         }
-        await JoinTeamModel.updateOne({ matchkey: matchkey }, {$set : { overs: jointeam.overs }});
+        await JoinTeamModel.updateOne({ matchkey: matchkey }, { $set: { overs: jointeam.overs } });
         //console.log("updatejointeam",updatejointeam)
         console.log("asas")
         return true;
@@ -948,13 +943,13 @@ class overfantasyServices {
     ///overinformation
 
 
-    async overInformations(req) {
+    async quizInformations(req) {
         try {
             const response = await axios({
-            	url: "https://rest.entitysport.com/v2/matches/60071/innings/1/commentary?token=8dac1e4f7ee5ce23c747d7216c1e66c0",
-            	method: "get",
+                url: "https://rest.entitysport.com/v2/matches/60071/innings/1/commentary?token=8dac1e4f7ee5ce23c747d7216c1e66c0",
+                method: "get",
             });
-         console.log("responsefid",response.data.response.inning.fielding_team_id);
+            console.log("responsefid", response.data.response.inning.fielding_team_id);
             // const { matchkey, teamid } = req.query;
             // let overData = [];
 
@@ -1067,15 +1062,14 @@ class overfantasyServices {
 
     //overinformation
 
-    async overfantasy_createTeam(req) {
+    async quizCreateTeam(req) {
         try {
-            const { matchkey, teamnumber, overs } = req.body;
+            const { matchkey, teamnumber, quiz } = req.body;
             console.log("teamnumber" + teamnumber)
-            console.log("overs" + overs)
 
-            const matchPlayersData = await matchPlayersModel.find({ matchkey: matchkey });
-            const duplicateData = await JoinTeamModel.findOne({ matchkey: matchkey, userid: req.user._id, overs: overs });
-            console.log("---duplicateData---", duplicateData)
+            // const matchPlayersData = await matchPlayersModel.find({ matchkey: matchkey });
+            const duplicateData = await JoinTeamModel.findOne({ matchkey: matchkey, userid: req.user._id, quiz: quiz });
+
             if (duplicateData) {
                 return {
                     message: 'You cannot create the same team.',
@@ -1083,23 +1077,6 @@ class overfantasyServices {
                     data: {}
                 };
             }
-            console.log("overs" + overs)
-            //sahil redis
-            // let keyname=`overfantasy_createTeam-${matchkey}`
-            // let redisdata=await Redis.getkeydata(keyname);
-            // let listmatchData;
-            // if(redisdata)
-            // {
-            //     listmatchData=redisdata;
-            // }
-            // else
-            // {
-            //     listmatchData = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(matchkey) });
-            //     let redisdata=Redis.setkeydata(keyname,listmatchData,60*60*4);
-            // }
-
-            //sahil redis end
-            
 
             let listmatchData = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(matchkey) });
             const matchTime = await this.getMatchTime(listmatchData.start_date);
@@ -1110,14 +1087,13 @@ class overfantasyServices {
                     data: {}
                 }
             }
-            const data = {},
-                lastplayerArray = [];
-            console.log(JSON.stringify(overs))
+            const data = {}
+
             data['userid'] = req.user._id;
             data['matchkey'] = matchkey;
             data['teamnumber'] = teamnumber;
-            data['overs'] = overs;
-            data['type'] = "overfantasy";
+            data['quiz'] = quiz;
+            data['type'] = "quiz";
             // data['playersArray'] = players;
             data['player_type'] = "classic";
             const joinTeam = await JoinTeamModel.findOne({
@@ -1176,7 +1152,7 @@ class overfantasyServices {
             throw error;
         }
     }
-    //overviewteam
+    //quizViewteam
     async updateIsViewedForBoatTeam(jointeamid) {
         try {
             await JoinTeamModel.findOneAndUpdate({
@@ -1189,8 +1165,8 @@ class overfantasyServices {
             throw error;
         }
     }
-    //overlivematches
-    async overlivematches(req) {
+    //quizLivematches
+    async quizLivematches(req) {
         const aggPipe = [];
         aggPipe.push({
             $match: {
@@ -1222,7 +1198,7 @@ class overfantasyServices {
         });
         aggPipe.push({
             $match: {
-                'match.fantasy_type': "overfantasy"
+                'match.fantasy_type': "quiz"
             },
         });
         aggPipe.push({
@@ -1433,8 +1409,8 @@ class overfantasyServices {
             };
         }
     }
-    //endoverlivematches
-    async overviewTeam(req) {
+    //endquizLivematches
+    async quizViewTeam(req) {
         try {
 
             let finalData = [];
@@ -1530,12 +1506,12 @@ class overfantasyServices {
     //overviewendteam
 
 
-    async overGetMyTeams(req) {
+    async quizGetMyTeams(req) {     
         try {
             console.log("-----------getmyteams-----------", req.query, "------req.body----", req.body)
             let finalData = [];
             //sahil redis
-            // let keyname=`overGetMyTeams-${req.query.matchkey}`
+            // let keyname=`quizGetMyTeams-${req.query.matchkey}`
             // let redisdata=await Redis.getkeydata(keyname);
             // let listmatchData;
             // if(redisdata)
@@ -1555,7 +1531,7 @@ class overfantasyServices {
             // }
 
             //sahil redis end
-             const listmatchData = await listMatchesModel.findOne({ _id: req.query.matchkey }).populate({
+            const listmatchData = await listMatchesModel.findOne({ _id: req.query.matchkey }).populate({
                 path: 'team1Id',
                 select: 'short_name'
             }).populate({
