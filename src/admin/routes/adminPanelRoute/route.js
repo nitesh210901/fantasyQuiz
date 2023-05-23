@@ -70,6 +70,7 @@ const aboutusController=require("../../controller/aboutusController");
 const contactController=require("../../controller/contactController");
 const howtoplayController=require("../../controller/howtoplayController");
 const FAQQuestionController=require("../../controller/FAQQuestionsController");
+const QuizController=require("../../controller/quizController");
 
 
 router.get("/", auth, getUrl, dashboardController.showdashboard);
@@ -470,9 +471,19 @@ router.get("/view_all_FAQ_Question_page", auth, getUrl,FAQQuestionController.vie
 router.post("/faq_question-table", auth, getUrl,FAQQuestionController.FAQQuestionTable);
 router.get("/edit_FAQ_Question_page/:id", auth, getUrl,FAQQuestionController.editFAQQuestion);
 router.post("/edit_FAQ_Question_data/:id", auth, getUrl,FAQQuestionController.editFAQQuestionData);
-router.get("/delete_FAQ_Question/:id", auth, getUrl,FAQQuestionController.deleteFAQQuestion);
+router.get("/delete_FAQ_Question/:id", auth, getUrl, FAQQuestionController.deleteFAQQuestion);
 
 
+// ---------------------------------Quiz manager----------------
+
+router.get("/add_quiz", auth, getUrl,QuizController.AddQuizPage);
+router.post("/add_quiz", auth, getUrl,QuizController.AddQuiz);
+router.get("/view_quiz", auth, getUrl, QuizController.ViewQuiz);
+router.post("/quiz-Data-Table", auth, QuizController.QuizDataTable);
+router.get("/edit-quiz/:id", auth, getUrl, QuizController.editQuiz);
+router.post("/edit-quiz-data/:id", auth, QuizController.editQuizData);
+router.get("/deletequiz", auth,  QuizController.deletequiz);
+// router.get("/update-quiz-status/:id", auth, getUrl, QuizController.updateStatusforQuiz);
 //-----cricket api controller (3rd party api)------------//
 // router.get("/listMatches", cricketApiController.listOfMatches);
 router.get("/listMatches", cricketApiController.listOfMatches_entity);
