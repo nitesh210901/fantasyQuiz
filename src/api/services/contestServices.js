@@ -839,7 +839,7 @@ class contestServices {
             const matchTime = await matchServices.getMatchTime(matchStartDate);
             if (matchTime === false) {
                 return {
-                    message: 'Match has been closed, You cannot join leauge now.',
+                    message: 'Match has been closed, You cannot join leauge now.', 
                     status: false,
                     data: {}
                 }
