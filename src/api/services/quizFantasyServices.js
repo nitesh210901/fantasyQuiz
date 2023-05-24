@@ -1290,6 +1290,20 @@ class overfantasyServices {
         }
     }
 
+    async findArrayIntersection(quizArray, previousQuiz) {
+        const c = [];
+        let j = 0,
+            i = 0;
+        for (i = 0; i < quizArray.length; ++i) {
+            if (previousQuiz.indexOf(quizArray[i]) != -1) {
+                c[j++] = quizArray[i];
+            }
+        }
+        if (i >= quizArray.length) {
+            return c;
+        }
+    }
+
     async getMatchTime(start_date) {
         const currentdate = new Date();
         const currentOffset = currentdate.getTimezoneOffset();
