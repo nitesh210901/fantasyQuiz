@@ -44,7 +44,7 @@ class overfantasyServices {
 
     async getAllNewContests(req) {
         try {
-            await this.updateJoinedusers(req);
+            // await this.updateJoinedusers(req);
             let finalData = [], contest_arr = [], aggpipe = [];
             aggpipe.push({
                 $lookup: {
@@ -216,6 +216,30 @@ class overfantasyServices {
     }
 
 
+    async getQuestionList(req) {
+        const matchkey_id = req.query.matchkey_id
+        if(matchkey_id){
+          let data = await quizModel.find({matchkey_id})
+           if(data.length>0){
+             return {
+                status :true,
+                message: "Quiz Question fatch Successfully",
+                data:data
+             }
+           }else{
+            return {
+                status :false,
+                message:"Quiz Question not Found"
+            }
+           }
+        }else{
+            return {
+                status:false,
+                message:"Match not defind"
+            }
+        }
+    }
+
     async quizCreateTeam(req) {
         try {
             const { matchkey, teamnumber, quiz } = req.body;
@@ -305,6 +329,113 @@ class overfantasyServices {
             throw error;
         }
     }
+
+
+    async quizGetMyTeams(req) {     
+        try {
+            console.log("-----------getmyteams-----------", req.query, "------req.body----", req.body)
+            let finalData = [];
+            const listmatchData = await listMatchesModel.findOne({ _id: req.query.matchkey }).populate({
+                path: 'team1Id',
+                select: 'short_name'
+            }).populate({
+                path: 'team2Id',
+                select: 'short_name'
+            });
+            const createTeams = await JoinTeamModel.find({
+                matchkey: req.query.matchkey,
+                userid: req.user._id,
+            });
+            if (createTeams.length == 0) {
+                return {
+                    message: 'Teams Not Available',
+                    status: false,
+                    data: []
+                }
+            }
+            const matchchallenges = await matchchallengesModel.find({ matchkey: mongoose.Types.ObjectId(req.query.matchkey) });
+            console.log(`--------------matchchallenges.length----------------`, matchchallenges.length);
+
+            // ----------total join contest and ----
+            const total_teams = await JoinTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
+            const total_joinedcontestData = await JoinLeaugeModel.aggregate([
+                {
+                    $match: {
+                        userid: mongoose.Types.ObjectId(req.user._id),
+                        matchkey: mongoose.Types.ObjectId(req.query.matchkey)
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$challengeid",
+                    }
+                }, {
+                    $count: "total_count"
+                }
+            ])
+            let count_JoinContest = total_joinedcontestData[0]?.total_count;
+            // ---------------------//
+            let i = 0;
+            for (let element of createTeams) {
+                i++
+                
+                const tempObj = {
+                    status: 1,
+                    userid: req.user._id,
+                    teamnumber: element.teamnumber,
+                    isSelected: false,
+                };
+
+                if (matchchallenges.length != 0 && req.query.matchchallengeid) {
+                    for await (const challenges of matchchallenges) {
+                        console.log(`----chalenges---viewmyteam api--`)
+                        if (challenges._id.toString() == req.query.matchchallengeid.toString()) {
+                            const joindata = await JoinLeaugeModel.findOne({
+                                challengeid: req.query.matchchallengeid,
+                                teamid: element._id,
+                                userid: req.user._id,
+                            });
+                            if (joindata) tempObj['isSelected'] = true;
+                        }
+                    }
+                }
+
+                let team1count = 0;
+                let team2count = 0;
+                   
+                let totalPoints = 0;
+                
+                tempObj["quiz"] = element.quiz ? element.quiz : '',
+                tempObj['team1count'] = team1count;
+                tempObj['jointeamid'] = element._id;
+                tempObj['team2count'] = team2count;
+                tempObj['total_teams'] = total_teams;
+                tempObj['total_joinedcontest'] = count_JoinContest;
+                tempObj["totalpoints"] = element.points;
+
+                finalData.push(tempObj);
+                if (i == createTeams.length) {
+                    return {
+                        message: 'Team Data',
+                        status: true,
+                        data: finalData
+                    }
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
 
 
     async latestJoinedMatches(req) {
@@ -1325,8 +1456,6 @@ class overfantasyServices {
             throw error;
         }
     }
-
-
     //overinformation
 
    
@@ -1587,96 +1716,26 @@ class overfantasyServices {
             };
         }
     }
-    //endquizLivematches
+
+
     async quizViewTeam(req) {
         try {
 
             let finalData = [];
-            //this.updateIsViewedForBoatTeam(req.query.jointeamid);
-            //const listmatchData = await listMatchesModel.findOne({ _id: req.query.matchkey });
+            
             finalData = await JoinTeamModel.findOne({
                 _id: req.query.jointeamid,
                 matchkey: req.query.matchkey,
                 teamnumber: req.query.teamnumber
             });
             finalData._doc.jointeamid = finalData._id;
-            // }).populate({
-            //     path: 'players',
-            //     populate: {
-            //         path: 'playerid',
-            //         select: ["player_name", "image", "role", "team"],
-            //         as: 'players'
-            //     }
-            // }).populate({
-            //     path: 'captain',
-            //     populate: {
-            //         path: 'playerid',
-            //         select: ["player_name", "image", "role", "team"],
-            //         as: 'captain'
-            //     }
-            // }).populate({
-            //     path: 'vicecaptain',
-            //     populate: {
-            //         path: 'playerid',
-            //         select: ["player_name", "image", "role", "team"],
-            //         as: "vicecaptain"
-            //     }
-            // });
-            // if (!createTeam) {
-            //     return {
-            //         message: 'Team Not Available',
-            //         status: false,
-            //         data: []
-            //     }
-            // }
-            // for await (const playerData of createTeam.players) {
-            //     const filterData = await matchPlayersModel.findOne({ _id: playerData._id });
-            //     if (!filterData) {
-            //         return {
-            //             status: false,
-            //             message: "match player not found",
-            //             data: []
-            //         }
-            //     }
-            //     // ----Inserting Captian image ---------
-            //     let Pimage;
-            //     if (playerData.playerid && playerData.playerid.image != '' && playerData.playerid.image != null && playerData.playerid.image != undefined) {
-            //         if (playerData.playerid.image.startsWith('/p') || playerData.playerid.image.startsWith('p')) {
-            //             Pimage = `${constant.BASE_URL}${playerData.playerid.image}`;
-            //         } else {
-            //             Pimage = playerData.playerid.image;
-            //         }
-            //     } else {
-            //         // Pimage = `${constant.BASE_URL}avtar1.png`
-            //         if ((listmatchData.team1Id._id.toString() == playerData.playerid.team.toString())) {
-            //             Pimage = `${constant.BASE_URL}white_team1.png`;
-            //         } else {
-            //             Pimage = `${constant.BASE_URL}black_team1.png`;
-            //         }
-            //     }
-            //     if (!playerData) break;
-            //     finalData.push({
-            //         id: playerData._id,
-            //         name: playerData.playerid.player_name,
-            //         role: filterData.role,
-            //         credit: filterData.credit,
-            //         playingstatus: filterData.playingstatus,
-            //         team: listmatchData.team1Id.toString() == playerData.playerid.team.toString() ? 'team1' : 'team2',
-            //         image: Pimage,
-            //         image1: '',
-            //         captain: createTeam.captain._id.toString() == playerData._id.toString() ? 1 : 0,
-            //         vicecaptain: createTeam.vicecaptain._id.toString() == playerData._id.toString() ? 1 : 0,
-            //         points: filterData.points,
-            //         isSelected: false,
-            //     });
-            // }
-            //if (finalData.length == createTeam.players.length) {
+            
+          
             return {
                 message: 'User Perticular Team Data',
                 status: true,
                 data: finalData
             }
-            //}
         } catch (error) {
             throw error;
         }
@@ -1684,124 +1743,6 @@ class overfantasyServices {
     //overviewendteam
 
 
-    async quizGetMyTeams(req) {     
-        try {
-            console.log("-----------getmyteams-----------", req.query, "------req.body----", req.body)
-            let finalData = [];
-            const listmatchData = await listMatchesModel.findOne({ _id: req.query.matchkey }).populate({
-                path: 'team1Id',
-                select: 'short_name'
-            }).populate({
-                path: 'team2Id',
-                select: 'short_name'
-            });
-            const createTeams = await JoinTeamModel.find({
-                matchkey: req.query.matchkey,
-                userid: req.user._id,
-            });
-            if (createTeams.length == 0) {
-                return {
-                    message: 'Teams Not Available',
-                    status: false,
-                    data: []
-                }
-            }
-            const matchchallenges = await matchchallengesModel.find({ matchkey: mongoose.Types.ObjectId(req.query.matchkey) });
-            console.log(`--------------matchchallenges.length----------------`, matchchallenges.length);
-
-            // ----------total join contest and ----
-            const total_teams = await JoinTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
-            const total_joinedcontestData = await JoinLeaugeModel.aggregate([
-                {
-                    $match: {
-                        userid: mongoose.Types.ObjectId(req.user._id),
-                        matchkey: mongoose.Types.ObjectId(req.query.matchkey)
-                    }
-                },
-                {
-                    $group: {
-                        _id: "$challengeid",
-                    }
-                }, {
-                    $count: "total_count"
-                }
-            ])
-            let count_JoinContest = total_joinedcontestData[0]?.total_count;
-            // ---------------------//
-            let i = 0;
-            for (let element of createTeams) {
-                i++
-                
-                const tempObj = {
-                    status: 1,
-                    userid: req.user._id,
-                    teamnumber: element.teamnumber,
-                    isSelected: false,
-                };
-
-                if (matchchallenges.length != 0 && req.query.matchchallengeid) {
-                    for await (const challenges of matchchallenges) {
-                        console.log(`----chalenges---viewmyteam api--`)
-                        if (challenges._id.toString() == req.query.matchchallengeid.toString()) {
-                            const joindata = await JoinLeaugeModel.findOne({
-                                challengeid: req.query.matchchallengeid,
-                                teamid: element._id,
-                                userid: req.user._id,
-                            });
-                            if (joindata) tempObj['isSelected'] = true;
-                        }
-                    }
-                }
-                
-                let team1count = 0;
-                let team2count = 0;
-                   
-                let totalPoints = 0;
-                
-                tempObj["quiz"] = element.quiz ? element.quiz : '',
-                tempObj['team1count'] = team1count;
-                tempObj['jointeamid'] = element._id;
-                tempObj['team2count'] = team2count;
-                tempObj['total_teams'] = total_teams;
-                tempObj['total_joinedcontest'] = count_JoinContest;
-                tempObj["totalpoints"] = element.points;
-
-                finalData.push(tempObj);
-                if (i == createTeams.length) {
-                    return {
-                        message: 'Team Data',
-                        status: true,
-                        data: finalData
-                    }
-                }
-            }
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async getQuestionList(req) {
-        const matchkey_id = req.query.matchkey_id
-        if(matchkey_id){
-          let data = await quizModel.find({matchkey_id})
-           if(data.length>0){
-             return {
-                status :true,
-                message: "Quiz Question fatch Successfully",
-                data:data
-             }
-           }else{
-            return {
-                status :false,
-                message:"Quiz Question not Found"
-            }
-           }
-        }else{
-            return {
-                status:false,
-                message:"Match not defind"
-            }
-        }
-      }
+    
 }
 module.exports = new overfantasyServices();

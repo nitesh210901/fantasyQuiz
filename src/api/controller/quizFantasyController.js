@@ -41,7 +41,7 @@ class matchController {
     }
 
 
-     async quizCreateTeam(req,res,next){
+    async quizCreateTeam(req,res,next){
         try {
             const data = await quizfantasyServices.quizCreateTeam(req);
             return res.status(200).json(Object.assign({ success: true }, data));
