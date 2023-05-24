@@ -29,6 +29,10 @@ let quizSchema = new Schema({
         type: String,
         default:""
     },
+    point: {
+        type: Number,
+        default:0
+    },
 }, {
     timestamps: true,
     versionKey: false

@@ -256,7 +256,7 @@ class overfantasyServices {
             }).sort({ teamnumber: -1 });
             if (joinTeam) {
                 data["user_type"] = 0;
-                data['created_at'] = joinTeam.created_at;
+                data['created_at'] = joinTeam.createdAt;
                 const updateTeam = await JoinTeamModel.findOneAndUpdate({ _id: joinTeam._id }, data, {
                     new: true,
                 });
