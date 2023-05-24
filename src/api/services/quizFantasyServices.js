@@ -1274,7 +1274,6 @@ class overfantasyServices {
         }
         return true;
     }
-    
 
     async findArrayIntersection(quizArray, previousQuiz) {
         const c = [];
