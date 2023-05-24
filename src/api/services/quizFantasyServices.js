@@ -284,7 +284,6 @@ class overfantasyServices {
                 const updateTeam = await JoinTeamModel.findOneAndUpdate({ _id: joinTeam._id }, data, {
                     new: true,
                 });
-                console.log("-------------updateTeam-------------", updateTeam)
                 if (updateTeam) {
                     return {
                         message: 'Team Updated Successfully',
@@ -333,7 +332,6 @@ class overfantasyServices {
 
     async quizGetMyTeams(req) {     
         try {
-            console.log("-----------getmyteams-----------", req.query, "------req.body----", req.body)
             let finalData = [];
             const listmatchData = await listMatchesModel.findOne({ _id: req.query.matchkey }).populate({
                 path: 'team1Id',
@@ -426,16 +424,6 @@ class overfantasyServices {
             throw error;
         }
     }
-
-
-
-
-
-
-
-
-
-
 
 
     async latestJoinedMatches(req) {

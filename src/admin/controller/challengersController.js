@@ -352,7 +352,7 @@ class challengersController {
             if(getlunchedMatches.status == true){
                 let mkey=req.query.matchkey
                 let fantasy_type=req.query.fantasy_type;
-                console.log("fantasy_type"+fantasy_type)
+                console.log("fantasy_type-----------------------"+fantasy_type)
                 let objfind={};
                    if(req.query.entryfee && req.query.entryfee != ""){
                     objfind.entryfee= req.query.entryfee
