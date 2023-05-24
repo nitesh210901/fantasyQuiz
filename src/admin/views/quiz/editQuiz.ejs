@@ -39,6 +39,23 @@
                                         <div class="sbp-preview">
                                             <div class="sbp-preview-content p-2">
                                                 <div class="row mx-0">
+                                                    <div class="col-md">
+                                                        <div class="form-group my-3">
+                                                            <!-- over fantasy start -->
+                                                            <label for="Fantasy Type*" style="color:black;">Match*</label>
+                                                            
+                                                            <% if(typeof listmatch !=="undefined" && listmatch){%>
+                                                                    <select class="form-control form-control-solid " title="Fantasy Type" id="matchkey_id" data-container="body" name="matchkey_id">
+                                                                        <% for(let match of listmatch){%>
+                                                                        <option value="<%= match._id %>" <%= match._id.toString() === data.matchkey_id.toString() ? "selected":"" %>><%= match.name%></option>
+                                                                        <%}%>
+                                                                    </select>
+                                                            <%}%>
+                                                                    
+                                                        </div>
+                                                    </div>
+ 
+                                                     
                                                     <div class="col-12">
                                                         <div class="form-group my-3">
                                                             <label for="job-title">Question*</label>
@@ -49,7 +66,17 @@
                                                             <% }%>
                                                         </div>
                                                     </div>
-                        
+                                                   
+                                                    <div class="col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="job-title">Point*</label>
+                                                            <% if(data.point) {%>
+                                                            <input class="form-control form-control-solid" value="<%=data.point %>"  id="job-title" type="number" placeholder="Enter Point" name="point" required>
+                                                            <%}else{ %>
+                                                                <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Point" name="point" required>
+                                                            <% }%>
+                                                        </div>
+                                                    </div>
                                                     <div class="col-md-6 col-12">
                                                         <div class="form-group my-3">
                                                             <label for="example-datetime-local-input">Option A*</label>

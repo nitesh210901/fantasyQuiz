@@ -20,7 +20,7 @@ class quizController {
 
   async AddQuizPage(req, res, next) {
       try {
-          const listmatch = await listMatchModel.find({ isQuiz: 1 })    
+      const listmatch = await listMatchModel.find({ isQuiz: 1 ,launch_status:"launched"})    
       res.locals.message = req.flash();
       res.render("quiz/add_quiz", {
         sessiondata: req.session.data,
@@ -104,9 +104,10 @@ class quizController {
     async editQuiz(req, res, next) {
         try {
             res.locals.message = req.flash();
+            const listmatch = await listMatchModel.find({ isQuiz: 1 ,launch_status:"launched"})
             const data = await quizServices.editQuiz(req);
             if (data) {
-                res.render("quiz/editQuiz", { sessiondata: req.session.data, msg: undefined, data });
+                res.render("quiz/editQuiz", { sessiondata: req.session.data, msg: undefined, data ,listmatch});
             }
         } catch (error) {
             console.log(error)

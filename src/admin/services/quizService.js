@@ -32,7 +32,8 @@ class quizServices {
                 option_C: req.body.option_C,
                 option_D: req.body.option_D,
                 answer: req.body.answer,
-                matchkey_id:req.body.matchkey_id
+                matchkey_id: req.body.matchkey_id,
+                point:req.body.point
             });
 
             let savequiz = await addquiz.save();

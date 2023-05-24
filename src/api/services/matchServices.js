@@ -2136,7 +2136,6 @@ let sk=0;
             data['player_type'] = "classic";
             data['captain'] = captain;
             data['vicecaptain'] = vicecaptain;
-            console.log('jointeam data',data);
             const joinTeam = await JoinTeamModel.findOne({
                 matchkey: matchkey,
                 teamnumber: parseInt(teamnumber),

@@ -5,14 +5,14 @@ class matchController {
     constructor() {
         return {
             
-            quiz_getmatchlist: this.quiz_getmatchlist.bind(this),
-            quiz_Newjoinedmatches: this.quiz_Newjoinedmatches.bind(this),
-            quizAllCompletedMatches: this.quizAllCompletedMatches.bind(this),
+            // quiz_getmatchlist: this.quiz_getmatchlist.bind(this),
+            // quiz_Newjoinedmatches: this.quiz_Newjoinedmatches.bind(this),
+            // quizAllCompletedMatches: this.quizAllCompletedMatches.bind(this),
             quizCreateTeam: this.quizCreateTeam.bind(this),
-            quizGetMyTeams: this.quizGetMyTeams.bind(this),
-            quizInformations: this.quizInformations.bind(this),
-            quizViewTeam: this.quizViewTeam.bind(this),
-            quizLivematches:this.quizLivematches.bind(this),
+            // quizGetMyTeams: this.quizGetMyTeams.bind(this),
+            // quizInformations: this.quizInformations.bind(this),
+            // quizViewTeam: this.quizViewTeam.bind(this),
+            // quizLivematches:this.quizLivematches.bind(this),
             getQuestionList:this.getQuestionList.bind(this)
             
         }

@@ -22,28 +22,14 @@ let JoinTeamSchema = new Schema({
         type: Number,
         default: 0
     },
-
     quiz: [{
-        questions: {
-            type: Number,
-            default: 0
+        questionId: {
+            type: mongoose.Types.ObjectId
         },
-        points: {
-            type: Number,
-            default: 0
-        },
-        teamid: {
-            type: mongoose.Schema.Types.ObjectId,
-
-        },
-        teamname: {
+        answer: {
             type: String,
-
-        },
-        type: {
-            type: String,
-            default: 0
-        },
+            default:""
+        }
     }],
     players: {
         type: [
