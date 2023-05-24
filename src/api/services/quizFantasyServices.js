@@ -243,11 +243,26 @@ class overfantasyServices {
     async quizCreateTeam(req) {
         try {
             const { matchkey, teamnumber, quiz } = req.body;
-            console.log("teamnumber" + teamnumber)
 
-            const duplicateData = await JoinTeamModel.findOne({ matchkey: matchkey, userid: req.user._id, quiz: quiz });
+            const quizArray = quiz.split(','),
 
-            if (duplicateData) {
+            quizObjectIdArray = [];
+            
+            if (quizArray.length <= 10) {
+                return {
+                    message: 'Select atleast 10 Questions.',
+                    status: false,
+                    data: {}
+                };
+            }
+
+
+            for (const quizObjectId of quizArray) quizObjectIdArray.push(mongoose.Types.ObjectId(quizObjectId.questionId));
+            const joinlist = await JoinTeamModel.find({ matchkey: matchkey, userid: req.user._id }).sort({ teamnumber: -1 });
+
+            const duplicateData = await this.checkForDuplicateTeam(joinlist, quizArray, teamnumber);
+
+            if (duplicateData === false) {
                 return {
                     message: 'You cannot create the same team.',
                     status: false,
@@ -1247,14 +1262,44 @@ class overfantasyServices {
     }
 
 
-    async checkForDuplicateTeam(joinlist, OverArray, teamnumber) {
+    async checkForDuplicateTeam(joinlist, quizArray, teamnumber) {
         if (joinlist.length == 0) return true;
+
         for await (const list of joinlist) {
 
-            const playerscount = await this.findArrayIntersection(OverArray, list.overs);
-            if (playerscount.length == OverArray.length) return false;
+            const quizCount = await this.findArrayIntersection(quizArray, list.quiz);
+            if (quizCount.length == quizArray.length) return false;
         }
         return true;
+    }
+    
+
+    async findArrayIntersection(quizArray, previousQuiz) {
+        const c = [];
+        let j = 0,
+            i = 0;
+        for (i = 0; i < quizArray.length; ++i) {
+            if (previousQuiz.indexOf(quizArray[i]) != -1) {
+                c[j++] = quizArray[i];
+            }
+        }
+        if (i >= quizArray.length) {
+            return c;
+        }
+    }
+
+    async findArrayIntersection(quizArray, previousQuiz) {
+        const c = [];
+        let j = 0,
+            i = 0;
+        for (i = 0; i < quizArray.length; ++i) {
+            if (previousQuiz.indexOf(quizArray[i]) != -1) {
+                c[j++] = quizArray[i];
+            }
+        }
+        if (i >= quizArray.length) {
+            return c;
+        }
     }
 
     async getMatchTime(start_date) {

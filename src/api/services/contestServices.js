@@ -819,6 +819,7 @@ class contestServices {
             aggpipe.push({
                 $match: { _id: mongoose.Types.ObjectId(matchchallengeid) }
             });
+
             aggpipe.push({
                 $lookup: {
                     from: 'listmatches',
@@ -827,6 +828,7 @@ class contestServices {
                     as: 'listmatch'
                 }
             });
+            
             const matchchallengesData = await matchchallengesModel.aggregate(aggpipe);
             let listmatchId = matchchallengesData[0].listmatch[0]._id;
             let matchchallengesDataId = matchchallengesData[0]._id;
