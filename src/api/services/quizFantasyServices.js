@@ -1274,6 +1274,21 @@ class overfantasyServices {
         }
         return true;
     }
+    
+
+    async findArrayIntersection(quizArray, previousQuiz) {
+        const c = [];
+        let j = 0,
+            i = 0;
+        for (i = 0; i < quizArray.length; ++i) {
+            if (previousQuiz.indexOf(quizArray[i]) != -1) {
+                c[j++] = quizArray[i];
+            }
+        }
+        if (i >= quizArray.length) {
+            return c;
+        }
+    }
 
 
     async findArrayIntersection(quizArray, previousQuiz) {
