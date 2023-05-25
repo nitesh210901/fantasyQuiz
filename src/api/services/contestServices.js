@@ -835,9 +835,11 @@ class contestServices {
             let matchchallenge = matchchallengesData[0];
             let seriesId = matchchallengesData[0].listmatch[0].series;
             let matchStartDate = matchchallengesData[0].listmatch[0].start_date;
+
             if (matchchallengesData.length == 0) {
                 return { message: 'Match Not Found', success: false, data: {} };
             }
+            
             const matchTime = await matchServices.getMatchTime(matchStartDate);
             if (matchTime === false) {
                 return {
