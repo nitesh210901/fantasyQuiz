@@ -38,7 +38,9 @@ class overfantasyServices {
             quizLivematches: this.quizLivematches.bind(this),
             pointcount: this.pointcount.bind(this),
             getQuestionList: this.getQuestionList.bind(this),
-            getAllNewContests:this.getAllNewContests.bind(this)
+            getAllNewContests:this.getAllNewContests.bind(this),
+            findArrayIntersection:this.findArrayIntersection.bind(this),
+            quizPointCalculator:this.quizPointCalculator.bind(this)
         }
     }
 
@@ -243,25 +245,18 @@ class overfantasyServices {
     async quizCreateTeam(req) {
         try {
             const { matchkey, teamnumber, quiz } = req.body;
-
-            const quizArray = quiz.split(','),
-
+            let quizArray = quiz.map(item => item.questionId),
             quizObjectIdArray = [];
-            
-            if (quizArray.length <= 10) {
+            if (quizArray.length < 10) {
                 return {
                     message: 'Select atleast 10 Questions.',
                     status: false,
                     data: {}
                 };
             }
-
-
-            for (const quizObjectId of quizArray) quizObjectIdArray.push(mongoose.Types.ObjectId(quizObjectId.questionId));
+            for (let quizObjectId of quizArray) quizObjectIdArray.push(mongoose.Types.ObjectId(quizObjectId.questionId));
             const joinlist = await JoinTeamModel.find({ matchkey: matchkey, userid: req.user._id }).sort({ teamnumber: -1 });
-
             const duplicateData = await this.checkForDuplicateTeam(joinlist, quizArray, teamnumber);
-
             if (duplicateData === false) {
                 return {
                     message: 'You cannot create the same team.',
@@ -299,7 +294,6 @@ class overfantasyServices {
                 const updateTeam = await JoinTeamModel.findOneAndUpdate({ _id: joinTeam._id }, data, {
                     new: true,
                 });
-                console.log("-------------updateTeam-------------", updateTeam)
                 if (updateTeam) {
                     return {
                         message: 'Team Updated Successfully',
@@ -348,7 +342,6 @@ class overfantasyServices {
 
     async quizGetMyTeams(req) {     
         try {
-            console.log("-----------getmyteams-----------", req.query, "------req.body----", req.body)
             let finalData = [];
             const listmatchData = await listMatchesModel.findOne({ _id: req.query.matchkey }).populate({
                 path: 'team1Id',
@@ -1266,9 +1259,7 @@ class overfantasyServices {
 
     async checkForDuplicateTeam(joinlist, quizArray, teamnumber) {
         if (joinlist.length == 0) return true;
-
         for await (const list of joinlist) {
-
             const quizCount = await this.findArrayIntersection(quizArray, list.quiz);
             if (quizCount.length == quizArray.length) return false;
         }
@@ -1280,24 +1271,10 @@ class overfantasyServices {
         const c = [];
         let j = 0,
             i = 0;
-        for (i = 0; i < quizArray.length; ++i) {
-            if (previousQuiz.indexOf(quizArray[i]) != -1) {
-                c[j++] = quizArray[i];
-            }
-        }
-        if (i >= quizArray.length) {
-            return c;
-        }
-    }
-
-
-    async findArrayIntersection(quizArray, previousQuiz) {
-        const c = [];
-        let j = 0,
-            i = 0;
-        for (i = 0; i < quizArray.length; ++i) {
-            if (previousQuiz.indexOf(quizArray[i]) != -1) {
-                c[j++] = quizArray[i];
+        let data = previousQuiz.map((value) => value.questionId.toString())
+            for (i = 0; i < quizArray.length; ++i) {
+                if (data.indexOf(quizArray[i]) != -1) {
+                    c[j++] = quizArray[i];
             }
         }
         if (i >= quizArray.length) {
@@ -1756,7 +1733,6 @@ class overfantasyServices {
 
     async quizViewTeam(req) {
         try {
-
             let finalData = [];
             
             finalData = await JoinTeamModel.findOne({
@@ -1765,8 +1741,6 @@ class overfantasyServices {
                 teamnumber: req.query.teamnumber
             });
             finalData._doc.jointeamid = finalData._id;
-            
-          
             return {
                 message: 'User Perticular Team Data',
                 status: true,
@@ -1776,9 +1750,51 @@ class overfantasyServices {
             throw error;
         }
     }
-    //overviewendteam
 
 
-    
+    async quizPointCalculator(matchkey,userId) {
+        try {
+            let joinData = await JoinTeamModel.findOne({ userid: userId, matchkey: matchkey })
+            let quizData = await quizModel.find({ matchkey_id: matchkey })
+            if (!joinData) {
+                return {
+                    message: "Team does not exist",
+                    status: false,
+                    data:{}
+                }
+            }
+            if (quizData.length == 0) {
+                return {
+                    message: " Quiz not found",
+                    status: false,
+                    data:{}
+                }
+            }
+            if (joinData.quiz.length > 0) {
+                for (let i = 0; i<quizData.length; i++){
+                    for (let j = 0; j < joinData.quiz.length; j++){
+                        if (quizData[i]._id.toString()===joinData.quiz[j].questionId.toString() && quizData[i].answer === joinData.quiz[j].answer) {
+                            joinData.quiz[j].point = quizData[i].point
+                            await joinData.save()
+                        }
+                    }
+                }
+                return {
+                    message: "Quiz Point added successfully",
+                    success: true,
+                    data: joinData
+                }
+            } else {
+                return {
+                message: 'Quiz Question does not exist',
+                status: false,
+                data: {}
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+    //overviewendteam    
 }
 module.exports = new overfantasyServices();

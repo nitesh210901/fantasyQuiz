@@ -330,8 +330,13 @@ router.get("/matchplayerimport/:matchkey",cricketcontrollerfun.fetchPlayerByMatc
 //overfantasy
 
 // Get All questions list 
-router.get('/quiz-question-list',  quizFantasyController.getQuestionList);
+router.get('/quiz-question-list', auth, quizFantasyController.getQuestionList);
 router.post('/quiz-create-team', auth, quizFantasyController.quizCreateTeam);
+router.get('/getAllContestQuiz', auth, quizFantasyController.getAllNewContests);
+router.get('/getQuizTeam', auth, quizFantasyController.quizGetMyTeams);
+router.post('/joinQuizContest', auth, ContestController.joinContest);
+
+router.get('/quizPointCalculator', auth, quizFantasyController.quizPointCalculator);
 
 // User Joiend latest 5 Upcoming
 // router.get('/quiz/newJoinedMatches', auth, quizFantasyController.quiz_Newjoinedmatches);

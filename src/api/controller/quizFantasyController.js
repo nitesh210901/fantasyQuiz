@@ -1,6 +1,8 @@
+const moment = require('moment')
 const matchServices = require('../services/matchServices');
 const listMatchesModel = require('../../models/listMatchesModel');
 const quizfantasyServices = require('../services/quizFantasyServices');
+const contestservices = require("../services/contestServices")
 class matchController {
     constructor() {
         return {
@@ -13,8 +15,10 @@ class matchController {
             // quizInformations: this.quizInformations.bind(this),
             // quizViewTeam: this.quizViewTeam.bind(this),
             // quizLivematches:this.quizLivematches.bind(this),
-            getQuestionList:this.getQuestionList.bind(this)
-            
+            getQuestionList:this.getQuestionList.bind(this),
+            getAllNewContests: this.getAllNewContests.bind(this),
+            quizGetMyTeams: this.quizGetMyTeams.bind(this),
+            quizPointCalculator: this.quizPointCalculator.bind(this),
         }
     }
 
@@ -117,17 +121,43 @@ class matchController {
     //         next(error);
     //     }
     // }
-    // async quizGetMyTeams(req, res, next) {
-    //     try {
-    //         const data = await quizfantasyServices.quizGetMyTeams(req);
-    //         if (data.status === false) {
-    //             return res.status(200).json(Object.assign({ success: true }, data));
-    //         } else {
-    //             return res.status(200).json(Object.assign({ success: data.status }, data));
-    //         }
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
+    async quizGetMyTeams(req, res, next) {
+        try {
+            const data = await quizfantasyServices.quizGetMyTeams(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+    async quizPointCalculator(req, res, next) {
+        try {
+            const currentDate = moment().format('YYYY-MM-DD 00:00:00');
+            const listmatches = await listMatchesModel.find({
+                fantasy_type: "quiz",
+                start_date: { $gte: currentDate },
+                launch_status: 'launched',
+                final_status: { $nin: ['winnerdeclared','IsCanceled'] },
+                status: { $ne: 'completed' }
+            })
+            if (listmatches.length > 0) {
+                for (let index of listmatches) {
+                    let matchkey = index._id
+                    let userId = req.user._id
+                    var data = await quizfantasyServices.quizPointCalculator(matchkey, userId);
+                }
+            }
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 module.exports = new matchController();

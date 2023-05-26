@@ -69,7 +69,7 @@ class matchServices {
                     message: `..quiz already exists..`
                 }
             } else {
-                saveMatch = await listMatchModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(matchId) }, { isQuiz: 1 },{new:true})
+                saveMatch = await listMatchModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(matchId) }, { isQuiz: 1,fantasy_type:"quiz" },{new:true})
                 // let obj2 = { ...getMatch._doc, _id: undefined, cricketid: getMatch._id }
                 // obj2['fantasy_type'] = 'quiz';
                 // obj2['launch_status'] = 'launched';

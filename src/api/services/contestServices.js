@@ -839,7 +839,6 @@ class contestServices {
             if (matchchallengesData.length == 0) {
                 return { message: 'Match Not Found', success: false, data: {} };
             }
-            
             const matchTime = await matchServices.getMatchTime(matchStartDate);
             if (matchTime === false) {
                 return {
@@ -923,7 +922,7 @@ class contestServices {
                     winning - mainwin,
                     balance - mainbal
                 );
-                //    console.log('resultForBonus',resultForBonus);
+                   console.log('resultForBonus',resultForBonus);
                 if (resultForBonus == false) {
 
                     if (i > 1) {
