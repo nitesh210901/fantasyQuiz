@@ -9,7 +9,6 @@ let JoinTeamSchema = new Schema({
     },
     
     type: {
-        
         type: String,
         default: "cricket"
       },
@@ -29,6 +28,10 @@ let JoinTeamSchema = new Schema({
         answer: {
             type: String,
             default:""
+        },
+        point: {
+            type: Number,
+            default:0
         }
     }],
     players: {

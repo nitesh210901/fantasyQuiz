@@ -39,7 +39,8 @@ class overfantasyServices {
             pointcount: this.pointcount.bind(this),
             getQuestionList: this.getQuestionList.bind(this),
             getAllNewContests:this.getAllNewContests.bind(this),
-            findArrayIntersection:this.findArrayIntersection.bind(this)
+            findArrayIntersection:this.findArrayIntersection.bind(this),
+            quizPointCalculator:this.quizPointCalculator.bind(this)
         }
     }
 
@@ -244,22 +245,18 @@ class overfantasyServices {
     async quizCreateTeam(req) {
         try {
             const { matchkey, teamnumber, quiz } = req.body;
-            console.log(quiz)
-            let quizArray =  quiz.map(item => item.questionId),
+            let quizArray = quiz.map(item => item.questionId),
             quizObjectIdArray = [];
-            
-            // if (quizArray.length <= 10) {
-            //     return {
-            //         message: 'Select atleast 10 Questions.',
-            //         status: false,
-            //         data: {}
-            //     };
-            // }
+            if (quizArray.length < 10) {
+                return {
+                    message: 'Select atleast 10 Questions.',
+                    status: false,
+                    data: {}
+                };
+            }
             for (let quizObjectId of quizArray) quizObjectIdArray.push(mongoose.Types.ObjectId(quizObjectId.questionId));
             const joinlist = await JoinTeamModel.find({ matchkey: matchkey, userid: req.user._id }).sort({ teamnumber: -1 });
-            console.log(joinlist,"------>");
             const duplicateData = await this.checkForDuplicateTeam(joinlist, quizArray, teamnumber);
-             console.log(duplicateData,"==========>");
             if (duplicateData === false) {
                 return {
                     message: 'You cannot create the same team.',
@@ -1736,7 +1733,6 @@ class overfantasyServices {
 
     async quizViewTeam(req) {
         try {
-
             let finalData = [];
             
             finalData = await JoinTeamModel.findOne({
@@ -1745,8 +1741,6 @@ class overfantasyServices {
                 teamnumber: req.query.teamnumber
             });
             finalData._doc.jointeamid = finalData._id;
-            
-          
             return {
                 message: 'User Perticular Team Data',
                 status: true,
@@ -1756,9 +1750,51 @@ class overfantasyServices {
             throw error;
         }
     }
-    //overviewendteam
 
 
-    
+    async quizPointCalculator(matchkey,userId) {
+        try {
+            let joinData = await JoinTeamModel.findOne({ userid: userId, matchkey: matchkey })
+            let quizData = await quizModel.find({ matchkey_id: matchkey })
+            if (!joinData) {
+                return {
+                    message: "Team does not exist",
+                    status: false,
+                    data:{}
+                }
+            }
+            if (quizData.length == 0) {
+                return {
+                    message: " Quiz not found",
+                    status: false,
+                    data:{}
+                }
+            }
+            if (joinData.quiz.length > 0) {
+                for (let i = 0; i<quizData.length; i++){
+                    for (let j = 0; j < joinData.quiz.length; j++){
+                        if (quizData[i]._id.toString()===joinData.quiz[j].questionId.toString() && quizData[i].answer === joinData.quiz[j].answer) {
+                            joinData.quiz[j].point = quizData[i].point
+                            await joinData.save()
+                        }
+                    }
+                }
+                return {
+                    message: "Quiz Point added successfully",
+                    success: true,
+                    data: joinData
+                }
+            } else {
+                return {
+                message: 'Quiz Question does not exist',
+                status: false,
+                data: {}
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+    //overviewendteam    
 }
 module.exports = new overfantasyServices();

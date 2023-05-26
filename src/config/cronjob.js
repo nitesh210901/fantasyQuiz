@@ -6,6 +6,7 @@ const overResultServices = require('../admin/services/overResultService');
 const boatUserService = require('../admin/services/botUserService');
 const classBotService = require('../admin/services/classicBotService');
 const refund_amount = require("../admin/controller/resultController");
+const quizPointCalculator = require("../api/controller/quizFantasyController")
 // const battingBotService = require('../admin/services/battingBotService');
 // const bowlingBotService = require('../admin/services/bowlingBotService');
 // const reverseBotService = require('../admin/services/reverseBotService');
@@ -21,6 +22,13 @@ const adminModel = require('../models/adminModel');
 exports.updatePlayerSelected = new CronJob('*/5 * * * *', async function () {
     try {
         return CronJobService.updatePlayerSelected();
+    } catch (e) {
+        return e;
+    }
+});
+exports.quizPointCalculator = new CronJob('*/5 * * * *', async function () {
+    try {
+        return quizPointCalculator.quizPointCalculator();
     } catch (e) {
         return e;
     }
