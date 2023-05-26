@@ -15,7 +15,7 @@ const constant = require('./src/config/const_credential');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const { updatePlayersCount, updateResultOfMatches, botUserJoinTeamPercentage, botAutoClassicTeam,refund_amount, botAutoBattingTeam, botAutoBowlingTeam, botAutoReverseTeam, generateRandomPlayerClassic, generateRandomPlayerBatting, generateRandomPlayerBowling, generateRandomPlayerReverse, autoWinnerDeclared,series_leaderboard,overUpdateResultOfMatches } = require('./src/config/cronjob');
+const { updatePlayersCount, updateResultOfMatches, botUserJoinTeamPercentage, botAutoClassicTeam,refund_amount, botAutoBattingTeam, botAutoBowlingTeam, botAutoReverseTeam, generateRandomPlayerClassic, generateRandomPlayerBatting, generateRandomPlayerBowling, generateRandomPlayerReverse, autoWinnerDeclared,series_leaderboard,overUpdateResultOfMatches ,quizPointCalculator} = require('./src/config/cronjob');
 //overUpdateResultOfMatches
 overUpdateResultOfMatches.start();
 // updatePlayerSelected.start();
@@ -26,6 +26,9 @@ botAutoClassicTeam.start();
 updatePlayersCount.start();
 // series_leaderboard.start();
 refund_amount.start();
+
+//quiz point calculation
+quizPointCalculator.start();
 
 // ------------
 // autoWinnerDeclared.start();
