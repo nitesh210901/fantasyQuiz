@@ -4,6 +4,7 @@ const router = express.Router();
 const multer = require('multer');
 
 const userController = require('../controller/userController');
+const resultController = require("../../admin/controller/resultController");
 const MatchController = require('../controller/matchController');
 const ContestController = require('../controller/ContestController');
 const webController=require("../controller/webController");
@@ -337,6 +338,7 @@ router.get('/getQuizTeam', auth, quizFantasyController.quizGetMyTeams);
 router.post('/joinQuizContest', auth, ContestController.joinContest);
 
 router.get('/quizPointCalculator', auth, quizFantasyController.quizPointCalculator);
+router.get('/quizRefundAmount',auth,quizFantasyController.quiz_refund_amount)
 
 // User Joiend latest 5 Upcoming
 // router.get('/quiz/newJoinedMatches', auth, quizFantasyController.quiz_Newjoinedmatches);

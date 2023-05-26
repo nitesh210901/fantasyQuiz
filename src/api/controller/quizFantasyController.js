@@ -19,6 +19,7 @@ class matchController {
             getAllNewContests: this.getAllNewContests.bind(this),
             quizGetMyTeams: this.quizGetMyTeams.bind(this),
             quizPointCalculator: this.quizPointCalculator.bind(this),
+            quiz_refund_amount: this.quiz_refund_amount.bind(this),
         }
     }
 
@@ -150,14 +151,27 @@ class matchController {
                     var data = await quizfantasyServices.quizPointCalculator(matchkey, userId);
                 }
             }
+            
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
                 return res.status(200).json(Object.assign({ success: data.status }, data));
             }
         } catch (error) {
-            next(error);
+            console.log(error);
         }
+    }
+    async quiz_refund_amount(req, res, next) {
+        try {
+            const data = await quizfantasyServices.quiz_refund_amount(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+          } catch (error) {
+            console.log('error',error);
+         }
     }
 }
 module.exports = new matchController();
