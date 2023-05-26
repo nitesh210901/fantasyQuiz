@@ -28,6 +28,7 @@ exports.updatePlayerSelected = new CronJob('*/5 * * * *', async function () {
 });
 exports.quizPointCalculator = new CronJob('*/5 * * * *', async function () {
     try {
+        console.log('<------ quiz point ------>');
         return quizPointCalculator.quizPointCalculator();
     } catch (e) {
         return e;

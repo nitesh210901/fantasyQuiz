@@ -77,22 +77,8 @@ class adminPanelController {
     
     async loginAdminData(req, res, next) {
         try {
-          res.locals.message = req.flash();
-          if(req.body['g-recaptcha-response'] === undefined || req.body['g-recaptcha-response'] === '' || req.body['g-recaptcha-response'] === null)
-          { 
-            req.flash("error" , "Please select captcha first");
-            res.redirect("/login-admin");
-          }else{
-          const secretKey = constent.SECRETKEY;
-          const verificationURL = "https://www.google.com/recaptcha/api/siteverify?secret=" + secretKey + "&response=" + req.body['g-recaptcha-response'] + "&remoteip=" + req.connection.remoteAddress;
-          request(verificationURL, async(error,response,body)=>{ 
-            body = JSON.parse(body);
-            if(body.success !== undefined && !body.success) {
-              req.flash("error" , "Failed captcha verification");
-              res.redirect("/login-admin");
-            } else {
+                res.locals.message = req.flash();
                 const registerData = await adminServices.loginAdminData(req);
-               
                 if (registerData.status === false) {
                   req.flash("error","Invalid Login")
                   res.redirect("/login-admin");
@@ -127,13 +113,8 @@ class adminPanelController {
                     }
           
                     res.redirect("/");
-                  });
-                }
-              }
-          });
-
-
-        }
+                });
+            }
         } catch (error) {
           next(error);
         }

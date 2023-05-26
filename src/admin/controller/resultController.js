@@ -83,7 +83,6 @@ class resultController {
   async refund_amount(req, res) {
     try {
       const getResult = await resultServices.refundAmount(req);
-
       res.send({status:true});
     } catch (error) {
       console.log('error',error);
