@@ -71,6 +71,7 @@ const contactController=require("../../controller/contactController");
 const howtoplayController=require("../../controller/howtoplayController");
 const FAQQuestionController=require("../../controller/FAQQuestionsController");
 const QuizController=require("../../controller/quizController");
+const stockContestController=require("../../controller/stockContestController");
 
 
 router.get("/", auth, getUrl, dashboardController.showdashboard);
@@ -492,4 +493,17 @@ router.get("/importPlayers/:matchkey", cricketApiController.fetchPlayerByMatch_e
 router.get('/quiz/:id', auth,matchController.quiz);
 router.get("/overfantacy/update_results_of_matches",overResultController.overupdate_results_of_matches);
 //router.get('/overfantasy/overInformations', auth, OverFantasyController.overInformations);
+
+// ---------------------------------Stock Contest manager----------------
+router.get("/viewStockContest", auth, stockContestController.viewStockContestPage);
+router.get("/add-stock-contest-page", auth, stockContestController.viewAddStockContestPage);
+router.post("/add-stock-contest", auth, stockContestController.addStockContest);
+router.post("/view-stock-contest-datatable", auth, stockContestController.stockContestDatatable);
+router.get("/delete-multi-stock-contest", auth, stockContestController.deleteMultiStockContest);
+router.get("/addStockpricecard/:id", auth, getUrl, stockContestController.addpricecard_page);
+router.post("/add-price-card-stock",upload.single("image"), auth, stockContestController.addpriceCard_Post);
+router.post("/add-price-card-stock-byPercentage", auth, stockContestController.addpricecardPostbyPercentage);
+router.get("/deletepricecardstock/:id", auth, getUrl, stockContestController.deletepricecard_data);
+router.get("/enable-disable-contest", auth, getUrl, stockContestController.enableDisableContest);
+
 module.exports = router;
