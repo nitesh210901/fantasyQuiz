@@ -30,16 +30,6 @@
                 </div>
               </div>
             </div>
-            <!-- over fantasy start -->
-            <div class="col-md-12">
-              <div class="card mb-3">
-                <div class="card-heading p-3">
-
-                </div>
-              </div>
-            </div>
-
-            <!-- over fantasy end -->
             <div class="container-fluid mt-7">
 
               <div class="card mb-4">
@@ -67,7 +57,6 @@
                             </div>
                           </th>
                           <th data-toggle="tooltip" title="S. No.">#</th>
-                          <th data-toggle="tooltip" title="Contest Category">C. C.</th>
                           <th data-toggle="tooltip" title="Entry Fee">E. Fee</th>
                           <th data-toggle="tooltip" title="Winning  Amount">W. Amt.</th>
                           <th data-toggle="tooltip" title="Max  Users">M. Users</th>
@@ -78,7 +67,8 @@
                           <th data-toggle="tooltip" title="Amount Type">A.T.</th>
                           <th data-toggle="tooltip" title="Price  Card">P. Card</th>
                           <th data-toggle="tooltip" title="Contest Type"> C. T.</th>
-                          <th data-toggle="tooltip" title="Contest Type">isEnable.</th>
+                          <th data-toggle="tooltip" title="Contest Type">Enable/Disable.</th>
+                          <th data-toggle="tooltip" title="Contest Type">Cancel Stock.</th>
                           <th data-toggle="tooltip" title="Action">Action</th>
                         </tr>
                       </thead>
@@ -93,7 +83,6 @@
                             </div>
                           </th>
                           <th data-toggle="tooltip" title="S. No.">#</th>
-                          <th data-toggle="tooltip" title="Contest Category">C. C.</th>
                           <th data-toggle="tooltip" title="Entry Fee">E. Fee</th>
                           <th data-toggle="tooltip" title="Winning  Amount">W. Amt.</th>
                           <th data-toggle="tooltip" title="Max  Users">M. Users</th>
@@ -104,7 +93,8 @@
                           <th data-toggle="tooltip" title="Amount Type">A.T.</th>
                           <th data-toggle="tooltip" title="Price  Card">P. Card</th>
                           <th data-toggle="tooltip" title="Contest Type"> C. T.</th>
-                          <th data-toggle="tooltip" title="Contest Type">isEnable.</th>
+                          <th data-toggle="tooltip" title="Contest Type">Enable/Disable.</th>
+                          <th data-toggle="tooltip" title="Contest Type">Cancel Stock.</th>
                           <th data-toggle="tooltip" title="Action">Action</th>
                         </tr>
                       </tfoot>
@@ -167,7 +157,6 @@
                   "columns": [
                     { "data": "s_no", orderable: false },
                     { "data": "count" },
-                    { "data": "cat" },
                     { "data": "entryfee" },
                     { "data": "win_amount" },
                     { "data": "maximum_user" },
@@ -179,6 +168,7 @@
                     { "data": "edit", orderable: false },
                     { "data": "contest_type", },
                     { "data": "isEnable" },
+                    { "data": "isCancelled" },
                     { "data": "action", orderable: false }
                   ]
 
@@ -275,7 +265,6 @@
               }
 
               function enableDisable(id) {
-                console.log('====',id)
                 $.ajax({
                   type: 'get',
                   url: `/enable-disable-contest?_id=${id}`,

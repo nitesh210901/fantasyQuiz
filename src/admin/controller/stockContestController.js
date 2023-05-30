@@ -15,6 +15,9 @@ class challengersController {
             addpricecardPostbyPercentage: this.addpricecardPostbyPercentage.bind(this),
             deletepricecard_data: this.deletepricecard_data.bind(this),
             enableDisableContest: this.enableDisableContest.bind(this),
+            cancelStockContest: this.cancelStockContest.bind(this),
+            editStockContestPage: this.editStockContestPage.bind(this),
+            editStockContestData: this.editStockContestData.bind(this),
         }
     }
    
@@ -103,13 +106,18 @@ class challengersController {
                         parseCard=`<a href="/addStockpricecard/${index._id}" class="btn btn-sm btn-info w-35px h-35px text-uppercase" data-toggle="tooltip" title="Add / Edit"><i class="fas fa-plus"></i></a>`
                        }else{
                         parseCard=''
-                       }
+                            }
+                        let cancelstock;
+                        if (index.isCancelled) {
+                            cancelstock = `<a href="" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank" style="pointer-events: none">Cancelled</a>`
+                        } else {
+                            cancelstock = `<a href="/cancel-stock-contest/${index._id}" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank">Cancel Stock</a>`
+                        }
                         data.push({
                             's_no': `<div class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input checkbox" name="checkCat" id="check${index._id}" value="${index._id}">
                             <label class="custom-control-label" for="check${index._id}"></label></div>`,
                             "count" :count,
-                            // "cat" :catIs?.name,
                             "entryfee":`₹ ${index.entryfee}`,
                              "win_amount":`₹ ${index.win_amount}`,
                              "maximum_user" :index.maximum_user,
@@ -121,21 +129,21 @@ class challengersController {
                              "contest_type" :index.contest_type,
                              "edit":parseCard,
                              "isEnable":`<div class="custom-control custom-switch">
-                               <input type="checkbox" class="custom-control-input" onchange="enableDisable('${index._id}')" id="customSwitch1" checked>
-                               <label class="custom-control-label" for="customSwitch1"></label>
+                               <input type="checkbox" class="custom-control-input" onchange="enableDisable('${index._id}')" id="customSwitch1'${count}'" checked>
+                               <label class="custom-control-label" for="customSwitch1'${count}'"></label>
                              </div>`,
+                             "isCancelled":`${cancelstock}`,
                              "action":`<div class="btn-group dropdown">
                              <button class="btn btn-primary text-uppercase rounded-pill btn-sm btn-active-pink dropdown-toggle dropdown-toggle-icon" data-toggle="dropdown" type="button" aria-expanded="true" style="padding:5px 11px">
                                  Action <i class="dropdown-caret"></i>
                              </button>
                              <ul class="dropdown-menu" style="opacity: 1;">
-                                 <li><a class="dropdown-item waves-light waves-effect" href="/edit-global-contest-challengers/${index._id}">Edit</a></li>
+                                 <li><a class="dropdown-item waves-light waves-effect" href="/edit-stock-contest/${index._id}">Edit</a></li>
                                  <li> <a class="dropdown-item waves-light waves-effect" onclick="delete_sweet_alert('/delete-global-challengers?globelContestsId=${index._id}', 'Are you sure you want to delete this data?')">Delete</a></li>
                              </ul>
                            </div>`,
                         });
                         count++;
-                        console.log('datataat',data)
                         if (count > rows1.length) {
                             let json_data = JSON.stringify({
                                 "recordsTotal": rows,
@@ -263,6 +271,49 @@ class challengersController {
         } catch (error) {
             console.log(error);
             throw error;
+        }
+    }
+    async cancelStockContest (req, res, next){
+        try {
+            res.locals.message = req.flash();
+            const stockData =  await stockContestService.cancelStockContest(req);
+             res.redirect("/viewStockContest")
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+    async editStockContestPage(req, res, next) {
+        try {
+            res.locals.message = req.flash();
+            const getstockdata = await stockContestService.editStockContestPage(req);
+            if (getstockdata.status== true) {
+                res.render('stockManager/editStockContest',{ sessiondata: req.session.data,getstockdata:getstockdata.StockData});
+            }else if(getstockdata.status == false){
+                req.flash('warning',getstockdata.message);
+                res.redirect('/viewStockContest');
+            }
+        } catch (error) {
+            console.log(error);
+            req.flash('error','Something went wrong please try again');
+            res.redirect("/viewStockContest");
+        }
+    }
+    async editStockContestData(req, res, next) {
+        try {
+            res.locals.message = req.flash();
+            let editContestData = await stockContestService.editStockContestData(req);
+            if(editContestData.status == true){
+                req.flash('success',editContestData.message);
+                res.redirect(`/edit-stock-contest/${req.body.stockContestsId}`);
+            }else if(editContestData.status == false){
+                req.flash('error',editContestData.message);
+                res.redirect(`/edit-stock-contest/${req.body.stockContestsId}`);
+            }
+        } catch (error) {
+            //  next(error);
+            req.flash('error','Something went wrong please try again');
+            res.redirect("/viewStockContest");
         }
     }
     

@@ -72,6 +72,7 @@ const howtoplayController=require("../../controller/howtoplayController");
 const FAQQuestionController=require("../../controller/FAQQuestionsController");
 const QuizController=require("../../controller/quizController");
 const stockContestController=require("../../controller/stockContestController");
+const stockCategoryController=require("../../controller/stockCategoryController");
 
 
 router.get("/", auth, getUrl, dashboardController.showdashboard);
@@ -505,5 +506,19 @@ router.post("/add-price-card-stock",upload.single("image"), auth, stockContestCo
 router.post("/add-price-card-stock-byPercentage", auth, stockContestController.addpricecardPostbyPercentage);
 router.get("/deletepricecardstock/:id", auth, getUrl, stockContestController.deletepricecard_data);
 router.get("/enable-disable-contest", auth, getUrl, stockContestController.enableDisableContest);
+router.get("/cancel-stock-contest/:id", auth, getUrl, stockContestController.cancelStockContest);
+router.get("/edit-stock-contest/:id", auth, getUrl, stockContestController.editStockContestPage);
+router.post("/edit-stock-contest-data", auth, stockContestController.editStockContestData);
+
+
+// ---------------------------------Stock Category Manager----------------
+router.get("/viewStockCategory", auth, getUrl, stockCategoryController.stockCategoryPage);
+router.get("/create-stock-category", auth, getUrl, stockCategoryController.createStockCategory);
+router.post("/add-stock-category-data", auth, upload.single("image"), stockCategoryController.addStockCategoryData);
+router.post("/stock-Category-table", auth, stockCategoryController.stockCategoryTable);
+router.get("/edit-stock-category", auth, getUrl, stockCategoryController.editStockCategory);
+router.post("/edit-stock-category-data/:stockId", upload.single("image"), auth, stockCategoryController.editStockCategoryData);
+router.get("/delete-stock-category", auth, getUrl, stockCategoryController.deleteStockCategory);
+// router.get("/edit-contest-category-leaderBoard",auth,stockCategoryController.editContestCategoryLeaderBoard);
 
 module.exports = router;
