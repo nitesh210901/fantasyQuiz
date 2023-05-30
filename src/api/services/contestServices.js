@@ -7,7 +7,7 @@ const JoinTeamModel = require('../../models/JoinTeamModel');
 const userModel = require('../../models/userModel');
 const TransactionModel = require('../../models/transactionModel');
 const JoinedReferModel = require('../../models/JoinedReferModel');
-const leaderBoardModel = require('../../models/leaderBoardModel');
+const leaderBoardModel = require('../../models/leaderboardModel');
 
 const constant = require('../../config/const_credential');
 const matchServices = require('./matchServices');
