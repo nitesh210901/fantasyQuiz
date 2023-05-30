@@ -13,7 +13,7 @@ const joinTeamsModel = require('../../models/JoinTeamModel');
 const matchPlayersModel = require('../../models/matchPlayersModel');
 const botPercentageModel = require("../../models/setBotPercentageModel");
 const matchChallengersModel = require("../../models/matchChallengersModel");
-const leaderBoardModel = require('../../models/leaderBoardModel');
+const leaderBoardModel = require('../../models/leaderboardModel');
 class botUserService {
   constructor() {
     return {
