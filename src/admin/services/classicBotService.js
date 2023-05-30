@@ -5,7 +5,7 @@ const joinTeamsModel = require('../../models/JoinTeamModel');
 const matchPlayersModel = require('../../models/matchPlayersModel');
 const JoinLeaugeModel = require('../../models/JoinLeaugeModel');
 const playerModel=require("../../models/playerModel");
-const leaderBoardModel = require('../../models/leaderBoardModel');
+const leaderBoardModel = require('../../models/leaderboardModel');
 class classicBotService {
     constructor() {
         return {
