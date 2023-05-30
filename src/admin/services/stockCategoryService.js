@@ -12,7 +12,6 @@ class stockCategory {
             editStockCategory: this.editStockCategory.bind(this),
             deleteStockCategory: this.deleteStockCategory.bind(this),
             editStockCategoryData:this.editStockCategoryData.bind(this),
-            editContestCategoryLeaderBoard:this.editContestCategoryLeaderBoard.bind(this),
         }
     }
     // --------------------
@@ -138,32 +137,6 @@ class stockCategory {
             throw error;
         }
     }
-    async editContestCategoryLeaderBoard(req){
-        try{
-            let cat_id=req.query.contestCatId;
-            let l_board=req.query.l_board;
-            if(l_board== 'yes'){
-                const check_leader=await contestCategoryModel.findOne({has_leaderBoard:l_board});
-                if(check_leader){
-                    return{
-                        status:false,
-                        message:`Leader Board already active on category ${check_leader.name}`
-                    }
-                }
-            }
-            const edit_leader=await contestCategoryModel.findOneAndUpdate({_id:mongoose.Types.ObjectId(cat_id)},{has_leaderBoard:l_board});
-            if(edit_leader){
-                return{
-                    status:true,
-                    message:`${edit_leader.name} Category LeaderBoard successfully Active`
-                }
-            }
-        }catch(error){
-            throw error;
-        }
-    }
-   
-
-
+    
 }
 module.exports = new stockCategory();

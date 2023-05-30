@@ -26,10 +26,10 @@ let stockcategorySchema = new Schema({
         type: Number,
         default: 0
     },
-    has_leaderBoard:{
-        type:String,
-        default:"no"
-    }
+    // has_leaderBoard:{
+    //     type:String,
+    //     default:"no"
+    // }
 }, {
     timestamps: true,
     versionKey: false
