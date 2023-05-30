@@ -91,10 +91,12 @@ let stockContestModel = new Schema({
         default: 0
     },
     start_date:{
-        type : Date, default: Date.now
+        type: String,
+        default:''
     },
     end_date:{
-        type : Date, default: Date.now
+        type: String,
+        default:''
     },
     status:{
         type: Boolean,
@@ -118,8 +120,6 @@ let stockContestModel = new Schema({
         type: Boolean,
         default: true
     }
-
-
 }, {
     timestamps: true,
     versionKey: false

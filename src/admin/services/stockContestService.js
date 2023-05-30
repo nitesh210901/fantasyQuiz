@@ -17,6 +17,9 @@ class challengersService {
             deletepricecard_data: this.deletepricecard_data.bind(this),
             deleteMultiStockContest: this.deleteMultiStockContest.bind(this),
             enableDisableContest: this.enableDisableContest.bind(this),
+            cancelStockContest: this.cancelStockContest.bind(this),
+            editStockContestPage: this.editStockContestPage.bind(this),
+            editStockContestData: this.editStockContestData.bind(this),
         }
     }
    
@@ -126,6 +129,9 @@ class challengersService {
                     data.fantasy_type = req.body.fantasy_type;
                     data.win_amount = req.body.win_amount;
                     data.amount_type = req.body.amount_type;
+                    data.select_team = req.body.select_team;
+                    data.start_date = req.body.start_date;
+                    data.end_date = req.body.end_date;
                     if (req.body.contest_type == 'Amount') {
                         data.winning_percentage = '0';
                     }
@@ -161,8 +167,6 @@ class challengersService {
             const deleteChallenger = await stockContestModel.deleteOne({ _id: req.query.globelContestsId });
             if (deleteChallenger.deletedCount == 1) {
                 const deletePriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: req.query.globelContestsId });
-
-
                 return true;
             } else {
                 return false;
@@ -567,7 +571,7 @@ class challengersService {
     
     async deletepricecard_data(req) {
         try {
-            const _checkData = await stockContestModel.findOne({ _id: req.params.id });
+            const _checkData = await stockPriceCardModel.findOne({ _id: req.params.id });
             if (!_checkData) {
                 return {
                     status: false,
@@ -602,8 +606,8 @@ class challengersService {
 
     async enableDisableContest(req){
         try {
-            const {_id} = req.query;
-            const chkData = await stockContestModel.find({_id});
+            let {_id} = req.query;
+            const chkData = await stockContestModel.findOne({_id});
             if(chkData.isEnable){
                 chkData.isEnable=false
             }else{
@@ -613,6 +617,249 @@ class challengersService {
             return chkData;
         } catch (error) {
             console.log(error);
+            throw error;
+        }
+    }
+    async cancelStockContest(req){
+        try {
+            let {id} = req.params;
+            const chkData = await stockContestModel.findOne({_id:id});
+            if(chkData.isCancelled === false){
+                chkData.isCancelled = true
+                chkData.save();
+                return chkData;
+            }
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    async editStockContestPage(req) {
+        try {
+            if (req.params.id) {
+                 const stockcontestdata = await stockContestModel.findOne({_id:req.params.id});
+                if (stockcontestdata) {
+                    return {
+                        status: true,
+                        StockData: stockcontestdata
+                    };
+                } else {
+                    return {
+                        status: false,
+                        message: 'Stock Contest Not Found '
+                    }
+                }
+            } else {
+                return {
+                    status: false,
+                    message: 'Invalid Stock Contest Id'
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async editStockContestData(req) {
+        try {
+            if (req.body.entryfee && req.body.win_amount && req.body.contest_type) {
+                // const checkContestName=await challengersModel.findOne({_id:{$ne: req.body.globelContestsId},contest_name:req.body.contest_name});
+                // if(checkContestName){
+                //     return {
+                //         status: false,
+                //         message: 'Contest Name already exist..'
+                //     }
+                // }
+                if (Number(req.body.entryfee) == 0 || Number(req.body.win_amount) == 0 || Number(req.body.maximum_user) == 0) {
+                    return {
+                        status: false,
+                        message: 'entryfee or win amount or maximum user can not equal to Zero'
+                    }
+                }
+                let data = {}
+                // console.log("req.body", req.body, "req.params", req.params, "req.query", req.query)
+                const stockcontestData = await stockContestModel.findOne({ _id: req.body.stockContestsId });
+                // console.log("challengerData......................", challengerData)
+                const checkData = await stockContestModel.findOne({ _id: { $ne: req.body.stockContestsId }, entryfee: req.body.entryfee, win_amount: req.body.win_amount, contest_type: req.body.contest_type, is_deleted: false });
+
+                if (checkData) {
+                    // console.log("check Data.. found");
+                    return {
+                        status: false,
+                        message: 'This contest is already exist with the same winning amount, entry fees and maximum number ,contest type ...'
+                    }
+                } else {
+                    if (req.body.team_limit) {
+                        if (Number(req.body.team_limit) == 0 || Number(req.body.team_limit) > Number(process.env.TEAM_LIMIT)) {
+                            // console.log("team_limit == 0. found");
+                            return {
+                                status: false,
+                                message: `Value of Team limit not equal to 0..or more then ${config.TEAM_LIMIT}.`
+                            }
+                        } else {
+                            data.multi_entry = 1;
+                        }
+                    }
+
+                    if (req.body.multi_entry) {
+                        req.body.multi_entry = 1;
+                    } else {
+                        req.body.multi_entry = 0;
+                    }
+                    if (req.body.confirmed_challenge) {
+                        req.body.confirmed_challenge = 1;
+                    } else {
+                        req.body.confirmed_challenge = 0;
+                    }
+
+                    if (req.body.is_running) {
+                        req.body.is_running = 1;
+                    } else {
+                        req.body.is_running = 0;
+                    }
+
+
+                    if (req.body.maximum_user) {
+                        if (req.body.maximum_user < 2) {
+                            // console.log("maximum_user < 2 found");
+                            return {
+                                status: false,
+                                message: 'Value of maximum user not less than 2...'
+                            }
+                        }
+                    }
+                    if (req.body.winning_percentage) {
+                        if (req.body.winning_percentage == 0) {
+                            // console.log("winning_percentage == 0. found");
+                            return {
+                                status: false,
+                                message: 'Value of winning percentage not equal to 0...'
+                            }
+                        }
+                    }
+                    if (req.body.bonus_percentage) {
+                        if (req.body.bonus_percentage == 0) {
+                            // console.log("bonus_percentage == 0. found");
+                            return {
+                                status: false,
+                                message: 'Value of bonus percentage not equal to 0...'
+                            }
+                        }
+                    }
+                    if (!req.body.bonus_percentage) {
+                        // console.log("..!req.body.bonus_percentage found");
+                        req.body.bonus_percentage = 0
+                        req.body.is_bonus = 0;
+                    }
+                    if (!req.body.maximum_user) {
+                        req.body.maximum_user = 0
+                    }
+                    if (!req.body.winning_percentage) {
+                        req.body.winning_percentage = 0;
+                    }
+                    if (Number(req.body.win_amount) != Number(stockcontestData.win_amount)) {
+                        // console.log("delete Price Card By win_Amount")
+                        const deletepriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: stockcontestData._id });
+                        // console.log("deletepriceCard..", deletepriceCard)
+                    }
+                    if (req.body.contest_type == 'Percentage') {
+                        // console.log("..contest_type == 'Percentage' found");
+                        req.body.maximum_user = 0;
+                        req.body.pricecard_type = 0;
+                        const checkPriceCard = await stockPriceCardModel.findOne({ stockcontestId: stockcontestData._id });
+                        if (checkPriceCard) {
+                            const deletepriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: stockcontestData._id });
+                        }
+                    }
+                    if (req.body.contest_type == 'Amount') {
+                        if (!req.body.pricecard_type) {
+                            req.body.pricecard_type = 'Amount'
+                        }
+                        req.body.winning_percentage = 0
+                    }
+                    if (req.body.maximum_user) {
+                        // console.log("..maximum_user' found");
+                        data.maximum_user = req.body.maximum_user;
+                    }
+
+                    if (req.body.winning_percentage) {
+                        // console.log("..winning_percentage.. found");
+                        data.winning_percentage = req.body.winning_percentage;
+                    }
+
+                    if (req.body.confirmed_challenge) {
+                        // console.log("..confirmed_challenge.. found");
+                        data.confirmed_challenge = 1;
+                    } else {
+                        data.confirmed_challenge = 0;
+                    }
+
+                    if (req.body.is_running) {
+                        // console.log("...is_running'.. found");
+                        data.is_running = 1;
+                    } else {
+                        data.is_running = 0;
+                    }
+                    if (req.body.is_bonus) {
+                        // console.log("....is_bonus'.. found");
+                        data.is_bonus = 1;
+                        data.bonus_percentage = req.body.bonus_percentage;
+                    } else {
+                        data.is_bonus = 0;
+                        data.bonus_percentage = 0;
+                    }
+                    if (req.body.multi_entry) {
+                        data.multi_entry = 1;
+                        data.multi_entry = req.body.multi_entry;
+                        data.team_limit = req.body.team_limit;
+                    } else {
+                        data.multi_entry = 0;
+                    }
+                    if (Number(req.body.maximum_user) != Number(stockcontestData.maximum_user)) {
+                        const checkPriceCard = await stockPriceCardModel.findOne({ stockcontestId: stockcontestData._id });
+                        if (checkPriceCard) {
+                            const deletepriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: stockcontestData._id });
+                        }
+                    }
+                    if (req.body.pricecard_type != stockcontestData.pricecard_type) {
+                        const checkPriceCard = await stockPriceCardModel.findOne({ stockcontestId: stockcontestData._id });
+                        if (checkPriceCard) {
+                            const deletepriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: stockcontestData._id });
+                        }
+                    }
+                    data.contest_type = req.body.contest_type;
+                    data.pricecard_type = req.body.pricecard_type;
+                    data.contest_cat = req.body.contest_cat;
+                    data.contest_name = req.body.contest_name;
+                    data.entryfee = req.body.entryfee;
+                    data.win_amount = req.body.win_amount;
+                    data.fantasy_type = req.body.fantasy_type;
+                    data.amount_type = req.body.amount_type;
+                    data.select_team = req.body.select_team;
+                    data.start_date = req.body.start_date;
+                    data.end_date = req.body.end_date;
+                    if (req.body.contest_type == 'Amount') {
+                        data.winning_percentage = 0;
+                    }
+                    console.log("data................", data)
+                    const updatestockContest = await stockContestModel.updateOne({ _id: mongoose.Types.ObjectId(req.body.stockContestsId) }, { $set: data });
+                    if (updatestockContest.modifiedCount > 0) {
+                        return {
+                            status: true,
+                            message: 'stock contest successfully update'
+                        };
+                    } else {
+                        return {
+                            status: false,
+                            message: "Not Able To Update stock Contest  ..ERROR.."
+                        }
+                    }
+                }
+
+            }
+
+        } catch (error) {
             throw error;
         }
     }
