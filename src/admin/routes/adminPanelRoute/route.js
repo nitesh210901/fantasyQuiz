@@ -519,6 +519,5 @@ router.post("/stock-Category-table", auth, stockCategoryController.stockCategory
 router.get("/edit-stock-category", auth, getUrl, stockCategoryController.editStockCategory);
 router.post("/edit-stock-category-data/:stockId", upload.single("image"), auth, stockCategoryController.editStockCategoryData);
 router.get("/delete-stock-category", auth, getUrl, stockCategoryController.deleteStockCategory);
-// router.get("/edit-contest-category-leaderBoard",auth,stockCategoryController.editContestCategoryLeaderBoard);
 
 module.exports = router;

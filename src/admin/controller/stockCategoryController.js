@@ -14,7 +14,6 @@ class stockCategory {
             editStockCategory: this.editStockCategory.bind(this),
             deleteStockCategory: this.deleteStockCategory.bind(this),
             editStockCategoryData: this.editStockCategoryData.bind(this),
-            // editContestCategoryLeaderBoard: this.editContestCategoryLeaderBoard.bind(this),
         }
     }
     async stockCategoryPage(req, res, next) {
@@ -96,21 +95,21 @@ class stockCategory {
                         } else {
                             image = `<img src="/uploadImage/defaultImage.jpg" class="w-40px view_team_table_images h-40px rounded-pill">`
                         }
-                        if (index.has_leaderBoard == "yes") {
-                            L_status = `<span style="color:green;" >${index.has_leaderBoard.toUpperCase()}</span>`
-                            leaderBoard = `<span style="color:red;" >I</span>`
-                            l_board = 'no'
-                        } else {
-                            leaderBoard = `<span style="color:red;" >A </span>`
-                            L_status = `<span style="color:red;" >${index.has_leaderBoard.toUpperCase()}</span>`
-                            l_board = 'yes'
-                        }
+                        // if (index.has_leaderBoard == "yes") {
+                        //     L_status = `<span style="color:green;" >${index.has_leaderBoard.toUpperCase()}</span>`
+                        //     leaderBoard = `<span style="color:red;" >I</span>`
+                        //     l_board = 'no'
+                        // } else {
+                        //     leaderBoard = `<span style="color:red;" >A </span>`
+                        //     L_status = `<span style="color:red;" >${index.has_leaderBoard.toUpperCase()}</span>`
+                        //     l_board = 'yes'
+                        // }
                         data.push({
                             'count': count,
                             'name': index.name,
                             'sub_title': index.sub_title,
                             'image': image,
-                            'leaderboard': L_status,
+                            // 'leaderboard': L_status,
                             "Order": index.Order,
                             'action': ` 
                             <a class="btn w-35px h-35px mr-1 btn-orange text-uppercase btn-sm"
@@ -121,11 +120,7 @@ class stockCategory {
                             data-toggle="tooltip" title="Delete"
                             onclick="delete_sweet_alert('/delete-stock-category?stockCatId=${index._id}', 'Are you sure you want to delete this data?')">
                             <i class="far fa-trash-alt"></i>
-                        </a>
-                        <a class="btn w-35px h-35px mr-1 btn-orange text-uppercase btn-sm"
-                        data-toggle="tooltip" title="Edit-leaderboard"
-                        href="/edit-stock-category-leaderBoard?stockCatId=${index._id}&l_board=${l_board}">${leaderBoard}
-                    </a>`
+                        </a>`
                         });
                         count++;
 
@@ -168,32 +163,11 @@ class stockCategory {
             if (deleteStocktCat) {
                 res.redirect('/viewStockCategory')
             }
-
         } catch (error) {
             //  next(error);
             req.flash('error', 'Something went wrong please try again');
             res.redirect("/viewStockCategory");
         }
     }
-    // async editContestCategoryLeaderBoard(req, res, next) {
-    //     try {
-    //         const data = await contestCategoryService.editContestCategoryLeaderBoard(req);
-    //         if (data.status) {
-    //             req.flash("success", data.message);
-    //             res.redirect("/view-contest-Category");
-    //         } else {
-    //             req.flash("error", data.message);
-    //             res.redirect("/view-contest-Category");
-    //         }
-
-    //     } catch (error) {
-    //         //    next(error);
-    //         req.flash('error', 'Something went wrong please try again');
-    //         res.redirect("/view-contest-Category");
-    //     }
-    // }
-
-
-
 }
 module.exports = new stockCategory();
