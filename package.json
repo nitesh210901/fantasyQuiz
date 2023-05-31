@@ -26,6 +26,7 @@
         "form-data": "^4.0.0",
         "https": "^1.0.0",
         "jsonwebtoken": "^8.5.1",
+        "kiteconnect": "^4.1.0",
         "mailgun-js": "^0.22.0",
         "mailgun.js": "^8.0.0",
         "moment": "^2.29.1",
