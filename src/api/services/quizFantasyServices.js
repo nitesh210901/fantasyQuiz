@@ -45,6 +45,7 @@ class overfantasyServices {
             quizPointCalculator: this.quizPointCalculator.bind(this),
             quiz_refund_amount: this.quiz_refund_amount.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
+            getMatchTime: this.getMatchTime.bind(this),
             
         }
     }
