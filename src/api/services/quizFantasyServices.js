@@ -51,6 +51,7 @@ class quizfantasyServices {
             findUsableBonusMoney: this.findUsableBonusMoney.bind(this),
             findUsableBalanceMoney: this.findUsableBalanceMoney.bind(this),
             findJoinLeaugeExist: this.findJoinLeaugeExist.bind(this),
+            getMatchTime: this.getMatchTime.bind(this),
             
         }
     }

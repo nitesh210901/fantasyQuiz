@@ -325,12 +325,7 @@ const cricketcontrollerfun=require("../../admin/controller/cricketApiController"
 router.get("/matchplayerimport/:matchkey",cricketcontrollerfun.fetchPlayerByMatch_entity);
 
 
-
-
-//over fantasy work by sahil
-//overfantasy
-
-// Get All questions list 
+// Quiz  
 router.get('/quiz-question-list', auth, quizFantasyController.getQuestionList);
 router.post('/quiz-create-team', auth, quizFantasyController.quizCreateTeam);
 router.get('/getAllContestQuiz', auth, quizFantasyController.getAllNewContests);
@@ -340,20 +335,8 @@ router.post('/joinQuizContest', auth, quizFantasyController.joinQuizContest);
 router.get('/quizPointCalculator', auth, quizFantasyController.quizPointCalculator);
 router.get('/quizRefundAmount',auth,quizFantasyController.quiz_refund_amount)
 
-// User Joiend latest 5 Upcoming
-// router.get('/quiz/newJoinedMatches', auth, quizFantasyController.quiz_Newjoinedmatches);
-
-// // User Joiend all completed matches
-// router.get('/quiz/allCompletedMatches', auth, quizFantasyController.quizAllCompletedMatches);
- 
-// //over Join team
-// router.post('/quiz/createTeam', auth, quizFantasyController.quizCreateTeam);
-
-// // User All Over Teams of the match
-// router.get('/quiz/getMyTeams', auth, quizFantasyController.quizGetMyTeams);
-// //router.get('/quiz/overInformations', auth, quizFantasyController.overInformations);
-// router.get('/quiz/viewTeam', auth, quizFantasyController.quizViewTeam);
-// router.get('/quiz/livematches', auth, quizFantasyController.quizLivematches);
+//stockManager
+router.post('/stock-create-team', auth, quizFantasyController.quizCreateTeam);
 
 
 
