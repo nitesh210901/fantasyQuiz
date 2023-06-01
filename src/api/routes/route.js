@@ -335,7 +335,7 @@ router.get('/quiz-question-list', auth, quizFantasyController.getQuestionList);
 router.post('/quiz-create-team', auth, quizFantasyController.quizCreateTeam);
 router.get('/getAllContestQuiz', auth, quizFantasyController.getAllNewContests);
 router.get('/getQuizTeam', auth, quizFantasyController.quizGetMyTeams);
-router.post('/joinQuizContest', auth, ContestController.joinContest);
+router.post('/joinQuizContest', auth, quizFantasyController.joinQuizContest);
 
 router.get('/quizPointCalculator', auth, quizFantasyController.quizPointCalculator);
 router.get('/quizRefundAmount',auth,quizFantasyController.quiz_refund_amount)

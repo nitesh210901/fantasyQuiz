@@ -20,6 +20,7 @@ class matchController {
             quizGetMyTeams: this.quizGetMyTeams.bind(this),
             quizPointCalculator: this.quizPointCalculator.bind(this),
             quiz_refund_amount: this.quiz_refund_amount.bind(this),
+            joinQuizContest: this.joinQuizContest.bind(this),
         }
     }
 
@@ -145,14 +146,15 @@ class matchController {
                 final_status: { $nin: ['winnerdeclared','IsCanceled'] },
                 status: { $ne: 'completed' }
             })
+            let data;
             if (listmatches.length > 0) {
                 for (let index of listmatches) {
                     let matchkey = index._id
                     // let userId = req.user._id
-                    var data = await quizfantasyServices.quizPointCalculator(matchkey);
+                     data = await quizfantasyServices.quizPointCalculator(matchkey);
                 }
             }
-            
+            console.log(data,"=============>")
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
@@ -173,6 +175,18 @@ class matchController {
           } catch (error) {
             console.log('error',error);
          }
+    }
+    async joinQuizContest(req, res, next) {
+        try {
+            const data = await quizfantasyServices.joinQuizContest(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
     }
 }
 module.exports = new matchController();

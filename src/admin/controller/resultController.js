@@ -1713,7 +1713,6 @@ class resultController {
   async autoUpdateMatchFinalStatus(req, res, next) {
     try {
       const matches = await listMatchesModel.find({ status: 'completed', launch_status: 'launched', final_status: 'IsReviewed' });
-
       if (matches && Array.isArray(matches) && matches.length > 0) {
         let count = 0;
         for (let match of matches) {

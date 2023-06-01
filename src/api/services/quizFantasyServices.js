@@ -9,6 +9,7 @@ require('../../models/playerModel');
 require('../../models/teamModel');
 const matchchallengesModel = require('../../models/matchChallengersModel');
 const TransactionModel = require('../../models/transactionModel');
+const leaderBoardModel = require(`../../models/leaderboardModel`)
 const refundModel = require('../../models/refundModel');
 const overMatchModel = require('../../models/quizmatches');
 const quizModel = require('../../models/quizModel');
@@ -17,14 +18,15 @@ const listMatchesModel = require('../../models/listMatchesModel');
 const matchPlayersModel = require('../../models/matchPlayersModel');
 const JoinLeaugeModel = require('../../models/JoinLeaugeModel');
 const playerModel = require("../../models/playerModel");
-const JoinTeamModel = require('../../models/JoinTeamModel');
+const JoinQuizTeamModel = require('../../models/JoinQuizTeamModel');
 const userModel = require("../../models/userModel");
 const constant = require('../../config/const_credential');
 const Redis = require('../../utils/redis');
+const matchServices = require("./matchServices")
 // ------over fantasy---
-//const JoinTeamModel = require("../../models/overJoinedTeam");
+//const JoinQuizTeamModel = require("../../models/overJoinedTeam");
 
-class overfantasyServices {
+class quizfantasyServices {
     constructor() {
         return {
 
@@ -45,6 +47,10 @@ class overfantasyServices {
             quizPointCalculator: this.quizPointCalculator.bind(this),
             quiz_refund_amount: this.quiz_refund_amount.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
+            joinQuizContest: this.joinQuizContest.bind(this),
+            findUsableBonusMoney: this.findUsableBonusMoney.bind(this),
+            findUsableBalanceMoney: this.findUsableBalanceMoney.bind(this),
+            findJoinLeaugeExist: this.findJoinLeaugeExist.bind(this),
             
         }
     }
@@ -161,7 +167,7 @@ class overfantasyServices {
                 }
             }
             let [total_teams, total_joinedcontestData] = await Promise.all([
-                JoinTeamModel.countDocuments({ userid: req.user._id, matchkey: req.query.matchkey }),
+                JoinQuizTeamModel.countDocuments({ userid: req.user._id, matchkey: req.query.matchkey }),
                 this.getJoinleague(req.user._id, req.query.matchkey)
             ]);
 
@@ -260,7 +266,7 @@ class overfantasyServices {
                 };
             }
             for (let quizObjectId of quizArray) quizObjectIdArray.push(mongoose.Types.ObjectId(quizObjectId.questionId));
-            const joinlist = await JoinTeamModel.find({ matchkey: matchkey, userid: req.user._id }).sort({ teamnumber: -1 });
+            const joinlist = await JoinQuizTeamModel.find({ matchkey: matchkey, userid: req.user._id }).sort({ teamnumber: -1 });
             const duplicateData = await this.checkForDuplicateTeam(joinlist, quizArray, teamnumber);
             if (duplicateData === false) {
                 return {
@@ -288,7 +294,7 @@ class overfantasyServices {
             data['type'] = "quiz";
             // data['playersArray'] = players;
             data['player_type'] = "classic";
-            const joinTeam = await JoinTeamModel.findOne({
+            const joinTeam = await JoinQuizTeamModel.findOne({
                 matchkey: matchkey,
                 teamnumber: parseInt(teamnumber),
                 userid: req.user._id,
@@ -296,7 +302,7 @@ class overfantasyServices {
             if (joinTeam) {
                 data["user_type"] = 0;
                 data['created_at'] = joinTeam.createdAt;
-                const updateTeam = await JoinTeamModel.findOneAndUpdate({ _id: joinTeam._id }, data, {
+                const updateTeam = await JoinQuizTeamModel.findOneAndUpdate({ _id: joinTeam._id }, data, {
                     new: true,
                 });
                 if (updateTeam) {
@@ -309,7 +315,7 @@ class overfantasyServices {
                     }
                 }
             } else {
-                const joinTeam = await JoinTeamModel.find({
+                const joinTeam = await JoinQuizTeamModel.find({
                     matchkey: matchkey,
                     userid: req.user._id,
                 });
@@ -321,7 +327,7 @@ class overfantasyServices {
                 if (data['teamnumber'] <= 11) {
                     data["user_type"] = 0;
                     console.log('datatatatattaatatatatatatataaat', data);
-                    let jointeamData = await JoinTeamModel.create(data);
+                    let jointeamData = await JoinQuizTeamModel.create(data);
                     if (jointeamData) {
                         return {
                             message: 'Team Created Successfully',
@@ -355,7 +361,7 @@ class overfantasyServices {
                 path: 'team2Id',
                 select: 'short_name'
             });
-            const createTeams = await JoinTeamModel.find({
+            const createTeams = await JoinQuizTeamModel.find({
                 matchkey: req.query.matchkey,
                 userid: req.user._id,
             });
@@ -370,7 +376,7 @@ class overfantasyServices {
             console.log(`--------------matchchallenges.length----------------`, matchchallenges.length);
 
             // ----------total join contest and ----
-            const total_teams = await JoinTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
+            const total_teams = await JoinQuizTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
             const total_joinedcontestData = await JoinLeaugeModel.aggregate([
                 {
                     $match: {
@@ -1309,7 +1315,7 @@ class overfantasyServices {
         const pointcounts = await overMatchModel.find({ matchkey: matchkey, teamid: teamid })
         //  console.log("pointcounts",pointcounts.length)
         //pointcounts=JSON.parse(pointcounts)
-        const jointeam = await JoinTeamModel.findOne({ matchkey: matchkey })
+        const jointeam = await JoinQuizTeamModel.findOne({ matchkey: matchkey })
         for await (let item of pointcounts) {
             //pointcounts.forEach( async(item)=>{
             totalpoint = 0;
@@ -1331,7 +1337,7 @@ class overfantasyServices {
 
             await overpointsModel.updateOne({ matchkey: matchkey, teamid: teamid, over: item.over }, { total_points: totalpoint });
 
-            //await JoinTeamModel.updateMany({matchkey:matchkey,teamid:teamid,over:item.over},{total_points:totalpoint})
+            //await JoinQuizTeamModel.updateMany({matchkey:matchkey,teamid:teamid,over:item.over},{total_points:totalpoint})
 
 
             console.log("item.over" + item.over, "totalpoint", totalpoint)
@@ -1347,7 +1353,7 @@ class overfantasyServices {
             }
             //console.log("jointeam.overs"+arr)
         }
-        await JoinTeamModel.updateOne({ matchkey: matchkey }, { $set: { overs: jointeam.overs } });
+        await JoinQuizTeamModel.updateOne({ matchkey: matchkey }, { $set: { overs: jointeam.overs } });
         //console.log("updatejointeam",updatejointeam)
         console.log("asas")
         return true;
@@ -1480,7 +1486,7 @@ class overfantasyServices {
     //quizViewteam
     async updateIsViewedForBoatTeam(jointeamid) {
         try {
-            await JoinTeamModel.findOneAndUpdate({
+            await JoinQuizTeamModel.findOneAndUpdate({
                 _id: mongoose.Types.ObjectId(jointeamid),
                 user_type: 1,
                 is_viewed: false
@@ -1740,7 +1746,7 @@ class overfantasyServices {
         try {
             let finalData = [];
             
-            finalData = await JoinTeamModel.findOne({
+            finalData = await JoinQuizTeamModel.findOne({
                 _id: req.query.jointeamid,
                 matchkey: req.query.matchkey,
                 teamnumber: req.query.teamnumber
@@ -1759,7 +1765,7 @@ class overfantasyServices {
 
     async quizPointCalculator(matchkey) {
         try {
-            let joinData = await JoinTeamModel.find({ matchkey: matchkey })
+            let joinData = await JoinQuizTeamModel.find({ matchkey: matchkey })
             let quizData = await quizModel.find({ matchkey_id: matchkey })
             if (joinData.length == 0) {
                 return {
@@ -1781,14 +1787,14 @@ class overfantasyServices {
                     for (let quiz_data of quizData) {
                         if (quiz_data._id.toString() === join_quiz_data.questionId.toString()) {
                             if (quiz_data.answer === join_quiz_data.answer) {
-                             data = await JoinTeamModel.findOneAndUpdate({ matchkey: join_data.matchkey, "quiz.questionId": quiz_data._id}, { "quiz.$.point": quiz_data.point },{new:true})
+                             data = await JoinQuizTeamModel.findOneAndUpdate({ matchkey: join_data.matchkey, "quiz.questionId": quiz_data._id}, { "quiz.$.point": quiz_data.point },{new:true})
                         }
                     }
                 }
             }
             return {
                 message: "Quiz Point added successfully",
-                success: true,
+                status: true,
                 data: joinData
             }
             }
@@ -1865,7 +1871,7 @@ class overfantasyServices {
 
     async quiz_refund_amount(req) {
         try {
-        console.log("-------------------------------------refundAmount-------------------------")
+        console.log("-------------------------------------quizrefundAmount-------------------------")
         const currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
         let match_time = moment().add(10, 'm').format('YYYY-MM-DD HH:mm:ss');
       
@@ -1975,6 +1981,463 @@ class overfantasyServices {
             throw error;
         }
     }
+
+
+    async findJoinLeaugeExist(matchkey, userId, teamId, challengeDetails) {
+        if (!challengeDetails || challengeDetails == null || challengeDetails == undefined) return 4;
+
+        const joinedLeauges = await JoinLeaugeModel.find({
+            matchkey: matchkey,
+            challengeid: challengeDetails._id,
+            userid: userId,
+        });
+        console.log(joinedLeauges)
+        if (joinedLeauges.length == 0) return 1;
+        if (joinedLeauges.length > 0) {
+            if (challengeDetails.multi_entry == 0) {
+                return { message: 'Contest Already joined', status: false, data: {} };
+            } else {
+                if (joinedLeauges.length >= challengeDetails.team_limit) {
+                    return { message: 'You cannot join with more teams now.', status: false, data: {} };
+                } else {
+                    const joinedLeaugesCount = joinedLeauges.filter(item => {
+                        return item.teamid.toString() === teamId;
+                    });
+                    if (joinedLeaugesCount.length) return { message: 'Team already joined', status: false, data: {} };
+                    else return 2;
+                }
+            }
+        }
+    }
+
+    async findUsableBonusMoney(challengeDetails, bonus, winning, balance) {
+        if (challengeDetails.is_private == 1 && challengeDetails.is_bonus != 1)
+            return { bonus: bonus, cons_bonus: 0, reminingfee: challengeDetails.entryfee };
+        let totalChallengeBonus = 0;
+        totalChallengeBonus = (challengeDetails.bonus_percentage / 100) * challengeDetails.entryfee;
+
+        const finduserbonus = bonus;
+        let findUsableBalance = winning + balance;
+        let bonusUseAmount = 0;
+        if (finduserbonus >= totalChallengeBonus)
+            (findUsableBalance += totalChallengeBonus), (bonusUseAmount = totalChallengeBonus);
+        else findUsableBalance += bonusUseAmount = finduserbonus;
+        if (findUsableBalance < challengeDetails.entryfee) return false;
+        if (bonusUseAmount >= challengeDetails.entryfee) {
+            return {
+                bonus: finduserbonus - challengeDetails.entryfee,
+                cons_bonus: challengeDetails.entryfee || 0,
+                reminingfee: 0,
+            };
+        } else {
+            return {
+                bonus: finduserbonus - bonusUseAmount,
+                cons_bonus: bonusUseAmount,
+                reminingfee: challengeDetails.entryfee - bonusUseAmount,
+            };
+        }
+    }
+
+    async findUsableBalanceMoney(resultForBonus, balance) {
+        if (balance >= resultForBonus.reminingfee)
+            return {
+                balance: balance - resultForBonus.reminingfee,
+                cons_amount: resultForBonus.reminingfee,
+                reminingfee: 0,
+            };
+        else
+            return { balance: 0, cons_amount: balance, reminingfee: resultForBonus.reminingfee - balance };
+    }
+
+    async findUsableWinningMoney(resultForBalance, winning) {
+        if (winning >= resultForBalance.reminingfee) {
+            return {
+                winning: winning - resultForBalance.reminingfee,
+                cons_win: resultForBalance.reminingfee,
+                reminingfee: 0,
+            };
+        } else { return { winning: 0, cons_win: winning, reminingfee: resultForBalance.reminingfee - winning }; }
+    }
+
+    async joinQuizContest(req) {
+        try {
+            const { matchchallengeid, jointeamid } = req.body;
+            let totalchallenges = 0,
+                totalmatches = 0,
+                totalseries = 0,
+                joinedMatch = 0,
+                joinedSeries = 0,
+                aggpipe = [];
+
+
+            aggpipe.push({
+                $match: { _id: mongoose.Types.ObjectId(matchchallengeid) }
+            });
+
+            aggpipe.push({
+                $lookup: {
+                    from: 'listmatches',
+                    localField: 'matchkey',
+                    foreignField: '_id',
+                    as: 'listmatch'
+                }
+            });
+            
+            const matchchallengesData = await matchchallengesModel.aggregate(aggpipe);
+            let listmatchId = matchchallengesData[0].listmatch[0]._id;
+            let matchchallengesDataId = matchchallengesData[0]._id;
+            let matchchallenge = matchchallengesData[0];
+            let seriesId = matchchallengesData[0].listmatch[0].series;
+            let matchStartDate = matchchallengesData[0].listmatch[0].start_date;
+
+            if (matchchallengesData.length == 0) {
+                return { message: 'Match Not Found', success: false, data: {} };
+            }
+            const matchTime = await matchServices.getMatchTime(matchStartDate);
+            if (matchTime === false) {
+                return {
+                    message: 'Match has been closed, You cannot join leauge now.', 
+                    status: false,
+                    data: {}
+                }
+            }
+            const jointeamids = jointeamid.split(',');
+
+            const jointeamsCount = await JoinQuizTeamModel.find({ _id: { $in: jointeamids } }).countDocuments();
+            if (jointeamids.length != jointeamsCount) return { message: 'Invalid Team', status: false, data: {} }
+
+            const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
+            if (!user || !user.userbalance) return { message: 'Insufficient balance', status: false, data: {} };
+
+            const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+            const balance = parseFloat(user.userbalance.balance.toFixed(2));
+            const winning = parseFloat(user.userbalance.winning.toFixed(2));
+            const totalBalance = bonus + balance + winning;
+            let i = 0,
+                count = 0,
+                mainbal = 0,
+                mainbonus = 0,
+                mainwin = 0,
+                tranid = '';
+            for (const jointeamId of jointeamids) {
+                const jointeamsData = await JoinQuizTeamModel.findOne({ _id: jointeamId })
+                // console.log(`-------------IN ${i} LOOP--------------------`);
+                i++;
+                const result = await this.findJoinLeaugeExist(listmatchId, req.user._id, jointeamId, matchchallenge);
+
+                if (result != 1 && result != 2 && i > 1) {
+
+                    const userObj = {
+                        'userbalance.balance': balance - mainbal,
+                        'userbalance.bonus': bonus - mainbonus,
+                        'userbalance.winning': winning - mainwin,
+                        $inc: {
+                            totalchallenges: totalchallenges,
+                            totalmatches: totalmatches,
+                            totalseries: totalseries,
+                        },
+                    };
+                    let randomStr = randomstring.generate({
+                        length: 4,
+                        charset: 'alphabetic',
+                        capitalization: 'uppercase'
+                    });
+
+                    const transactiondata = {
+                        type: 'Contest Joining Fee',
+                        contestdetail: `${matchchallenge.entryfee}-${count}`,
+                        amount: matchchallenge.entryfee * count,
+                        total_available_amt: totalBalance - matchchallenge.entryfee * count,
+                        transaction_by: constant.TRANSACTION_BY.WALLET,
+                        challengeid: matchchallengeid,
+                        userid: req.user._id,
+                        paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                        bal_bonus_amt: bonus - mainbonus,
+                        bal_win_amt: winning - mainwin,
+                        bal_fund_amt: balance - mainbal,
+                        cons_amount: mainbal,
+                        cons_bonus: mainbonus,
+                        cons_win: mainwin,
+                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                    };
+
+                    await Promise.all([
+                        userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                        TransactionModel.create(transactiondata)
+                    ]);
+                    return result;
+                } else if (result != 1 && result != 2) {
+
+                    return result;
+                }
+                const resultForBonus = await this.findUsableBonusMoney(
+                    matchchallenge,
+                    bonus - mainbonus,
+                    winning - mainwin,
+                    balance - mainbal
+                );
+                   console.log('resultForBonus',resultForBonus);
+                if (resultForBonus == false) {
+
+                    if (i > 1) {
+                        const userObj = {
+                            'userbalance.balance': balance - mainbal,
+                            'userbalance.bonus': bonus - mainbonus,
+                            'userbalance.winning': winning - mainwin,
+                            $inc: {
+                                totalchallenges: totalchallenges,
+                                totalmatches: totalmatches,
+                                totalseries: totalseries,
+                            },
+                        };
+                        let randomStr = randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization: 'uppercase'
+                        });
+                        const transactiondata = {
+                            type: 'Contest Joining Fee',
+                            contestdetail: `${matchchallenge.entryfee}-${count}`,
+                            amount: matchchallenge.entryfee * count,
+                            total_available_amt: totalBalance - matchchallenge.entryfee * count,
+                            transaction_by: constant.TRANSACTION_BY.WALLET,
+                            challengeid: matchchallengeid,
+                            userid: req.user._id,
+                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                            bal_bonus_amt: bonus - mainbonus,
+                            bal_win_amt: winning - mainwin,
+                            bal_fund_amt: balance - mainbal,
+                            cons_amount: mainbal,
+                            cons_bonus: mainbonus,
+                            cons_win: mainwin,
+                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                        };
+                        await Promise.all([
+                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                            TransactionModel.create(transactiondata)
+                        ]);
+                    }
+                    return { message: 'Insufficient balance', status: false, data: {} };
+                }
+                const resultForBalance = await this.findUsableBalanceMoney(resultForBonus, balance - mainbal);
+                const resultForWinning = await this.findUsableWinningMoney(resultForBalance, winning - mainwin);
+                // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
+                if (resultForWinning.reminingfee > 0) {
+                    // console.log(`---------------------3RD IF--------${resultForWinning}---------`);
+                    if (i > 1) {
+                        const userObj = {
+                            'userbalance.balance': balance - mainbal,
+                            'userbalance.bonus': bonus - mainbonus,
+                            'userbalance.winning': winning - mainwin,
+                            $inc: {
+                                totalchallenges: totalchallenges,
+                                totalmatches: totalmatches,
+                                totalseries: totalseries,
+                            },
+                        };
+                        let randomStr = randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization: 'uppercase'
+                        });
+
+                        const transactiondata = {
+                            type: 'Contest Joining Fee',
+                            contestdetail: `${matchchallenge.entryfee}-${count}`,
+                            amount: matchchallenge.entryfee * count,
+                            total_available_amt: totalBalance - matchchallenge.entryfee * count,
+                            transaction_by: constant.TRANSACTION_BY.WALLET,
+                            challengeid: matchchallengeid,
+                            userid: req.user._id,
+                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                            bal_bonus_amt: bonus - mainbonus,
+                            bal_win_amt: winning - mainwin,
+                            bal_fund_amt: balance - mainbal,
+                            cons_amount: mainbal,
+                            cons_bonus: mainbonus,
+                            cons_win: mainwin,
+                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                        };
+                        await Promise.all([
+                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                            TransactionModel.create(transactiondata)
+                        ]);
+                    }
+                    return { message: 'Insufficient balance', status: false, data: {} };
+                }
+                let randomStr = randomstring.generate({
+                    length: 4,
+                    charset: 'alphabetic',
+                    capitalization: 'uppercase'
+                });
+
+                const coupon = randomstring.generate({ charset: 'alphanumeric', length: 4, });
+                tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+                let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
+                if (result == 1) {
+
+                    joinedMatch = await JoinLeaugeModel.find({ matchkey: listmatchId, userid: req.user._id }).limit(1).count();
+                    if (joinedMatch == 0) {
+                        joinedSeries = await JoinLeaugeModel.find({ seriesid: seriesId, userid: req.user._id }).limit(1).count();
+                    }
+                }
+                const joinedLeauges = await JoinLeaugeModel.find({ challengeid: matchchallengesDataId }).count();
+                const joinUserCount = joinedLeauges + 1;
+                if (matchchallenge.contest_type == 'Amount' && joinUserCount > matchchallenge.maximum_user) {
+                    if (i > 1) {
+                        const userObj = {
+                            'userbalance.balance': balance - mainbal,
+                            'userbalance.bonus': bonus - mainbonus,
+                            'userbalance.winning': winning - mainwin,
+                            $inc: {
+                                totalchallenges: totalchallenges,
+                                totalmatches: totalmatches,
+                                totalseries: totalseries,
+                            },
+                        };
+                        let randomStr = randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization: 'uppercase'
+                        });
+                        const transactiondata = {
+                            type: 'Contest Joining Fee',
+                            contestdetail: `${matchchallenge.entryfee}-${count}`,
+                            amount: matchchallenge.entryfee * count,
+                            total_available_amt: totalBalance - matchchallenge.entryfee * count,
+                            transaction_by: constant.TRANSACTION_BY.WALLET,
+                            challengeid: matchchallengeid,
+                            userid: req.user._id,
+                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                            bal_bonus_amt: bonus - mainbonus,
+                            bal_win_amt: winning - mainwin,
+                            bal_fund_amt: balance - mainbal,
+                            cons_amount: mainbal,
+                            cons_bonus: mainbonus,
+                            cons_win: mainwin,
+                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                        };
+                        await Promise.all([
+                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                            TransactionModel.create(transactiondata)
+                        ]);
+                    }
+                    return { message: 'League is Closed', status: false, data: {} };
+                }
+                const joinLeaugeResult = await JoinLeaugeModel.create({
+                    userid: req.user._id,
+                    challengeid: matchchallengesDataId,
+                    teamid: jointeamId,
+                    matchkey: listmatchId,
+                    seriesid: seriesId,
+                    transaction_id: tranid,
+                    refercode: referCode,
+                    leaugestransaction: {
+                        user_id: req.user._id,
+                        bonus: resultForBonus.cons_bonus,
+                        balance: resultForBalance.cons_amount,
+                        winning: resultForWinning.cons_win,
+                    },
+                });
+                await leaderBoardModel.create({
+                    userId: req.user._id,
+                    challengeid: matchchallengesDataId,
+                    teamId: jointeamId,
+                    matchkey: listmatchId,
+                    user_team: user.team,
+                    teamnumber: jointeamsData.teamnumber,
+                    joinId: joinLeaugeResult._id
+                });
+                const joinedLeaugesCount = await JoinLeaugeModel.find({ challengeid: matchchallengesDataId }).count();
+                if (result == 1) {
+                    totalchallenges = 1;
+                    if (joinedMatch == 0) {
+                        totalmatches = 1;
+                        if (joinedMatch == 0 && joinedSeries == 0) {
+                            totalseries = 1;
+                        }
+                    }
+                }
+                count++;
+
+                if (joinLeaugeResult._id) {
+                    mainbal = mainbal + resultForBalance.cons_amount;
+                    mainbonus = mainbonus + resultForBonus.cons_bonus;
+                    mainwin = mainwin + resultForWinning.cons_win;
+                    if (matchchallenge.contest_type == 'Amount' && joinedLeaugesCount == matchchallenge.maximum_user && matchchallenge.is_running != 1) {
+                        // console.log(`---------------------8TH IF--------${matchchallenge.is_running}---------`);
+                        await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+                            status: 'closed',
+                            joinedusers: joinedLeaugesCount,
+                        }, { new: true });
+                    } else {
+                        // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
+                        const gg = await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+                            status: 'opened',
+                            joinedusers: joinedLeaugesCount,
+                        }, { new: true });
+                    }
+                } else
+                    await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+                        status: 'opened',
+                        joinedusers: joinedLeaugesCount,
+                    }, { new: true });
+                if (i == jointeamids.length) {
+                    // console.log(`---------------------9TH IF--------${i}---------`);
+                    const userObj = {
+                        'userbalance.balance': balance - mainbal,
+                        'userbalance.bonus': bonus - mainbonus,
+                        'userbalance.winning': winning - mainwin,
+                        $inc: {
+                            totalchallenges: totalchallenges,
+                            totalmatches: totalmatches,
+                            totalseries: totalseries,
+                        },
+                    };
+                    let randomStr = randomstring.generate({
+                        length: 4,
+                        charset: 'alphabetic',
+                        capitalization: 'uppercase'
+                    });
+                    const transactiondata = {
+                        type: 'Contest Joining Fee',
+                        contestdetail: `${matchchallenge.entryfee}-${count}`,
+                        amount: matchchallenge.entryfee * count,
+                        total_available_amt: totalBalance - matchchallenge.entryfee * count,
+                        transaction_by: constant.TRANSACTION_BY.WALLET,
+                        challengeid: matchchallengeid,
+                        userid: req.user._id,
+                        paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                        bal_bonus_amt: bonus - mainbonus,
+                        bal_win_amt: winning - mainwin,
+                        bal_fund_amt: balance - mainbal,
+                        cons_amount: mainbal,
+                        cons_bonus: mainbonus,
+                        cons_win: mainwin,
+                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                    };
+                    Promise.all([
+                        userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                        TransactionModel.create(transactiondata)
+                    ]);
+                    // ----------------------------------------------------------------------------------------------------------------------
+
+                    return {
+                        message: 'Contest Joined',
+                        status: true,
+                        data: {
+                            joinedusers: joinedLeaugesCount,
+                            referCode: referCode
+                        }
+                    };
+                }
+
+            }
+
+        } catch (error) {
+            throw error;
+        }
+    }
     //overviewendteam    
 }
-module.exports = new overfantasyServices();
+module.exports = new quizfantasyServices();

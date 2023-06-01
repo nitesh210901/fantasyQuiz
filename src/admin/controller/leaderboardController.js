@@ -21,10 +21,11 @@ class leaderboardController {
   async viewLeaderBoarderPage(req,res,next){
     try{
         res.locals.message = req.flash();
-        const data=await leaderboardServices.viewLeaderBoarderPage(req);
+      const data = await leaderboardServices.viewLeaderBoarderPage(req);
+      console.log("0000000000000",data)
         let obj={};
         if(req.query.seriesStatus){
-        if(req.query.seriesStatus){
+          if (req.query.seriesStatus) {
             obj.seriesStatus=req.query.seriesStatus;
         }else{
             obj.seriesStatus='live_end';
