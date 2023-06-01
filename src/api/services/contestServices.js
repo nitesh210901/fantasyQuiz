@@ -1199,6 +1199,7 @@ class contestServices {
             challengeid: challengeDetails._id,
             userid: userId,
         });
+        console.log(joinedLeauges)
         if (joinedLeauges.length == 0) return 1;
         if (joinedLeauges.length > 0) {
             if (challengeDetails.multi_entry == 0) {
