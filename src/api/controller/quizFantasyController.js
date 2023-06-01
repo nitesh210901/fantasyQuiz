@@ -137,6 +137,7 @@ class matchController {
     async quizPointCalculator(req, res, next) {
         try {
             const currentDate = moment().format('YYYY-MM-DD 00:00:00');
+            console.log(currentDate)
             const listmatches = await listMatchesModel.find({
                 fantasy_type: "quiz",
                 start_date: { $gte: currentDate },
@@ -147,8 +148,8 @@ class matchController {
             if (listmatches.length > 0) {
                 for (let index of listmatches) {
                     let matchkey = index._id
-                    let userId = req.user._id
-                    var data = await quizfantasyServices.quizPointCalculator(matchkey, userId);
+                    // let userId = req.user._id
+                    var data = await quizfantasyServices.quizPointCalculator(matchkey);
                 }
             }
             

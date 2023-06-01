@@ -1758,11 +1758,11 @@ class overfantasyServices {
     }
 
 
-    async quizPointCalculator(matchkey,userId) {
+    async quizPointCalculator(matchkey) {
         try {
-            let joinData = await JoinTeamModel.findOne({ userid: userId, matchkey: matchkey })
+            let joinData = await JoinTeamModel.find({ matchkey: matchkey })
             let quizData = await quizModel.find({ matchkey_id: matchkey })
-            if (!joinData) {
+            if (joinData.length == 0) {
                 return {
                     message: "Team does not exist",
                     status: false,
@@ -1776,26 +1776,22 @@ class overfantasyServices {
                     data:{}
                 }
             }
-            if (joinData.quiz.length > 0) {
-                for (let i = 0; i<quizData.length; i++){
-                    for (let j = 0; j < joinData.quiz.length; j++){
-                        if (quizData[i]._id.toString()===joinData.quiz[j].questionId.toString() && quizData[i].answer === joinData.quiz[j].answer) {
-                            joinData.quiz[j].point = quizData[i].point
-                            await joinData.save()
+            let data;
+            for (let join_data of joinData) {
+                for (let join_quiz_data of join_data.quiz) {
+                    for (let quiz_data of quizData) {
+                        if (quiz_data._id.toString() === join_quiz_data.questionId.toString()) {
+                            if (quiz_data.answer === join_quiz_data.answer) {
+                             data = await JoinTeamModel.findOneAndUpdate({ matchkey: join_data.matchkey, "quiz.questionId": quiz_data._id}, { "quiz.$.point": quiz_data.point },{new:true})
                         }
                     }
                 }
-                return {
-                    message: "Quiz Point added successfully",
-                    success: true,
-                    data: joinData
-                }
-            } else {
-                return {
-                message: 'Quiz Question does not exist',
-                status: false,
-                data: {}
-                }
+            }
+            return {
+                message: "Quiz Point added successfully",
+                success: true,
+                data: joinData
+            }
             }
         } catch (error) {
             throw error;
