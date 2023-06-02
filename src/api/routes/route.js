@@ -337,8 +337,9 @@ router.get('/quizPointCalculator', auth, quizFantasyController.quizPointCalculat
 router.get('/quizRefundAmount',auth,quizFantasyController.quiz_refund_amount)
 
 //stockManager
-router.post('/stock-create-team', auth, stockController.stockCreateTeam);
 router.get('/get-stock-contest',  stockController.listStockContest);
+router.post('/stock-create-team', auth, stockController.stockCreateTeam);
+router.post('/join-stock-contest', auth, stockController.stockJoinContest);
 
 
 
