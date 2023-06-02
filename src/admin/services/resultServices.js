@@ -374,14 +374,14 @@ class resultServices {
         try {
             const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
             const listmatches = await listMatches.find({
-                fantasy_type: "Cricket",
+                fantasy_type: "Cricket"||"quiz",
                 start_date: { $gte: currentDate },
                 launch_status: 'launched',
                 // real_matchkey: "61365",
                 final_status: { $nin: ['winnerdeclared','IsCanceled'] },
                 status: { $ne: 'completed' }
             })
-            //console.log("startabcd"+listmatches)
+            // console.log("startabcdddd"+listmatches)
             if (listmatches.length > 0) {
                 for (let index of listmatches) {
                     let matchType = index.format;
@@ -428,7 +428,7 @@ class resultServices {
                 const giveresresult = await entityApiController.getMatchScore(real_matchkey);
                 // const giveresresult1 = fs.readFileSync('scorecard.json', 'utf8');
                 // console.log("giveresresult1", giveresresult1)
-                if (giveresresult) { 
+                if (giveresresult) {
                     // const giveresresultNew = JSON.parse(giveresresult1.matchdata);  //with entity url remove this line
                     // return giveresresultNew;
                     // let giveresresult = giveresresultNew.response;

@@ -495,6 +495,11 @@ router.get('/quiz/:id', auth,matchController.quiz);
 router.get("/overfantacy/update_results_of_matches",overResultController.overupdate_results_of_matches);
 //router.get('/overfantasy/overInformations', auth, OverFantasyController.overInformations);
 
+
+// ---------------------------------Winner Declare manager----------------
+router.get("/quizautoupdateMatchFinalStatus", QuizController.quizautoupdateMatchFinalStatus);
+router.post("/quizupdateMatchFinalStatus/:id/:status", auth, QuizController.quizupdateMatchFinalStatus);
+
 // ---------------------------------Stock Contest manager----------------
 router.get("/viewStockContest", auth, stockContestController.viewStockContestPage);
 router.get("/add-stock-contest-page", auth, stockContestController.viewAddStockContestPage);
