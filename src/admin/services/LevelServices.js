@@ -35,13 +35,13 @@ class LevelServices{
                 refer_amt['level'] = i;
                 refer_amt['amount'] = Number(referrer_bonus.toFixed());
                 refer_amt['type'] = 'Referral Reward';
-                refer_amt['txnid'] = `MG11-${Date.now()}`;
+                refer_amt['txnid'] = `Riskle-${Date.now()}`;
                 
                 const saveData=await refer_amtModel.create(refer_amt);
 
                 let transaction={};
                 transaction['userid'] = level._id;
-                transaction['transaction_id'] = `MG11-${Date.now()}`;
+                transaction['transaction_id'] = `Riskle-${Date.now()}`;
                 transaction['transaction_by'] = 'wallet';
                 transaction['type'] = 'Referral Reward';
                 transaction['amount'] =  Number(referrer_bonus.toFixed());

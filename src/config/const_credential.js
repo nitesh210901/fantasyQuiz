@@ -47,7 +47,7 @@ const credentials = {
     PORT_api: process.env.PORT_api || 3333,
     CRON_PORT: process.env.CRON_PORT || 3636,
     APP_NAME: process.env.APP_NAME || 'Riskle',
-    APP_SHORT_NAME: process.env.APP_SHORT_NAME || 'MG11',
+    APP_SHORT_NAME: process.env.APP_SHORT_NAME || 'Riskle',
     DEFAULT_IMAGE_FOR_PRODUCT: 'default_product.png',
     DEFAULT_IMAGE_FOR_TICKET: 'default_product.png',
     TEAM_LIMIT: process.env.TEAM_LIMIT,
