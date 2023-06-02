@@ -167,7 +167,6 @@ class matchController {
                         // let team2logo = `<img src=${team2.logo ? `${team2.logo}` : 'team_image.png'} class="w-40px view_team_table_images2 h-40px rounded-pill">`;
                         let team1logo = `<img src="${process.env.BASE_URL}/${team1.logo ? team1.logo : 'team_image.png'}" class="w-40px view_team_table_images2 h-40px rounded-pill">`;
                         let team2logo = `<img src="${process.env.BASE_URL}/${team2.logo ? team2.logo : 'team_image.png'}" class="w-40px view_team_table_images2 h-40px rounded-pill">`;
-                       // https://api.mygames11.com/api process.env.BASE_URL
                         let action = '';
                         let start_date_format = moment(index.start_date, 'YYYY-MM-DD hh:mm:ss').format('dddd, DD-MMM-YYYY, h:mm:ss a');
                         let start_date = `<div class="text-center"><span class="font-weight-bold text-success">${start_date_format.split(',')[0]},</span><br>

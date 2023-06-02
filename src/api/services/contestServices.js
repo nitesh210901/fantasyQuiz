@@ -1995,7 +1995,7 @@ for await (const rankData of rankArray) {
                                     ]
                                 },
                                 'then': '$userdata.image',
-                                'else': 'https://admin.mygames11.com/default_profile.png'
+                                'else': 'https://admin.Riskle.com/default_profile.png'
                             }
                         }
                     }
@@ -2035,7 +2035,7 @@ for await (const rankData of rankArray) {
                         },
                         'image': {
                             '$ifNull': [
-                                '$image', 'https://admin.mygames11.com/user.png'
+                                '$image', 'https://admin.Riskle.com/user.png'
                             ]
                         },
                         'teamnumber': {
@@ -2105,7 +2105,7 @@ for await (const rankData of rankArray) {
                                     ]
                                 },
                                 'then': '$userdata.image',
-                                'else': 'https://admin.mygames11.com/default_profile.png'
+                                'else': 'https://admin.Riskle.com/default_profile.png'
                             }
                         }
                     }
@@ -2147,7 +2147,7 @@ for await (const rankData of rankArray) {
                         },
                         'image': {
                             '$ifNull': [
-                                '$image', 'https://admin.mygames11.com/user.png'
+                                '$image', 'https://admin.Riskle.com/user.png'
                             ]
                         },
                         'teamnumber': {
