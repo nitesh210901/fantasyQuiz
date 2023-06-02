@@ -3,7 +3,11 @@ const moment = require('moment');
 const joinStockTeamModel = require('../../models/JoinStockTeamModel');
 const stockContestModel = require('../../models/stockContestModel');
 const joinStockLeagueModel = require('../../models/joinStockLeagueModel');
+const TransactionModel = require('../../models/transactionModel');
+const userModel = require('../../models/userModel');
+const constant = require('../../config/const_credential');
 const randomstring = require("randomstring");
+const stockLeaderBoardModel = require('../../models/stockLeaderboardModel');
 
 class overfantasyServices {
     constructor() {
@@ -61,9 +65,10 @@ class overfantasyServices {
             let stockArray = stock.map(item => item.stockId);
 
             const chkStockLimit = await stockContestModel.findById({_id:contestId},{select_team:1});
-            if (stockArray.length < chkStockLimit) {
+
+            if (stockArray.length > chkStockLimit.select_team) {
                 return {
-                    message: `Select atleast ${chkStockLimit} Stocks.`,
+                    message: `Select Under ${chkStockLimit.select_team} Stocks Limit.`,
                     status: false,
                     data: {}
                 };
@@ -85,7 +90,7 @@ class overfantasyServices {
                 };
             }
 
-            let listmatchData = await stockContestModel.findOne({ _id: mongoose.Types.ObjectId(matchkey) });
+            let listmatchData = await stockContestModel.findOne({ _id: mongoose.Types.ObjectId(contestId) });
             const matchTime = await this.getMatchTime(listmatchData.start_date);
             if (matchTime === false) {
                 return {
@@ -131,7 +136,7 @@ class overfantasyServices {
                 } else {
                     data['teamnumber'] = 1;
                 }
-                if (data['teamnumber'] < 2) {
+                if (data['teamnumber'] < 5) {
                     data["user_type"] = 0;
                     let jointeamData = await joinStockTeamModel.create(data);
                     if (jointeamData) {
@@ -157,9 +162,10 @@ class overfantasyServices {
     }
 
     async checkForDuplicateTeam(joinlist, quizArray, teamnumber) {
+        console.log('--------------',joinlist)
         if (joinlist.length == 0) return true;
         for await (const list of joinlist) {
-            const quizCount = await this.findArrayIntersection(quizArray, list.quiz);
+            const quizCount = await this.findArrayIntersection(quizArray, list.stock);
             if (quizCount.length == quizArray.length) return false;
         }
         return true;
@@ -170,7 +176,7 @@ class overfantasyServices {
         const c = [];
         let j = 0,
             i = 0;
-        let data = previousQuiz.map((value) => value.questionId.toString())
+        let data = previousQuiz.map((value) => value.stockId.toString())
             for (i = 0; i < quizArray.length; ++i) {
                 if (data.indexOf(quizArray[i]) != -1) {
                     c[j++] = quizArray[i];
@@ -196,6 +202,12 @@ class overfantasyServices {
     async stockJoinContest(req, res) {
         try {
             const { stockContestId, stockTeamId } = req.body;
+            let totalchallenges = 0,
+            totalmatches = 0,
+            totalseries = 0,
+            joinedMatch = 0,
+            joinedSeries = 0;
+            
             const chkContest = await stockContestModel.findOne({_id:stockContestId, isCancelled:false, isEnable:true, launch_status:true, final_status: 'pending' });
             if(!chkContest){
                 return {
@@ -236,7 +248,7 @@ class overfantasyServices {
                     const jointeamsData = await joinStockTeamModel.findOne({ _id: jointeamId })
                     // console.log(`-------------IN ${i} LOOP--------------------`);
                     i++;
-                    const result = await this.findJoinLeaugeExist(listmatchId, req.user._id, jointeamId, chkContest);
+                    const result = await this.findJoinLeaugeExist(stockContestId, req.user._id, jointeamId, chkContest);
     
                     if (result != 1 && result != 2 && i > 1) {
     
@@ -255,14 +267,14 @@ class overfantasyServices {
                             charset: 'alphabetic',
                             capitalization: 'uppercase'
                         });
-    
+                        
                         const transactiondata = {
                             type: 'Contest Joining Fee',
                             contestdetail: `${chkContest.entryfee}-${count}`,
                             amount: chkContest.entryfee * count,
                             total_available_amt: totalBalance - chkContest.entryfee * count,
                             transaction_by: constant.TRANSACTION_BY.WALLET,
-                            challengeid: chkContestid,
+                            challengeid: chkContest._id,
                             userid: req.user._id,
                             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                             bal_bonus_amt: bonus - mainbonus,
@@ -314,7 +326,7 @@ class overfantasyServices {
                                 amount: chkContest.entryfee * count,
                                 total_available_amt: totalBalance - chkContest.entryfee * count,
                                 transaction_by: constant.TRANSACTION_BY.WALLET,
-                                challengeid: chkContestid,
+                                challengeid: chkContest._id,
                                 userid: req.user._id,
                                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                                 bal_bonus_amt: bonus - mainbonus,
@@ -360,7 +372,7 @@ class overfantasyServices {
                                 amount: chkContest.entryfee * count,
                                 total_available_amt: totalBalance - chkContest.entryfee * count,
                                 transaction_by: constant.TRANSACTION_BY.WALLET,
-                                challengeid: chkContestid,
+                                challengeid: chkContest._id,
                                 userid: req.user._id,
                                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                                 bal_bonus_amt: bonus - mainbonus,
@@ -388,14 +400,11 @@ class overfantasyServices {
                     tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
                     let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
                     if (result == 1) {
-    
-                        joinedMatch = await joinStockLeagueModel.find({ matchkey: listmatchId, userid: req.user._id }).limit(1).count();
-                        if (joinedMatch == 0) {
-                            joinedSeries = await joinStockLeagueModel.find({ seriesid: seriesId, userid: req.user._id }).limit(1).count();
-                        }
+                        joinedMatch = await joinStockLeagueModel.find({ matchkey: stockContestId, userid: req.user._id }).limit(1).count();
                     }
-                    const joinedLeauges = await joinStockLeagueModel.find({ challengeid: chkContestsDataId }).count();
+                    const joinedLeauges = await joinStockLeagueModel.find({ matchkey:  stockContestId}).count();
                     const joinUserCount = joinedLeauges + 1;
+                   
                     if (chkContest.contest_type == 'Amount' && joinUserCount > chkContest.maximum_user) {
                         if (i > 1) {
                             const userObj = {
@@ -419,7 +428,7 @@ class overfantasyServices {
                                 amount: chkContest.entryfee * count,
                                 total_available_amt: totalBalance - chkContest.entryfee * count,
                                 transaction_by: constant.TRANSACTION_BY.WALLET,
-                                challengeid: chkContestid,
+                                challengeid: chkContest._id,
                                 userid: req.user._id,
                                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                                 bal_bonus_amt: bonus - mainbonus,
@@ -439,10 +448,8 @@ class overfantasyServices {
                     }
                     const joinLeaugeResult = await joinStockLeagueModel.create({
                         userid: req.user._id,
-                        challengeid: chkContestsDataId,
                         teamid: jointeamId,
-                        matchkey: listmatchId,
-                        seriesid: seriesId,
+                        matchkey: stockContestId,
                         transaction_id: tranid,
                         refercode: referCode,
                         leaugestransaction: {
@@ -452,23 +459,19 @@ class overfantasyServices {
                             winning: resultForWinning.cons_win,
                         },
                     });
-                    await leaderBoardModel.create({
+                    await stockLeaderBoardModel.create({
                         userId: req.user._id,
-                        challengeid: chkContestsDataId,
                         teamId: jointeamId,
-                        matchkey: listmatchId,
+                        matchkey: stockContestId,
                         user_team: user.team,
                         teamnumber: jointeamsData.teamnumber,
                         joinId: joinLeaugeResult._id
                     });
-                    const joinedLeaugesCount = await joinStockLeagueModel.find({ challengeid: chkContestsDataId }).count();
+                    const joinedLeaugesCount = await joinStockLeagueModel.find({ matchkey: stockContestId }).count();
                     if (result == 1) {
                         totalchallenges = 1;
                         if (joinedMatch == 0) {
                             totalmatches = 1;
-                            if (joinedMatch == 0 && joinedSeries == 0) {
-                                totalseries = 1;
-                            }
                         }
                     }
                     count++;
@@ -479,24 +482,25 @@ class overfantasyServices {
                         mainwin = mainwin + resultForWinning.cons_win;
                         if (chkContest.contest_type == 'Amount' && joinedLeaugesCount == chkContest.maximum_user && chkContest.is_running != 1) {
                             // console.log(`---------------------8TH IF--------${chkContest.is_running}---------`);
-                            await chkContestsModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(chkContestid) }, {
+                            await stockContestModel.findOneAndUpdate({ matchkey: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
                                 status: 'closed',
                                 joinedusers: joinedLeaugesCount,
                             }, { new: true });
                         } else {
                             // console.log(`---------------------8TH IF/ELSE--------${chkContest.is_running}---------`);
-                            const gg = await chkContestsModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(chkContestid) }, {
+                            const gg = await stockContestModel.findOneAndUpdate({ matchkey: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
                                 status: 'opened',
                                 joinedusers: joinedLeaugesCount,
                             }, { new: true });
                         }
                     } else
-                        await chkContestsModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(chkContestid) }, {
+                        await stockContestModel.findOneAndUpdate({ matchkey: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
                             status: 'opened',
                             joinedusers: joinedLeaugesCount,
                         }, { new: true });
-                    if (i == jointeamids.length) {
-                        // console.log(`---------------------9TH IF--------${i}---------`);
+                        console.log('======================',i,jointeamId.length);
+                    if (i == stockTeamIds.length) {
+                        console.log(`---------------------9TH IF--------${i}---------`);
                         const userObj = {
                             'userbalance.balance': balance - mainbal,
                             'userbalance.bonus': bonus - mainbonus,
@@ -518,7 +522,7 @@ class overfantasyServices {
                             amount: chkContest.entryfee * count,
                             total_available_amt: totalBalance - chkContest.entryfee * count,
                             transaction_by: constant.TRANSACTION_BY.WALLET,
-                            challengeid: chkContestid,
+                            challengeid: chkContest._id,
                             userid: req.user._id,
                             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                             bal_bonus_amt: bonus - mainbonus,
@@ -534,7 +538,6 @@ class overfantasyServices {
                             TransactionModel.create(transactiondata)
                         ]);
                         // ----------------------------------------------------------------------------------------------------------------------
-    
                         return {
                             message: 'Contest Joined',
                             status: true,
@@ -553,6 +556,29 @@ class overfantasyServices {
             throw error;
         }
     }
+
+
+    async findUsableBalanceMoney(resultForBonus, balance) {
+        if (balance >= resultForBonus.reminingfee)
+            return {
+                balance: balance - resultForBonus.reminingfee,
+                cons_amount: resultForBonus.reminingfee,
+                reminingfee: 0,
+            };
+        else
+            return { balance: 0, cons_amount: balance, reminingfee: resultForBonus.reminingfee - balance };
+    }
+
+    async findUsableWinningMoney(resultForBalance, winning) {
+        if (winning >= resultForBalance.reminingfee) {
+            return {
+                winning: winning - resultForBalance.reminingfee,
+                cons_win: resultForBalance.reminingfee,
+                reminingfee: 0,
+            };
+        } else { return { winning: 0, cons_win: winning, reminingfee: resultForBalance.reminingfee - winning }; }
+    }
+
 
     async findUsableBonusMoney(challengeDetails, bonus, winning, balance) {
         if (challengeDetails.is_private == 1 && challengeDetails.is_bonus != 1)
@@ -579,6 +605,33 @@ class overfantasyServices {
                 cons_bonus: bonusUseAmount,
                 reminingfee: challengeDetails.entryfee - bonusUseAmount,
             };
+        }
+    }
+
+    async findJoinLeaugeExist(matchkey, userId, teamId, challengeDetails) {
+        if (!challengeDetails || challengeDetails == null || challengeDetails == undefined) return 4;
+
+        const joinedLeauges = await joinStockLeagueModel.find({
+            matchkey: matchkey,
+            challengeid: challengeDetails._id,
+            userid: userId,
+        });
+        console.log(joinedLeauges)
+        if (joinedLeauges.length == 0) return 1;
+        if (joinedLeauges.length > 0) {
+            if (challengeDetails.multi_entry == 0) {
+                return { message: 'Contest Already joined', status: false, data: {} };
+            } else {
+                if (joinedLeauges.length >= challengeDetails.team_limit) {
+                    return { message: 'You cannot join with more teams now.', status: false, data: {} };
+                } else {
+                    const joinedLeaugesCount = joinedLeauges.filter(item => {
+                        return item.teamid.toString() === teamId;
+                    });
+                    if (joinedLeaugesCount.length) return { message: 'Team already joined', status: false, data: {} };
+                    else return 2;
+                }
+            }
         }
     }
 }

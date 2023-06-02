@@ -99,8 +99,7 @@ let stockContestModel = new Schema({
         default:''
     },
     status:{
-        type: Boolean,
-        default: true
+        type: String
     },
     launch_status:{
         type: Boolean,
@@ -121,7 +120,8 @@ let stockContestModel = new Schema({
         default: true
     },
     final_status: {
-        type: String
+        type: String,
+        default:"pending"
     }
 }, {
     timestamps: true,
