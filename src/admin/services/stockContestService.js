@@ -126,7 +126,7 @@ class challengersService {
                     data.contest_cat = req.body.contest_cat;
                     data.contest_name = req.body.contest_name;
                     data.entryfee = req.body.entryfee;
-                    data.fantasy_type = req.body.fantasy_type;
+                    data.fantasy_type = 'Stock';
                     data.win_amount = req.body.win_amount;
                     data.amount_type = req.body.amount_type;
                     data.select_team = req.body.select_team;
