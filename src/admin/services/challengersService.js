@@ -1161,7 +1161,7 @@ class challengersService {
     async add_CustomContest(req) {
         try {
             const getLunchedMatchinAddContest = await listMatchesModel.find({ status: "notstarted", launch_status: "launched",final_status:{$ne:"IsCanceled"}  }, { fantasy_type: 1, name: 1 });
-           console.log("getLunchedMatchinAddContest",getLunchedMatchinAddContest)
+        //    console.log("getLunchedMatchinAddContest",getLunchedMatchinAddContest)
             const getContest = await contestCategoryModel.find({}, { name: 1 });
 
             if (getLunchedMatchinAddContest) {
