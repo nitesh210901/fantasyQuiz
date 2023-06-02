@@ -58,12 +58,8 @@ let joinedleaugeSchema = new Schema({
     },
     matchkey: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'listmatch',
+        ref: 'contest_stock',
         index:true
-    },
-    seriesid: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'series'
     },
     leaugestransaction: leaugestransaction,
     is_deleted: {

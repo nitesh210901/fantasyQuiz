@@ -1875,12 +1875,12 @@ let sk=0;
     }
     //sahil apk download
     async downloadApp(req,res){
-        try {let file='./public/apk/Riskle.apk'
+        try {let file='./public/apk/MyGames11.apk'
             if(req.query.refercode){
                 let data = req.query.refercode;
-                res.download(file, `Riskle_${data}.apk`);
+                res.download(file, `MyGames11_${data}.apk`);
             }else{
-                res.download(file, `Riskle-app.apk`);
+                res.download(file, `MyGames11-app.apk`);
             }
             
           } catch (error) {
@@ -2983,7 +2983,7 @@ let sk=0;
             //                 ],
             //               },
             //               // Check if the value of the first element of the "user.image" array is an empty string
-            //               then: "https://admin.Riskle.com/avtar1.png",
+            //               then: "https://admin.mygames11.com/avtar1.png",
             //               // If the value of the first element of "user.image" is an empty string, return this URL
             //               else:  {
             //           $getField: {
@@ -3207,7 +3207,7 @@ let sk=0;
                                 "",
                               ],
                             },
-                            then: "https://admin.Riskle.com/avtar1.png",
+                            then: "https://admin.mygames11.com/avtar1.png",
                             else: {
                               $getField: {
                                 field: "image",
@@ -3424,7 +3424,7 @@ let sk=0;
                                 "",
                               ],
                             },
-                            then: "https://admin.Riskle.com/avtar1.png",
+                            then: "https://admin.mygames11.com/avtar1.png",
                             else: {
                               $getField: {
                                 field: "image",
