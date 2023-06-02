@@ -27,6 +27,10 @@ let sidebanner = new Schema({
   bannerType: {
     type: String,
   },
+  fantasy_type: {
+    type: String,
+    default:"Cricket"
+  },
   image: {
     type: String,
   },

@@ -29,7 +29,7 @@ class webServices{
     }
     async webBanner(req){
         try{
-            const getData=await adminModel.findOne({role:0},{sidebanner:1});
+        const getData=await adminModel.findOne({role:0},{sidebanner:1});
         let newArray=[];
         for await(let key of getData.sidebanner){
             let result = credentials.BASE_URL

@@ -23,14 +23,16 @@ class overfantasyServices {
             const data = await stockContestModel.aggregate([
                 [
                     {
-                      '$match': {
+                        '$match': {
+                        'launch_status':true,
                         'isEnable': true, 
                         'isCancelled': false,
                         'start_date':{$gte:moment().format('YYYY-MM-DD HH:mm:ss')}
                       }
                     }, {
                       '$sort': {
-                        'bonus_percentage': -1
+                          'bonus_percentage': -1,
+                          'confirmed_challenge':-1
                       }
                     }
                   ]

@@ -77,8 +77,16 @@
                   </form>
                     <!-- end overfantasy filtring-->
                     <form method="POST" action="/add_custom_contest_data" class="card-body">
-                      <!-- <input name="fantasy_type" type="hidden" value="Cricket"> -->
                       
+                          <%if(fantasy_type==="quiz"){%>
+                            <input name="fantasy_type" type="hidden" value="<%= fantasy_type%>">
+                          <%}%>
+                          <%if(fantasy_type===undefined){%>
+                          <input name="fantasy_type" type="hidden" value="Cricket">
+                          <%}%>
+                          <%if(fantasy_type==="Cricket"){ %>
+                            <input name="fantasy_type" type="hidden" value="<%= fantasy_type%>">
+                          <%}%>                    
                       <div class="sbp-preview">
                         <div class="sbp-preview-content">
                           <div class="row mx-0">
@@ -107,7 +115,7 @@
                                 <select name="matchkey"
                                   class="p-1 form-control form-control-solid selectpicker show-tick" data-container="body" required>
                                   <option value="" disabled selected>Select Match</option>
-                                  <% if(listmatches){ console.log("listmatches"+listmatches)%>
+                                  <% if(listmatches){%>
                                     <% for(let key of listmatches){ 
                                       if(key.fantasy_type==fantasy_type){%>
                                       <option value=<%=key._id %>> <%=key.name%>
@@ -115,7 +123,7 @@
                                       <%}%>
                                       <%if(fantasy_type==undefined){
                                         if(key.fantasy_type=="Cricket"){
-                                        console.log("cricket")%>
+                                       %>
                                       
                                         <option value=<%=key._id %>> <%=key.name%>
                                         </option>
