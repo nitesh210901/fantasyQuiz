@@ -249,6 +249,7 @@ class adminServices {
                     $set: {
                         'sidebanner.$.type': req.body.type,
                          'sidebanner.$.bannerType': req.body.bannerType,
+                         'sidebanner.$.fantasy_type': req.body.fantasy_type,
                         'sidebanner.$.image': image,
                         'sidebanner.$.url': req.body.url
                     }
@@ -258,6 +259,7 @@ class adminServices {
                     $set: {
                         'sidebanner.$.type': req.body.type,
                          'sidebanner.$.bannerType': req.body.bannerType,
+                         'sidebanner.$.fantasy_type': req.body.fantasy_type,
                         'sidebanner.$.image': image,
                         'sidebanner.$.url': ''
                     }

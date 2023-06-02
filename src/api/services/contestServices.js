@@ -213,7 +213,7 @@ class contestServices {
      */
     async getAllContests(req) {
         try {
-            //await this.updateJoinedusers(req);
+            // await this.updateJoinedusers(req);
             let finalData = [],
                 contest_arr = [],
                 aggpipe = [];

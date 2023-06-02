@@ -89,6 +89,25 @@
                                                 </div>
 
                                                 <div class="col-12">
+                                                    <div class="form-group my-3">
+                                                        <label for="type">Fantasy Type*</label>
+                                                        <select  name="fantasy_type" id="selectdOption"
+                                                            class="form-control form-control-solid selectpicker show-tick" required
+                                                            onchange="show_hide_link(this)">
+                                                            <% if(data.fantasy_type) {%>
+                                                                <option value="Cricket" <%=data.fantasy_type =='Cricket'
+                                                                    ? 'selected' : '' %> >Cricket</option>
+                                                                <option value="quiz" <%=data.fantasy_type =='quiz'
+                                                                    ? 'selected' : '' %> >Quiz</option>
+                                                            <% }else{ %>
+                                                                    <option value="Cricket">Cricket</option>
+                                                                    <option value="quiz">Quiz</option>
+                                                            <% }%>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12">
                                                     <div class="form-group">
                                                         <div class="row justify-content-center py-0">
                                                             <h1 class="fs-14 font-weight-bold text-center mt-3 col-12">

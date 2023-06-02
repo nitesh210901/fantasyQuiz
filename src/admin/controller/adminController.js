@@ -322,6 +322,7 @@ class adminPanelController {
                                 'newcount': `${newcount}`,
                                 'type': doc.type,
                                 'bannerType':doc.bannerType,
+                                'fantasy_type':doc.fantasy_type,
                                 'image': `${doc.image ? `<img src="${doc.image}" class="w-80px h-80px rounded-10 shadow border border-primary">` : ""}`,
                                 'url': `<div class="container">${doc.url}</div>`,
                                 'Action': `<a class="btn btn-sm text-uppercase mr-2 btn-primary w-35px h-35px" title="Edit" href="/edit-sideBanner?Id=${index._id}&bannerId=${doc._id}"> <i class="fas fa-pencil" aria-hidden="true"></i></a>

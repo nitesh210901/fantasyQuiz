@@ -348,7 +348,7 @@ class challengersController {
         try{
             res.locals.message = req.flash();
             const getlunchedMatches=await challengersService.createCustomContest(req);
-            
+
             if(getlunchedMatches.status == true){
                 let mkey=req.query.matchkey
                 let fantasy_type=req.query.fantasy_type;
@@ -400,9 +400,8 @@ class challengersController {
     async create_custom_page(req,res,next){
         try{
             res.locals.message = req.flash();
-            let fantasy_type=req.query.fantasy_type;
+            let fantasy_type = req.query.fantasy_type;
             const getlunchedMatches=await challengersService.add_CustomContest(req);
-            
             if(getlunchedMatches.status == true){
 
                 res.render("contest/createCustom",{sessiondata: req.session.data,listmatches:getlunchedMatches.data,contestData:getlunchedMatches.contestData,fantasy_type});
@@ -440,7 +439,7 @@ class challengersController {
                 res.redirect('/create_Match_custom');
             }
 
-        }catch(error){
+        } catch (error) {
             //  next(error); 
             req.flash('error','Something went wrong please try again');
             res.redirect("/create-custom-contest");
