@@ -10,6 +10,7 @@ const ContestController = require('../controller/ContestController');
 const webController=require("../controller/webController");
 const CronJob = require('../services/cronJobServices');
 const quizFantasyController=require("../controller/quizFantasyController")
+const stockController=require("../controller/stockController")
 
 const auth = require('../../middlewares/apiauth');
 
@@ -335,7 +336,8 @@ router.get('/quizPointCalculator', auth, quizFantasyController.quizPointCalculat
 router.get('/quizRefundAmount',auth,quizFantasyController.quiz_refund_amount)
 
 //stockManager
-router.post('/stock-create-team', auth, quizFantasyController.quizCreateTeam);
+router.post('/stock-create-team', auth, stockController.stockCreateTeam);
+router.get('/get-stock-contest',  stockController.listStockContest);
 
 
 

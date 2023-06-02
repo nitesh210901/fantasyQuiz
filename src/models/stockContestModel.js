@@ -119,6 +119,9 @@ let stockContestModel = new Schema({
     isEnable:{
         type: Boolean,
         default: true
+    },
+    final_status: {
+        type: String
     }
 }, {
     timestamps: true,

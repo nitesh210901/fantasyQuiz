@@ -554,10 +554,9 @@
             reverseButtons: true
           }).then((result) => {
             if (result.isConfirmed) {
-              // console.log("pCheck..........",pCheck)
               $.ajax({
                 type: 'POST',
-                url: '/delete-multi-global-challengers',
+                url: '/delete-multi-stock-contest',
                 data: { deletedId: pCheck },
                 success: function (data) {
                   // console.log("data..many deleet............",data)
