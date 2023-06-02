@@ -18,6 +18,7 @@ class challengersController {
             cancelStockContest: this.cancelStockContest.bind(this),
             editStockContestPage: this.editStockContestPage.bind(this),
             editStockContestData: this.editStockContestData.bind(this),
+            launchStockContest: this.launchStockContest.bind(this),
         }
     }
    
@@ -106,6 +107,12 @@ class challengersController {
                             cancelstock = `<a href="" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank" style="pointer-events: none">Cancelled</a>`
                         } else {
                             cancelstock = `<a href="/cancel-stock-contest/${index._id}" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank">Cancel Stock</a>`
+                            }
+                        let launch_contest;
+                        if (index.launch_status) {
+                            launch_contest = `<a href="" class="btn-sm btn my-1 btn-primary w-35px h-35px" data-toggle="tooltip" title="Launch Contest" style="pointer-events: none"><i class="fas fa-rocket"></i></a>`
+                        } else {
+                            launch_contest = `<a href="/launch-contest/${index._id}" class="btn-sm btn my-1 btn-primary w-35px h-35px" data-toggle="tooltip" title="Launch Contest"><i class="fas fa-rocket"></i></a>`
                         }
                         data.push({
                             's_no': `<div class="custom-control custom-checkbox">
@@ -126,7 +133,8 @@ class challengersController {
                                <input type="checkbox" class="custom-control-input" onchange="enableDisable('${index._id}')" id="customSwitch1'${count}'" checked>
                                <label class="custom-control-label" for="customSwitch1'${count}'"></label>
                              </div>`,
-                             "isCancelled":`${cancelstock}`,
+                            "isCancelled": `${cancelstock}`,
+                            "launch_status":`${launch_contest}`,
                              "action":`<div class="btn-group dropdown">
                              <button class="btn btn-primary text-uppercase rounded-pill btn-sm btn-active-pink dropdown-toggle dropdown-toggle-icon" data-toggle="dropdown" type="button" aria-expanded="true" style="padding:5px 11px">
                                  Action <i class="dropdown-caret"></i>
@@ -307,6 +315,17 @@ class challengersController {
             //  next(error);
             req.flash('error','Something went wrong please try again');
             res.redirect("/viewStockContest");
+        }
+    }
+
+    async launchStockContest (req, res, next){
+        try {
+            res.locals.message = req.flash();
+            const stockData =  await stockContestService.launchStockContest(req);
+             res.redirect("/viewStockContest")
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
     }
     

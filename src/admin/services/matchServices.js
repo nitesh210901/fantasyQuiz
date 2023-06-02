@@ -451,146 +451,159 @@ class matchServices {
 
 
     async launch(req) {
-        const data = await this.findMatchDetails(req.params.id);
-        // console.log('match details',data)
-        if (data.length > 0) {
-            let team1 = data[0].team1Id;
-            let team2 = data[0].team2Id;
-            data[0].start_date = moment(data[0].start_date).format('MMMM Do YYYY, H:MM:SS');
 
-            let batsman1 = 0,
-                batsman2 = 0,
-                bowlers1 = 0,
-                bowlers2 = 0,
-                allrounder1 = 0,
-                allrounder2 = 0,
-                wk1 = 0,
-                wk2 = 0,
-                criteria = 1;
+        let quizMatch = await listMatchModel.findOne({ _id: req.params.id, fantasy_type: "quiz", isQuiz: 1 })
+        if (quizMatch) {
+            await listMatchModel.updateOne({
+                _id: req.params.id
+            }, {
+                $set: {
+                    launch_status: "launched"
+                }
+            });
+            return true;
+        } else {
+            const data = await this.findMatchDetails(req.params.id);
+            // console.log('match details',data)
+            if (data.length > 0) {
+                let team1 = data[0].team1Id;
+                let team2 = data[0].team2Id;
+                data[0].start_date = moment(data[0].start_date).format('MMMM Do YYYY, H:MM:SS');
 
-            let match1Query = {
-                matchkey: mongoose.Types.ObjectId(data[0]._id)
-            };
-            const findAllMatchPlayers = await this.findMatchPlayers(match1Query);
-            if (findAllMatchPlayers.length > 0) {
-                for (let players of findAllMatchPlayers) {
-                    if (players.playersData.team.toString() == team1.toString()) {
-                        if (players.role == 'bowler') {
-                            bowlers1++;
+                let batsman1 = 0,
+                    batsman2 = 0,
+                    bowlers1 = 0,
+                    bowlers2 = 0,
+                    allrounder1 = 0,
+                    allrounder2 = 0,
+                    wk1 = 0,
+                    wk2 = 0,
+                    criteria = 1;
+
+                let match1Query = {
+                    matchkey: mongoose.Types.ObjectId(data[0]._id)
+                };
+                const findAllMatchPlayers = await this.findMatchPlayers(match1Query);
+                if (findAllMatchPlayers.length > 0) {
+                    for (let players of findAllMatchPlayers) {
+                        if (players.playersData.team.toString() == team1.toString()) {
+                            if (players.role == 'bowler') {
+                                bowlers1++;
+                            }
+                            if (players.role == 'batsman') {
+                                batsman1++;
+                            }
+                            if (players.role == 'allrounder') {
+                                allrounder1++;
+                            }
+                            if (players.role == 'keeper') {
+                                wk1++;
+                            }
+                            if (players.role == "") {
+                                criteria = 0;
+                                return {
+                                    message: `You cannot launch this match because the role of ${players.name} is not defined.`,
+                                    status: false,
+                                    data: data[0]
+                                };
+                            }
                         }
-                        if (players.role == 'batsman') {
-                            batsman1++;
-                        }
-                        if (players.role == 'allrounder') {
-                            allrounder1++;
-                        }
-                        if (players.role == 'keeper') {
-                            wk1++;
-                        }
-                        if (players.role == "") {
-                            criteria = 0;
-                            return {
-                                message: `You cannot launch this match because the role of ${players.name} is not defined.`,
-                                status: false,
-                                data: data[0]
-                            };
-                        }
-                    }
-                    if (players.playersData.team.toString() == team2.toString()) {
-                        if (players.role == 'bowler') {
-                            bowlers2++;
-                        }
-                        if (players.role == 'batsman') {
-                            batsman2++;
-                        }
-                        if (players.role == 'allrounder') {
-                            allrounder2++;
-                        }
-                        if (players.role == 'keeper') {
-                            wk2++;
-                        }
-                        if (players.role == "") {
-                            criteria = 0;
-                            return {
-                                message: `You cannot launch this match because the role of ${players.name} is not defined.`,
-                                status: false,
-                                data: data[0]
-                            };
+                        if (players.playersData.team.toString() == team2.toString()) {
+                            if (players.role == 'bowler') {
+                                bowlers2++;
+                            }
+                            if (players.role == 'batsman') {
+                                batsman2++;
+                            }
+                            if (players.role == 'allrounder') {
+                                allrounder2++;
+                            }
+                            if (players.role == 'keeper') {
+                                wk2++;
+                            }
+                            if (players.role == "") {
+                                criteria = 0;
+                                return {
+                                    message: `You cannot launch this match because the role of ${players.name} is not defined.`,
+                                    status: false,
+                                    data: data[0]
+                                };
+                            }
                         }
                     }
                 }
+
+                if (bowlers1 < 3) {
+                    criteria = 0;
+                    return {
+                        message: `Minimum 3 bowlers are required in team1 to launch this match.`,
+                        status: false,
+                        data: data[0]
+                    };
+                } else if (bowlers2 < 3) {
+                    criteria = 0;
+                    return {
+                        message: `'Minimum 3 bowlers are required in team2 to launch this match.`,
+                        status: false,
+                        data: data[0]
+                    };
+                } else if (batsman1 < 3) {
+                    criteria = 0;
+                    return {
+                        message: `Minimum 3 batman are required in team1 to launch this match.`,
+                        status: false,
+                        data: data[0]
+                    };
+                } else if (batsman2 < 3) {
+                    criteria = 0;
+                    return {
+                        message: `Minimum 3 batman are required in team2 to launch this match.`,
+                        status: false,
+                        data: data[0]
+                    };
+                } else if (wk1 < 1) {
+                    criteria = 0;
+                    return {
+                        message: `Minimum 1 wicketkeeper is required in team1 to launch this match.`,
+                        status: false,
+                        data: data[0]
+                    };
+                } else if (wk2 < 1) {
+                    criteria = 0;
+                    return {
+                        message: `Minimum 1 wicketkeeper is required in team2 to launch this match.`,
+                        status: false,
+                        data: data[0]
+                    };
+                } else if (allrounder1 < 1) {
+                    criteria = 0;
+                    return {
+                        message: `Minimum 1 all rounder are required in team1 to launch this match.`,
+                        status: false,
+                        data: data[0]
+                    };
+                } else if (allrounder2 < 1) {
+                    criteria = 0;
+                    return {
+                        message: `Minimum 1 all rounder are required in team2 to launch this match.`,
+                        status: false,
+                        data: data[0]
+                    };
+                }
+
+
+                if (criteria == 1) {
+                    await listMatchModel.updateOne({
+                        _id: req.params.id
+                    }, {
+                        $set: {
+                            launch_status: "launched"
+                        }
+                    });
+                }
+
+                return true;
             }
-
-            if (bowlers1 < 3) {
-                criteria = 0;
-                return {
-                    message: `Minimum 3 bowlers are required in team1 to launch this match.`,
-                    status: false,
-                    data: data[0]
-                };
-            } else if (bowlers2 < 3) {
-                criteria = 0;
-                return {
-                    message: `'Minimum 3 bowlers are required in team2 to launch this match.`,
-                    status: false,
-                    data: data[0]
-                };
-            } else if (batsman1 < 3) {
-                criteria = 0;
-                return {
-                    message: `Minimum 3 batman are required in team1 to launch this match.`,
-                    status: false,
-                    data: data[0]
-                };
-            } else if (batsman2 < 3) {
-                criteria = 0;
-                return {
-                    message: `Minimum 3 batman are required in team2 to launch this match.`,
-                    status: false,
-                    data: data[0]
-                };
-            } else if (wk1 < 1) {
-                criteria = 0;
-                return {
-                    message: `Minimum 1 wicketkeeper is required in team1 to launch this match.`,
-                    status: false,
-                    data: data[0]
-                };
-            } else if (wk2 < 1) {
-                criteria = 0;
-                return {
-                    message: `Minimum 1 wicketkeeper is required in team2 to launch this match.`,
-                    status: false,
-                    data: data[0]
-                };
-            } else if (allrounder1 < 1) {
-                criteria = 0;
-                return {
-                    message: `Minimum 1 all rounder are required in team1 to launch this match.`,
-                    status: false,
-                    data: data[0]
-                };
-            } else if (allrounder2 < 1) {
-                criteria = 0;
-                return {
-                    message: `Minimum 1 all rounder are required in team2 to launch this match.`,
-                    status: false,
-                    data: data[0]
-                };
-            }
-
-
-            if (criteria == 1) {
-                await listMatchModel.updateOne({
-                    _id: req.params.id
-                }, {
-                    $set: {
-                        launch_status: "launched"
-                    }
-                });
-            }
-
-            return true;
         }
     }
     async launchMatchChangeTeamLogo(req) {
