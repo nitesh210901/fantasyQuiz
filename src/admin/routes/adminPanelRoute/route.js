@@ -500,7 +500,7 @@ router.get("/viewStockContest", auth, stockContestController.viewStockContestPag
 router.get("/add-stock-contest-page", auth, stockContestController.viewAddStockContestPage);
 router.post("/add-stock-contest", auth, stockContestController.addStockContest);
 router.post("/view-stock-contest-datatable", auth, stockContestController.stockContestDatatable);
-router.get("/delete-multi-stock-contest", auth, stockContestController.deleteMultiStockContest);
+router.post("/delete-multi-stock-contest", auth, stockContestController.deleteMultiStockContest);
 router.get("/addStockpricecard/:id", auth, getUrl, stockContestController.addpricecard_page);
 router.post("/add-price-card-stock",upload.single("image"), auth, stockContestController.addpriceCard_Post);
 router.post("/add-price-card-stock-byPercentage", auth, stockContestController.addpricecardPostbyPercentage);

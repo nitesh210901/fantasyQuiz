@@ -163,8 +163,7 @@ class challengersService {
 
     async deleteMultiStockContest(req) {
         try {
-
-            const deleteChallenger = await stockContestModel.deleteOne({ _id: req.query.globelContestsId });
+            const deleteChallenger = await stockContestModel.deleteOne({ _id: req.body.deletedId });
             if (deleteChallenger.deletedCount == 1) {
                 const deletePriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: req.query.globelContestsId });
                 return true;

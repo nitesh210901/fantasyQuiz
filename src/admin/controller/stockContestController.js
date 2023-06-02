@@ -35,14 +35,8 @@ class challengersController {
     async viewAddStockContestPage(req,res,next){
         try {
             res.locals.message = req.flash();
-            // const getContest = await challengersService.getContest(req);
-            
-            // if (getContest.status==true) {
-                res.render("stockManager/addStockContest", { sessiondata: req.session.data, msg:undefined, data: "" });
-            // }else{
-            //     req.flash('error','page not found ..error..');
-            //     res.redirect("/");
-            // }
+            res.render("stockManager/addStockContest", { sessiondata: req.session.data, msg:undefined, data: "" });
+          
 
         } catch (error) {
               //  next(error);
@@ -163,7 +157,6 @@ class challengersController {
 
     async deleteMultiStockContest(req,res,next){
         try {
-            
             const deleteChallengers=await stockContestService.deleteMultiStockContest(req);
             if(deleteChallengers){
                 res.redirect("/viewStockContest")

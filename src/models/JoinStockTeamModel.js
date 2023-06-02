@@ -7,10 +7,6 @@ let JoinStockTeamSchema = new Schema({
         ref: 'user',
         index: true
     },
-    // type: {
-    //     type: String,
-    //     default: "cricket"
-    // },
     type: {
         type: String,
         default: "stock"
@@ -36,26 +32,7 @@ let JoinStockTeamSchema = new Schema({
             default:0
         }
     }],
-    // players: {
-    //     type: [
-    //         {
-    //             type: mongoose.Schema.Types.ObjectId,
-    //             ref: 'matchplayer'
-    //         }
-    //     ],
-    //     default: []
-    // },
-    // playersArray: {
-    //     type: String
-    // },
-    // captain: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'matchplayer'
-    // },
-    // vicecaptain: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'matchplayer'
-    // },
+   
     points: {
         type: Number,
         default: 0.0
@@ -64,10 +41,6 @@ let JoinStockTeamSchema = new Schema({
         type: Number,
         default: 0.0
     },
-    // player_type: {
-    //     type: String,
-    //     default: 'classic'
-    // },
     is_deleted: {
         type: Boolean,
         default: false
