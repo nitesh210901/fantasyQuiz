@@ -20,6 +20,7 @@ class challengersService {
             cancelStockContest: this.cancelStockContest.bind(this),
             editStockContestPage: this.editStockContestPage.bind(this),
             editStockContestData: this.editStockContestData.bind(this),
+            launchStockContest: this.launchStockContest.bind(this),
         }
     }
    
@@ -859,6 +860,21 @@ class challengersService {
             }
 
         } catch (error) {
+            throw error;
+        }
+    }
+
+    async launchStockContest(req){
+        try {
+            let {id} = req.params;
+            const chkLaunchData = await stockContestModel.findOne({_id:id});
+            if(chkLaunchData.launch_status === false){
+                chkLaunchData.launch_status = true
+                chkLaunchData.save();
+                return chkLaunchData;
+            }
+        } catch (error) {
+            console.log(error);
             throw error;
         }
     }

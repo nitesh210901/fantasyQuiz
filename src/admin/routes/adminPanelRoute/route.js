@@ -514,6 +514,7 @@ router.get("/enable-disable-contest", auth, getUrl, stockContestController.enabl
 router.get("/cancel-stock-contest/:id", auth, getUrl, stockContestController.cancelStockContest);
 router.get("/edit-stock-contest/:id", auth, getUrl, stockContestController.editStockContestPage);
 router.post("/edit-stock-contest-data", auth, stockContestController.editStockContestData);
+router.get("/launch-contest/:id", auth, stockContestController.launchStockContest);
 
 
 // ---------------------------------Stock Category Manager----------------
