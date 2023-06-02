@@ -7,7 +7,7 @@ let andriodVersion = new Schema({
   },
   updation_points: {
     type: String,
-    default: '<p>MyGames11</p>',
+    default: '<p>Riskle</p>',
   },
 });
 

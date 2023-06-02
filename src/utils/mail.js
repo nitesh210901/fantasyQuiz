@@ -43,7 +43,7 @@ console.log("process.env.MAIL_FROM",process.env.MAIL_FROM,"process.env.MAIL_APP_
         });
 
         // ----------
-//         const DOMAIN='www.admin.mygames11.com'
+//         const DOMAIN='www.admin.Riskle.com'
 //         const client = mailgun.client({
 //             username: 'api',
 //             key: '5f4fbbbb65c0c47ffb794e65d8be68be-f8b3d330-e982ebcf',
