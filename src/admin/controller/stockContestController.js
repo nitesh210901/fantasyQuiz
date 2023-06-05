@@ -1,6 +1,7 @@
 const mongoose=require("mongoose");
 const stockContestService = require('../services/stockContestService');
 const stockContestModel = require('../../models/stockContestModel');
+const stockContestCategoryModel = require('../../models/stockContestCategory');
 
 class challengersController {
     constructor() {
@@ -25,8 +26,9 @@ class challengersController {
     async viewStockContestPage(req,res,next){
         try{
             res.locals.message = req.flash();
-            let fantasy_type=req.query.fantasy_type
-            res.render('stockManager/viewStockContest', { sessiondata: req.session.data,fantasy_type });
+            let fantasy_type = req.query.fantasy_type
+            let stock_contest_cat = req.query.stock_contest_cat
+            res.render('stockManager/viewStockContest', { sessiondata: req.session.data,fantasy_type,stock_contest_cat});
         }catch(error){
             req.flash('error','something is wrong please try again letter');
             res.redirect('');
@@ -36,9 +38,8 @@ class challengersController {
     async viewAddStockContestPage(req,res,next){
         try {
             res.locals.message = req.flash();
-            res.render("stockManager/addStockContest", { sessiondata: req.session.data, msg:undefined, data: "" });
-          
-
+            let getstockcontestcategory = await stockContestCategoryModel.find()
+            res.render("stockManager/addStockContest", { sessiondata: req.session.data, msg:undefined, data: "",getstockcontestcategory });
         } catch (error) {
               //  next(error);
             req.flash('error','Something went wrong please try again');
@@ -84,7 +85,10 @@ class challengersController {
             let sortObject = {},
                 dir, join
             let conditions = {};
-            
+            if (req.query.searchName) {
+                let searchName = req.query.searchName;
+                conditions.stock_contest_cat = { $regex: new RegExp("^" + searchName.toLowerCase(), "i") }
+            }
             stockContestModel.countDocuments(conditions).exec((err, rows) => {
                 let totalFiltered = rows;
                 let data = [];
@@ -119,6 +123,7 @@ class challengersController {
                             <input type="checkbox" class="custom-control-input checkbox" name="checkCat" id="check${index._id}" value="${index._id}">
                             <label class="custom-control-label" for="check${index._id}"></label></div>`,
                             "count" :count,
+                            "stock_contest_cat":`${index.stock_contest_cat}`,
                             "entryfee":`₹ ${index.entryfee}`,
                              "win_amount":`₹ ${index.win_amount}`,
                              "maximum_user" :index.maximum_user,
@@ -266,7 +271,6 @@ class challengersController {
 
     async enableDisableContest (req, res, next){
         try {
-            console.log('--------------',req.query)
             const result =  await stockContestService.enableDisableContest(req);
             res.send(result);
         } catch (error) {
@@ -288,8 +292,9 @@ class challengersController {
         try {
             res.locals.message = req.flash();
             const getstockdata = await stockContestService.editStockContestPage(req);
+            let getstockcontestcategory = await stockContestCategoryModel.find()
             if (getstockdata.status== true) {
-                res.render('stockManager/editStockContest',{ sessiondata: req.session.data,getstockdata:getstockdata.StockData});
+                res.render('stockManager/editStockContest',{ sessiondata: req.session.data,getstockdata:getstockdata.StockData,getstockcontestcategory});
             }else if(getstockdata.status == false){
                 req.flash('warning',getstockdata.message);
                 res.redirect('/viewStockContest');

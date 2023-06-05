@@ -231,6 +231,7 @@ class quizfantasyServices {
 
 
     async getQuestionList(req) {
+        try {
         const matchkey_id = req.query.matchkey_id
         if(matchkey_id){
           let data = await quizModel.find({matchkey_id})
@@ -251,6 +252,9 @@ class quizfantasyServices {
                 status:false,
                 message:"Match not defind"
             }
+        }
+        } catch (error) {
+            console.log('error', error);
         }
     }
 

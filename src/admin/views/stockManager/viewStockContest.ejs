@@ -31,7 +31,35 @@
               </div>
             </div>
             <div class="container-fluid mt-7">
+              <div class="card mb-3">
+                <div class="card-heading p-3">
+                    <form method="get" action="/viewStockContest">
+                        <div class="sbp-preview position-relative">
+                            <div class="form-group mb-0">
+                                <div class="row mx-0 align-items-end">
 
+                                    <div class="col-md">
+                                        <div class="form-group my-3">
+                                            <label for="Contest Name" class="text-bold">Stock Contest Category</label>
+                                          <%if(stock_contest_cat){%>
+                                          <input placeholder="Search By Stock Contest Category" id="stock_contest_cat" class="form-control form-control-solid" name="stock_contest_cat" value="<%=stock_contest_cat%>" type="text">
+                                           <%}else{%>
+                                          <input placeholder="Search By Stock Contest Category" id="stock_contest_cat" class="form-control form-control-solid" name="stock_contest_cat" type="text">
+                                           <%}%>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-auto text-right h-100 mb-3">
+                                        <button type="submit" class="btn btn-success  btn-sm rounded-pill"><i class="far fa-check-circle"></i>&nbsp;
+                                            Search</button>
+                                        <a href="/viewStockContest" class="btn btn-warning  btn-sm rounded-pill"><i class="fa fa-undo"></i>&nbsp;Reset</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
               <div class="card mb-4">
                 <div class="card-header">
                   <div class="row w-100 align-items-center mx-0">
@@ -57,6 +85,7 @@
                             </div>
                           </th>
                           <th data-toggle="tooltip" title="S. No.">#</th>
+                          <th data-toggle="tooltip" title="S. Contest Cat.">S. Contest Cat.</th>
                           <th data-toggle="tooltip" title="Entry Fee">E. Fee</th>
                           <th data-toggle="tooltip" title="Winning  Amount">W. Amt.</th>
                           <th data-toggle="tooltip" title="Max  Users">M. Users</th>
@@ -84,6 +113,7 @@
                             </div>
                           </th>
                           <th data-toggle="tooltip" title="S. No.">#</th>
+                          <th data-toggle="tooltip" title="S. Contest Cat.">S. Contest Cat.</th>
                           <th data-toggle="tooltip" title="Entry Fee">E. Fee</th>
                           <th data-toggle="tooltip" title="Winning  Amount">W. Amt.</th>
                           <th data-toggle="tooltip" title="Max  Users">M. Users</th>
@@ -144,6 +174,7 @@
 
             <script type="text/javascript">
               $(document).ready(function () {
+                let searchName = $("#stock_contest_cat").val();
                 // var fantasy_type = $('#fantasy_type').val();
                 $.fn.dataTable.ext.errMode = 'none';
                 $('#global_index_datatable').DataTable({
@@ -152,13 +183,14 @@
                     zeroRecords: "No records to display",
                   },
                   "ajax": {
-                    "url": '/view-stock-contest-datatable',
+                    "url": `/view-stock-contest-datatable?searchName=${searchName}`,
                     "dataType": "json",
                     "type": "POST",
                   },
                   "columns": [
                     { "data": "s_no", orderable: false },
                     { "data": "count" },
+                    { "data": "stock_contest_cat" },
                     { "data": "entryfee" },
                     { "data": "win_amount" },
                     { "data": "maximum_user" },

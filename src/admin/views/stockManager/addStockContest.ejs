@@ -41,7 +41,7 @@
                                     <div class="sbp-preview">
                                         <div class="sbp-preview-content py-2">
                                             <div class="row mx-0">
-
+                                               
                                                 <!-- <div class="col-md-6">
                                                     <div class="form-group my-3">
                                                         <label class="label-control text-bold fs-13">Fantasy
@@ -100,20 +100,19 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <!-- <div class="col-md-12">
-                        <div class="form-group my-3">
-                          <label class="label-control text-bold">Contest Category*</label>
-                          <select name="contest_cat" class="form-control form-control-solid p-1 selectpicker show-tick"
-                            required="" id="contest_cat">
-                            <option value="" selected disabled>Select Contest Category</option>
-                            <% for(let key of data) {%>
-                              <option value="<%=key._id %>">
-                                <%=key.name %>
-                              </option>
-                              <% } %>
-                          </select>
-                        </div>
-                      </div> -->
+                                                <div class="col-md-12">
+                                        <div class="form-group my-3">
+                                            <label class="label-control text-bold">Stock Contest Category*</label>
+                                            <select name="stock_contest_cat" class="form-control form-control-solid p-1 selectpicker show-tick"
+                                            required="" id="stock_contest_cat">
+                                               <%if(typeof getstockcontestcategory!=="undefined" && getstockcontestcategory){%>
+                                                <%for(let stockcategory of getstockcontestcategory){%>
+                                                <option value="<%= stockcategory.name%>"><%= stockcategory.name%></option>
+                                                <%}%>
+                                               <%}%>
+                                            </select>
+                                        </div>
+                                        </div>
                                                 <div class="col-md-12 col-12">
                                                     <div class="form-group my-3">
                                                         <label class="label-control text-bold">Contest Name*</label>

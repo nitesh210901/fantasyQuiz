@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const moment = require('moment');
 const joinStockTeamModel = require('../../models/JoinStockTeamModel');
 const stockContestModel = require('../../models/stockContestModel');
+const stockContestCategoryModel = require('../../models/stockContestCategory')
 const joinStockLeagueModel = require('../../models/joinStockLeagueModel');
 const randomstring = require("randomstring");
 
@@ -15,7 +16,7 @@ class overfantasyServices {
             listStockContest: this.listStockContest.bind(this),
             stockJoinContest: this.stockJoinContest.bind(this),
             findUsableBonusMoney: this.findUsableBonusMoney.bind(this),
-
+            getStockContestCategory: this.getStockContestCategory.bind(this)
         }
     }
     async listStockContest(req){
@@ -581,6 +582,28 @@ class overfantasyServices {
                 cons_bonus: bonusUseAmount,
                 reminingfee: challengeDetails.entryfee - bonusUseAmount,
             };
+        }
+    }
+
+    async getStockContestCategory(req){
+        try {
+            const data = await stockContestCategoryModel.find()
+            if(data.length>0){
+                return {
+                    message: 'All Stock Contests Categories',
+                    status: true,
+                    data: data
+                }
+            }else{
+                return {
+                    message: 'Stock Contests Categories not found',
+                    status: false,
+                    data:{}
+                }
+            }
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
     }
 }

@@ -46,6 +46,10 @@ let stockContestModel = new Schema({
         type:String,
         default:''
     },
+    stock_contest_cat:{
+        type:String,
+        default:''
+    },
     multi_entry: {
         type: Number,
         default: 0
