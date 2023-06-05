@@ -1,12 +1,13 @@
 const { CronJob } = require('cron');
 const axios = require('axios');
+const convertCsv =  require('csvtojson');
 const CronJobService = require('../api/services/cronJobServices');
 const resultServices = require('../admin/services/resultServices');
 const overResultServices = require('../admin/services/overResultService');
 const boatUserService = require('../admin/services/botUserService');
 const classBotService = require('../admin/services/classicBotService');
 const refund_amount = require("../admin/controller/resultController");
-const quizPointCalculator = require("../api/controller/quizFantasyController")
+const quizPointCalculator = require("../api/controller/quizFantasyController");
 // const battingBotService = require('../admin/services/battingBotService');
 // const bowlingBotService = require('../admin/services/bowlingBotService');
 // const reverseBotService = require('../admin/services/reverseBotService');
@@ -17,6 +18,7 @@ const randomizePlayerSelectionClassic = require('../admin/controller/randomizePl
 const autoWinnerDeclared = require('../admin/controller/resultController');
 
 const adminModel = require('../models/adminModel');
+const stockModel = require('../models/stockModel');
 
 // 1 0 */15 * * every 15 days on 00:01:00 GMT+0530
 exports.updatePlayerSelected = new CronJob('*/5 * * * *', async function () {
@@ -26,6 +28,7 @@ exports.updatePlayerSelected = new CronJob('*/5 * * * *', async function () {
         return e;
     }
 });
+
 exports.quizPointCalculator = new CronJob('*/5 * * * *', async function () {
     try {
         console.log('<------ quiz point ------>');
@@ -196,6 +199,23 @@ exports.series_leaderboard = new CronJob("*/1 * * * *", async function () {
         }
 
     } catch (error) {
+        return error;
+    }
+})
+
+
+exports.saveStocks = new CronJob("30 8 * * *", async function () {
+    try {
+        let stockdata = await axios.get(`https://api.kite.trade/instruments`)
+        const data = await convertCsv().fromString(stockdata.data)
+        for(let i of data){
+            await stockModel.updateOne(
+            { instrument_token: i.instrument_token },
+            { $set: i },
+            { upsert: true })
+        }
+    } catch (error) {
+        console.log("error", error)
         return error;
     }
 })
