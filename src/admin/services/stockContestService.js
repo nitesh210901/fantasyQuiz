@@ -133,6 +133,7 @@ class challengersService {
                     data.select_team = req.body.select_team;
                     data.start_date = req.body.start_date;
                     data.end_date = req.body.end_date;
+                    data.stock_contest_cat = req.body.stock_contest_cat;
                     if (req.body.contest_type == 'Amount') {
                         data.winning_percentage = '0';
                     }
@@ -839,6 +840,7 @@ class challengersService {
                     data.select_team = req.body.select_team;
                     data.start_date = req.body.start_date;
                     data.end_date = req.body.end_date;
+                    data.stock_contest_cat = req.body.stock_contest_cat;
                     if (req.body.contest_type == 'Amount') {
                         data.winning_percentage = 0;
                     }

@@ -82,6 +82,20 @@
                                                     </div>
                                                    
                                                 </div>
+                                                
+                                                <div class="col-md-12">
+                                                    <div class="form-group my-3">
+                                                        <label class="label-control text-bold">Stock Contest Category*</label>
+                                                        <select name="stock_contest_cat" class="form-control form-control-solid p-1 selectpicker show-tick"
+                                                        required="" id="stock_contest_cat">
+                                                           <%if(typeof getstockcontestcategory!=="undefined" && getstockcontestcategory){%>
+                                                            <%for(let stockcategory of getstockcontestcategory){%>
+                                                            <option value="<%= stockcategory.name%>" <%=getstockdata.stock_contest_cat === stockcategory.name ? 'selected' : '' %>><%= stockcategory.name%></option>
+                                                            <%}%>
+                                                           <%}%>
+                                                        </select>
+                                                    </div>
+                                                    </div>
 
                                                 <div class="col-md-12 col-12">
                                                     
