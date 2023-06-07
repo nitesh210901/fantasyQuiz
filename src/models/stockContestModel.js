@@ -50,6 +50,7 @@ let stockContestModel = new Schema({
         type:String,
         default:''
     },
+    stock_categoryId:[mongoose.Types.ObjectId],
     multi_entry: {
         type: Number,
         default: 0
