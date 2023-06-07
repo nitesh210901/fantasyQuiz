@@ -73,6 +73,7 @@ const FAQQuestionController=require("../../controller/FAQQuestionsController");
 const QuizController=require("../../controller/quizController");
 const stockContestController=require("../../controller/stockContestController");
 const stockCategoryController=require("../../controller/stockCategoryController");
+const stockController=require("../../controller/stockController");
 
 
 router.get("/", auth, getUrl, dashboardController.showdashboard);
@@ -526,8 +527,13 @@ router.get("/edit-stock-contest/:id", auth, getUrl, stockContestController.editS
 router.post("/edit-stock-contest-data", auth, stockContestController.editStockContestData);
 router.get("/launch-contest/:id", auth, stockContestController.launchStockContest);
 
+// ---------------------------------Stocks---------------------------------------------------------
+router.get("/viewStocks", auth, stockController.viewStock);
+router.post("/save-stockcategory", auth, stockController.saveStockCategory);
+router.get("/viewStockDatabale", auth, getUrl, stockController.viewStockDatabale);
 
-// ---------------------------------Stock Category Manager----------------
+
+// ---------------------------------Stock Category Manager-----------------------------------------
 router.get("/viewStockCategory", auth, getUrl, stockCategoryController.stockCategoryPage);
 router.get("/create-stock-category", auth, getUrl, stockCategoryController.createStockCategory);
 router.post("/add-stock-category-data", auth, upload.single("image"), stockCategoryController.addStockCategoryData);

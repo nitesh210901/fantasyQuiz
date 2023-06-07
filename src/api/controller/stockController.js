@@ -1,5 +1,9 @@
-const moment = require('moment')
-const stockContestService = require("../services/stockContestService")
+const moment = require('moment');
+const convertCsv =  require('csvtojson');
+const stockModel = require('../../models/stockModel');
+const stockContestService = require("../services/stockContestService");
+const axios = require('axios');
+
 class matchController {
 
     constructor() {
@@ -9,6 +13,31 @@ class matchController {
             listStockContest: this.listStockContest.bind(this),
             stockJoinContest: this.stockJoinContest.bind(this),
             getStockContestCategory: this.getStockContestCategory.bind(this),
+            saveStocks: this.saveStocks.bind(this),
+
+        }
+    }
+
+    async saveStocks(req, res, next){
+        try {
+            let stockdata = await axios.get(`https://api.kite.trade/instruments`);
+            const data = await convertCsv().fromString(stockdata.data);
+            let arr = [];
+            for(let i of data){
+                if(i.exchange === 'NSE'){
+                    arr.push(stockModel.updateOne(
+                    { instrument_token: i.instrument_token },
+                    { $set: i },
+                    { upsert: true }));
+                }
+            }
+            Promise.allSettled(arr).then((values) => {
+                return res.status(200).json(Object.assign({ success: true }));
+              });
+              return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
     }
 
