@@ -56,20 +56,20 @@ class matchServices {
             let matchId = req.params.id;
             const getMatch = await listMatchModel.findOne({ _id: mongoose.Types.ObjectId(matchId) });
             let saveMatch
-            if (getMatch.format != "t20") {
-                return {
-                    status: false,
-                    message: `format is Not t20`
-                }
-            }
+            // if (getMatch.format != "t20") {
+            //     return {
+            //         status: false,
+            //         message: `format is Not t20`
+            //     }
+            // }
 
-            if (getMatch.fantasy_type == "quiz") {
-                return {
-                    status: false,
-                    message: `..quiz already exists..`
-                }
-            } else {
-                saveMatch = await listMatchModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(matchId) }, { isQuiz: 1,fantasy_type:"quiz" },{new:true})
+            // if (getMatch.fantasy_type == "quiz") {
+            //     return {
+            //         status: false,
+            //         message: `..quiz already exists..`
+            //     }
+            // } else {
+                saveMatch = await listMatchModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(matchId) }, { isQuiz: 1 },{new:true})
                 // let obj2 = { ...getMatch._doc, _id: undefined, cricketid: getMatch._id }
                 // obj2['fantasy_type'] = 'quiz';
                 // obj2['launch_status'] = 'launched';
@@ -77,7 +77,7 @@ class matchServices {
                 // let datainsert = new listMatchModel(obj2);
                 // saveMatch = await datainsert.save();
                 //var saveMatch=datainsert
-            }
+            // }
             if (saveMatch) {
                 return {
                     status: true,
@@ -102,8 +102,7 @@ class matchServices {
 
     async updateStatusforSeries(req) {
         try {
-            // console.log('id',req.params.id);
-            // console.log('id',req.query.status);
+
             let data = await listMatchModel.updateOne({
                 _id: req.params.id
             }, {
@@ -452,7 +451,7 @@ class matchServices {
 
     async launch(req) {
 
-        let quizMatch = await listMatchModel.findOne({ _id: req.params.id, fantasy_type: "quiz", isQuiz: 1 })
+        let quizMatch = await listMatchModel.findOne({ _id: req.params.id, isQuiz: 1 })
         if (quizMatch) {
             await listMatchModel.updateOne({
                 _id: req.params.id

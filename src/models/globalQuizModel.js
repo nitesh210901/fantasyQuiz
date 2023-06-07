@@ -1,10 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-let quizSchema = new Schema({
-    matchkey_id: {
-        type : mongoose.Types.ObjectId
-    },
+let globalQuizSchema = new Schema({
     question: {
         type: String,
         default:""
@@ -33,13 +30,8 @@ let quizSchema = new Schema({
         type: Number,
         default:0
     },
-    global_quizId: {
-        type: mongoose.Schema.Types.ObjectId,
-        default:null,
-        ref:"global_quizzes"
-    }
 }, {
     timestamps: true,
     versionKey: false
 })
-module.exports = mongoose.model('quiz', quizSchema);
+module.exports = mongoose.model('global_quiz', globalQuizSchema);

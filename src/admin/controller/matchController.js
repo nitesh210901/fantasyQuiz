@@ -529,6 +529,10 @@ async quiz(req, res, next) {
     async launch(req, res, next) {
         try {
             const data = await matchServices.launch(req);
+            // if (data.status === true) { 
+            //     req.flash('success', 'Match Launched ..!!');
+            //     res.redirect(`/Import-global-questions?matchkey=${req.params.id}`);
+            // }
             if (data === true) {
                 req.flash('success', 'Match Launched ..!!');
                 res.redirect(`/create-custom-contest?matchkey=${req.params.id}`);
@@ -538,6 +542,7 @@ async quiz(req, res, next) {
             }
 
         } catch (error) {
+            console.log("oooopopo")
             // next(error);
             req.flash('error', 'something is wrong please try again later');
             res.redirect("/view_AllUpcomingMatches");

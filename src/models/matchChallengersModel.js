@@ -52,8 +52,7 @@ let matchpricecard = new Schema({
     },
     description: {
         type: String
-    }
-
+    },
 }, {
     timestamps: true,
     versionKey: false
@@ -208,6 +207,10 @@ let matchchallengesSchema = new Schema({
         type:Array,
         default:[]
     },
+    isQuiz: {
+        type: Number,
+        default:0
+    }
 }, {
     timestamps: true,
     versionKey: false

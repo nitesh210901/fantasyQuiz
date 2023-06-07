@@ -484,7 +484,17 @@ router.get("/view_quiz", auth, getUrl, QuizController.ViewQuiz);
 router.post("/quiz-Data-Table", auth, QuizController.QuizDataTable);
 router.get("/edit-quiz/:id", auth, getUrl, QuizController.editQuiz);
 router.post("/edit-quiz-data/:id", auth, QuizController.editQuizData);
-router.get("/deletequiz", auth,  QuizController.deletequiz);
+router.get("/deletequiz", auth, QuizController.deletequiz);
+router.get("/view-all-global-questions", auth, QuizController.ViewallGlobalQuestions_page);
+router.post("/global-questions-datatable", auth, QuizController.globalQuestionsDatatable);
+router.get("/add-global-question", auth, QuizController.addGlobalQuestionPage);
+router.post("/add-global-question", auth, QuizController.addGlobalQuestion);
+router.get("/edit-global-question/:id", auth, getUrl, QuizController.editglobalquestion_page);
+router.post("/edit-global-question-data", auth, QuizController.editGlobalQuestionData);
+router.get("/delete-global-question", auth, getUrl, QuizController.deleteGlobalQuestion);
+router.post("/delete-multi-global-question", auth, QuizController.globalQuestionMuldelete);
+router.get("/Import-global-questions", auth, QuizController.importGlobalQuestionPage);
+router.get("/importmatchQuestion/:matchKey", auth, getUrl, QuizController.importQuestionData);
 // router.get("/update-quiz-status/:id", auth, getUrl, QuizController.updateStatusforQuiz);
 //-----cricket api controller (3rd party api)------------//
 // router.get("/listMatches", cricketApiController.listOfMatches);
