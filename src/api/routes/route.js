@@ -341,5 +341,6 @@ router.get('/get-stock-contest',  stockController.listStockContest);
 router.post('/stock-create-team', auth, stockController.stockCreateTeam);
 router.post('/join-stock-contest', auth, stockController.stockJoinContest);
 router.get('/get-stock-contest-category', auth, stockController.getStockContestCategory);
+router.get("/saveStocks", auth, stockController.saveStocks);
 
 module.exports = router;
