@@ -73,14 +73,92 @@
                                           data-toggle='tooltip' title='Add New Custom Question'><i class="fas fa-plus"></i>
                                           &nbsp;Add</a>
                                   </div>
-
                               </div>
                           </form>
                       </div>
                   </div>
               </div>
           </div>
-        
+          
+
+
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header">Quiz Manager - Quiz List</div>
+                <div class="card-body">
+                  <% let i=0 %>
+                  <div class="row" row>
+                    <% if(quizData) {%>
+                      <% for(let key of quizData) {%>
+                        <div
+                          class="row shadow border-0 mx-0 p2 h-100 rounded-10 border border-primary bg-primary pt-1 m-2">
+                          <div class="datatable table-responsive bg-white rounded-10">
+                            <table class="table mb-0 table-hover text-nowrap w-100 fs-12" id="global_index_datatable"
+                              cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td class="font-weight-bold text-primary fs-15">Question</td>
+                                  <td class="font-weight-bold text-success fs-17 text-right"><%=key.question %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Option A</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.option_A %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Option B</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.option_B %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Option C</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.option_C %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Option D</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.option_D %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Answer</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.answer %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Point</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.point %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Created By</td>
+                                  <td class="font-weight-bold text-gray text-right">Admin</td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Action</td>
+                                  <td class="font-weight-bold text-gray text-right position-relative">
+                                    <div class="btn-group dropdown position-absolute bottom-6px right-8px">
+                                      <button
+                                        class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-icon border-0 shadow-none overflow-hidden"
+                                        data-toggle="dropdown" type="button" aria-expanded="true">
+                                        Action <i class="dropdown-caret"></i>
+                                      </button>
+                                      <ul class="dropdown-menu" style="opacity: 1;">
+
+                                      <li><a class="nav-link"
+                                            href='/edit-global-question/<%=key._id %>'>Edit Quiz</a></li>
+                                      </ul>
+                                    </div>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <% i++ %>
+                        <% }%>
+                      <% }%>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
             <!-- <script>
               $('matchkey').change(function(){

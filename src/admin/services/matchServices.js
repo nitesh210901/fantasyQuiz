@@ -460,10 +460,11 @@ class matchServices {
                     launch_status: "launched"
                 }
             });
-            return true;
+            return {
+                status:true
+            }
         } else {
             const data = await this.findMatchDetails(req.params.id);
-            // console.log('match details',data)
             if (data.length > 0) {
                 let team1 = data[0].team1Id;
                 let team2 = data[0].team2Id;

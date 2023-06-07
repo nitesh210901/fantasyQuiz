@@ -100,7 +100,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-12">
+                                        <div class="col-md-12">
                                         <div class="form-group my-3">
                                             <label class="label-control text-bold">Stock Contest Category*</label>
                                             <select name="stock_contest_cat" class="form-control form-control-solid p-1 selectpicker show-tick"
@@ -112,6 +112,19 @@
                                                <%}%>
                                             </select>
                                         </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group my-3">
+                                            <label class="label-control text-bold">Stock Category*</label>
+                                            <select name="stock_categoryId[]" class="form-control form-control-solid p-1 selectpicker show-tick"required="" id="stock_categoryId"multiple>
+                                             <%if(typeof stockcategory!=="undefined" && stockcategory){%>
+                                              <%for(let stockcat of stockcategory){%>
+                                              <option value="<%= stockcat._id%>"><%= stockcat.name%></option>
+                                               <%}%>
+                                               <%}%>
+                                             </select>
+                                              </div>
                                         </div>
                                                 <div class="col-md-12 col-12">
                                                     <div class="form-group my-3">

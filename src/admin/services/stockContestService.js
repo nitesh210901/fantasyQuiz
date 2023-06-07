@@ -121,7 +121,7 @@ class challengersService {
                         data.multi_entry = 1;
                         data.multi_entry = req.body.multi_entry;
                         data.team_limit = req.body.team_limit;
-                    }
+                }
                     data.contest_type = req.body.contest_type;
                     data.pricecard_type = req.body.pricecard_type;
                     data.contest_cat = req.body.contest_cat;
@@ -134,6 +134,7 @@ class challengersService {
                     data.start_date = req.body.start_date;
                     data.end_date = req.body.end_date;
                     data.stock_contest_cat = req.body.stock_contest_cat;
+                    data.stock_categoryId = req.body.stock_categoryId;
                     if (req.body.contest_type == 'Amount') {
                         data.winning_percentage = '0';
                     }
@@ -841,10 +842,10 @@ class challengersService {
                     data.start_date = req.body.start_date;
                     data.end_date = req.body.end_date;
                     data.stock_contest_cat = req.body.stock_contest_cat;
+                    data.stock_categoryId = req.body.stock_categoryId;
                     if (req.body.contest_type == 'Amount') {
                         data.winning_percentage = 0;
                     }
-                    console.log("data................", data)
                     const updatestockContest = await stockContestModel.updateOne({ _id: mongoose.Types.ObjectId(req.body.stockContestsId) }, { $set: data });
                     if (updatestockContest.modifiedCount > 0) {
                         return {

@@ -1,6 +1,7 @@
 const mongoose=require("mongoose");
 const stockContestService = require('../services/stockContestService');
 const stockContestModel = require('../../models/stockContestModel');
+const stockCategoryModel = require("../../models/stockcategoryModel")
 const stockContestCategoryModel = require('../../models/stockContestCategory');
 
 class challengersController {
@@ -39,7 +40,8 @@ class challengersController {
         try {
             res.locals.message = req.flash();
             let getstockcontestcategory = await stockContestCategoryModel.find()
-            res.render("stockManager/addStockContest", { sessiondata: req.session.data, msg:undefined, data: "",getstockcontestcategory });
+            let stockcategory = await stockCategoryModel.find()
+            res.render("stockManager/addStockContest", { sessiondata: req.session.data, msg:undefined, data: "",getstockcontestcategory,stockcategory });
         } catch (error) {
               //  next(error);
             req.flash('error','Something went wrong please try again');
@@ -293,8 +295,9 @@ class challengersController {
             res.locals.message = req.flash();
             const getstockdata = await stockContestService.editStockContestPage(req);
             let getstockcontestcategory = await stockContestCategoryModel.find()
+            let stockcategory = await stockCategoryModel.find()
             if (getstockdata.status== true) {
-                res.render('stockManager/editStockContest',{ sessiondata: req.session.data,getstockdata:getstockdata.StockData,getstockcontestcategory});
+                res.render('stockManager/editStockContest',{ sessiondata: req.session.data,getstockdata:getstockdata.StockData,getstockcontestcategory,stockcategory});
             }else if(getstockdata.status == false){
                 req.flash('warning',getstockdata.message);
                 res.redirect('/viewStockContest');
