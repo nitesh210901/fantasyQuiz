@@ -93,7 +93,8 @@ let listmatchSchema = new mongoose.Schema({
         type: Number
     },
     isQuiz: {
-        type: Number
+        type: Number,
+        default:0
     },
     tosswinner_team: {
         type: Number

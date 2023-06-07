@@ -1074,10 +1074,10 @@ class challengersService {
     async importchallengersData(req) {
         try {
             const findmatch = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey) });
-            console.log("findmatch"+findmatch)
+            let listmatchData = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey), isQuiz: 1, is_deleted: false });
+            
             if (findmatch) {
                 const findleauges = await challengersModel.find({ fantasy_type: { $regex: new RegExp(findmatch.fantasy_type.toLowerCase(), "i") } });
-                 console.log("findleauges....////////....",findleauges)
                 let anArray = [];
                 if (findleauges.length > 0) {
                     for await (let key1 of findleauges) {
@@ -1102,6 +1102,11 @@ class challengersService {
                             data['matchkey'] = mongoose.Types.ObjectId(req.params.matchKey);
                             data['contest_name'] = key1.contest_name;
                             data['amount_type'] = key1.amount_type;
+                            if (listmatchData) {
+                                data['isQuiz'] = 1
+                            } else {
+                                data['isQuiz'] = 0;
+                            }
                             const insertData = new matchchallengersModel(data);
                             let saveInsert = await insertData.save();
 
@@ -1191,8 +1196,8 @@ class challengersService {
                 //     }
                 // }
                 const findAllListmatches = await listMatchesModel.find({ fantasy_type: req.body.fantasy_type, launch_status: 'launched', start_date: curTime }, { name: 1, real_matchkey: 1 });
+                let listmatch = await listMatchesModel.findOne({ _id: req.body.matchkey, isQuiz: 1, is_deleted: false });
                 let obj = {}
-                // const checkListMatch
                 if (req.body.maximum_user) {
                     if (req.body.maximum_user < 2 || !req.body.maximum_user) {
                         return {
@@ -1285,6 +1290,11 @@ class challengersService {
                     obj.multi_entry = req.body.multi_entry;
                     obj.team_limit = req.body.team_limit;
                 }
+                if (listmatch) {
+                    obj.isQuiz = 1
+                } else {
+                    obj.isQuiz = 0
+                }
                 obj.contest_type = req.body.contest_type;
                 obj.pricecard_type = req.body.pricecard_type;
                 obj.contest_cat = req.body.contest_cat;
@@ -1295,6 +1305,7 @@ class challengersService {
                 obj.status = 'opened';
                 obj.fantasy_type = req.body.fantasy_type;
                 obj.amount_type = req.body.amount_type;
+
                 const insertMatch = new matchchallengersModel(obj);
                 let saveMatch = await insertMatch.save();
                 // console.log("saveMatch..........", saveMatch)

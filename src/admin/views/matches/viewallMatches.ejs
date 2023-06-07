@@ -100,8 +100,8 @@
                                                                         <!-- <option disabled selected> Fantasy Type </option> -->
                                                                         <option value="Cricket" <%=fantasy_type=='cricket' ? 'selected' :'' %>
                                                                             >Cricket</option>
-                                                                        <option value="quiz" <%=fantasy_type=='quiz' ? 'selected'
-                                                                            : '' %>>Quiz</option>
+                                                                        <option value="quiz" <%=fantasy_type=='overfantasy' ? 'selected'
+                                                                            : '' %>>Over Fantasy</option>
                                                                     </select>
                                                                     <%}else{%>
                                                                         <select class="form-control form-control-solid " title="Fantasy Type"
@@ -109,7 +109,7 @@
                                                                             onchange="this.form.submit()">
                                                                             <!-- <option disabled selected> Fantasy Type </option> -->
                                                                             <option value="Cricket">Cricket</option>
-                                                                            <option value="quiz">Quiz</option>
+                                                                            <option value="overfantasy">Over Fantasy</option>
                                                                         </select>
                                                                         <%}%>
                                                             </div>

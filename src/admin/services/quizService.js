@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const moment = require("moment");
 
 const quizModel = require('../../models/quizModel');
+const globalQuizModel = require('../../models/globalQuizModel');
 const listMatches = require('../../models/listMatchesModel');
 const joinLeague = require('../../models/JoinLeaugeModel')
 const TransactionModel = require('../../models/transactionModel')
@@ -22,7 +23,14 @@ class quizServices {
             editQuizData: this.editQuizData.bind(this),
             editQuiz: this.editQuiz.bind(this),
             deletequiz: this.deletequiz.bind(this),
-            quizdistributeWinningAmount: this.quizdistributeWinningAmount.bind(this)
+            quizdistributeWinningAmount: this.quizdistributeWinningAmount.bind(this),
+            addGlobalQuestion: this.addGlobalQuestion.bind(this),
+            editglobalquestion: this.editglobalquestion.bind(this),
+            editGlobalQuestionData: this.editGlobalQuestionData.bind(this),
+            deleteGlobalQuestion: this.deleteGlobalQuestion.bind(this),
+            globalQuestionMuldelete: this.globalQuestionMuldelete.bind(this),
+            createCustomQuestions: this.createCustomQuestions.bind(this),
+            importQuestionData: this.importQuestionData.bind(this),
         }
     }
 
@@ -758,6 +766,290 @@ class quizServices {
             }
         }
         return true;
+    }
+
+    async addGlobalQuestion(req) {
+        try {
+            let addglobalquiz = new globalQuizModel({
+                question: req.body.question,
+                option_A: req.body.option_A,
+                option_B: req.body.option_B,
+                option_C: req.body.option_C,
+                option_D: req.body.option_D,
+                answer: req.body.answer,
+                point:req.body.point
+            });
+
+            let savequiz = await addglobalquiz.save();
+            if (savequiz) {
+                return {
+                    status:true,
+                    message:'quiz add successfully'
+                }
+            }else{
+                return {
+                    status:false,
+                    message:'quiz not add error..'
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async editglobalquestion(req) {
+        try {
+            if (req.params.id) {
+                let globalquestions = await globalQuizModel.findOne({_id:req.params.id})
+                if (globalquestions) {
+                    return {
+                        status: true,
+                        data:globalquestions
+                    }
+                } else {
+                    return {
+                        status: false,
+                        message: 'Quiz Not Found'
+                    }
+                }
+            } else {
+                return {
+                    status: false,
+                    message: 'Invalid Quiz Id'
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async editGlobalQuestionData(req) {
+        try {
+                let data = {}
+                const globalQuestionData = await globalQuizModel.findOne({ _id: req.body.globelQuestionId });
+                if (!globalQuestionData) {
+                    return {
+                        status: false,
+                        message: 'Quiz Not Found',
+                    }
+                } else {
+                    data.question = req.body.question;
+                    data.option_A = req.body.option_A;
+                    data.option_B = req.body.option_B;
+                    data.option_C = req.body.option_C;
+                    data.option_D = req.body.option_D;
+                    data.answer = req.body.answer;
+                    data.point = req.body.point;
+                    const updateGlobalQuestion = await globalQuizModel.updateOne({ _id: mongoose.Types.ObjectId(req.body.globelQuestionId) }, { $set: data });
+                    if (updateGlobalQuestion.modifiedCount > 0) {
+                        return {
+                            status: true,
+                            message: 'globel Question successfully update'
+                        };
+                    } else {
+                        return {
+                            status: false,
+                            message: "Not Able To Update Globel Question  ..ERROR.."
+                        }
+                    }
+                }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async deleteGlobalQuestion(req) {
+        try {
+            const deleteQuestions = await globalQuizModel.deleteOne({ _id: req.query.globelQuestionId });
+            if (deleteQuestions.deletedCount == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+    async globalQuestionMuldelete(req) {
+        try {
+            console.log(req.body.deletedId,"iiiiiiiiiiiiiii")
+            let deleteIds = req.body.deletedId;
+            for (let key of deleteIds) {
+                const deleteQuestion = await globalQuizModel.deleteOne({ _id: mongoose.Types.ObjectId(key) })
+            }
+            if (deleteIds.length == 0) {
+                return true;
+            }
+
+        } catch (error) {
+            throw error;
+        }
+    }
+    async createCustomQuestions(req) {
+        try {
+            let curTime = moment().format("YYYY-MM-DD HH:mm:ss");
+            const getLunchedMatch = await listMatches.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime } ,isQuiz:1}, { name: 1 });
+            let getlistofMatches
+            let anArray = [];
+            if (req.query.matchkey) {
+                // let qukey = req.query.matchkey
+                // let objfind={};
+                // objfind.matchkey= mongoose.Types.ObjectId(qukey)
+                // if(req.query.entryfee && req.query.entryfee != ""){
+                // objfind.entryfee= Number(req.query.entryfee)
+                // }
+                // if(req.query.win_amount && req.query.win_amount != ""){
+                // objfind.win_amount= Number(req.query.win_amount)
+                // }
+                // if(req.query.team_limit && req.query.team_limit != ""){
+                // objfind.team_limit= Number(req.query.team_limit)
+                // }
+                // console.log('objfind',objfind);
+                // getlistofMatches = await matchchallengersModel.find(objfind);
+                // console.log("getlistofMatches.....>",getlistofMatches)
+                // for await (let keyy of getlistofMatches) {
+                //     let obj = {};
+                //     let newDate = moment(keyy.createdAt).format('MMM Do YY');
+                //     let day = moment(keyy.createdAt).format('dddd');
+                //     let time = moment(keyy.createdAt).format('h:mm:ss a');
+                //     if (keyy.is_expert == 1) {
+                //         obj.newDate = newDate;
+                //         obj.day = day;
+                //         obj.time = time;
+                //         obj.contest_cat = keyy.contest_cat;
+                //         obj.matchkey = keyy.matchkey;
+                //         obj.fantasy_type = keyy.fantasy_type
+                //         obj.entryfee = keyy.entryfee;
+                //         obj.win_amount = keyy.win_amount;
+                //         obj.status = keyy.status;
+                //         obj.contest_type = keyy.contest_type;
+                //         obj.winning_percentage = keyy.winning_percentage;
+                //         obj.is_bonus = keyy.is_bonus;
+                //         obj.bonus_percentage = keyy.bonus_percentage;
+                //         obj.amount_type = keyy.amount_type;
+                //         obj.c_type = keyy.c_type;
+                //         obj.is_private = keyy.is_private;
+                //         obj.is_running = keyy.is_running;
+                //         obj.confirmed_challenge = keyy.confirmed_challenge;
+                //         obj.multi_entry = keyy.multi_entry;
+                //         obj._id = keyy._id;
+                //         obj.joinedusers = keyy.joinedusers;
+                //         obj.team_limit = keyy.team_limit;
+
+                //     } else {
+                //         obj.newDate = newDate;
+                //         obj.day = day;
+                //         obj.time = time;
+                //         obj._id = keyy._id;
+                //         obj.contest_cat = keyy.contest_cat;
+                //         obj.challenge_id = keyy.challenge_id;
+                //         obj.matchkey = keyy.matchkey;
+                //         obj.fantasy_type = keyy.fantasy_type;
+                //         obj.entryfee = keyy.entryfee;
+                //         obj.win_amount = keyy.win_amount;
+                //         obj.maximum_user = keyy.maximum_user;
+                //         obj.status = keyy.status;
+                //         obj.joinedusers = keyy.joinedusers;
+                //         obj.contest_type = keyy.contest_type;
+                //         obj.contest_name = keyy?.contest_name;
+                //         obj.mega_status = keyy.mega_status;
+                //         obj.winning_percentage = keyy.winning_percentage;
+                //         obj.is_bonus = keyy.is_bonus;
+                //         obj.bonus_percentage = keyy.bonus_percentage;
+                //         obj.pricecard_type = keyy.pricecard_type;
+                //         obj.minimum_user = keyy.minimum_user;
+                //         obj.confirmed_challenge = keyy.confirmed_challenge;
+                //         obj.multi_entry = keyy.multi_entry;
+                //         obj.team_limit = keyy.team_limit;
+                //         obj.c_type = keyy.c_type;
+                //         obj.is_private = keyy.is_private;
+                //         obj.is_running = keyy.is_running;
+                //         obj.is_deleted = keyy.is_deleted;
+                //         obj.matchpricecards = keyy.matchpricecards;
+                //         obj.amount_type = keyy.amount_type;
+                //     }
+                //     anArray.push(obj)
+                // }
+
+            } else {
+                getlistofMatches = []
+            }
+            if (getLunchedMatch.length>0) {
+                return {
+                    matchData: anArray,
+                    matchkey: req.body.matchkey,
+                    data: getLunchedMatch,
+                    status: true
+                }
+            } else {
+                return {
+                    status: false,
+                    message: 'can not get list-Matches data'
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async importQuestionData(req) {
+        try {
+            let listmatchData = await listMatches.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey), isQuiz: 1, is_deleted: false });
+            if (listmatchData) {
+                // const findleauges = await challengersModel.find({ fantasy_type: { $regex: new RegExp(findmatch.fantasy_type.toLowerCase(), "i") } });
+                let findQuestions
+                if (req.query.question_count && req.query.question_count>0) {
+                    findQuestions = await globalQuizModel.find().limit(req.query.question_count);
+                    if (findQuestions.length < req.query.question_count) {
+                        return {
+                            status: false,
+                            message: `You Select Only ${findQuestions.length} questions`
+                        }
+                    }
+                } else {
+                    return {
+                        status: false,
+                        message: 'Please Add Atleast One Question'
+                    }
+                }
+                let anArray = [];
+                if (findQuestions.length > 0) {
+                    for await (let key1 of findQuestions) {
+                        // const findchallengeexist = await matchchallengersModel.find({ matchkey: mongoose.Types.ObjectId(req.params.matchKey), challenge_id: mongoose.Types.ObjectId(key1._id) });
+                        const findquestionexist = await quizModel.find({ matchkey_id: mongoose.Types.ObjectId(req.params.matchKey), global_quizId: mongoose.Types.ObjectId(key1._id) });
+                        if (findquestionexist.length == 0) {
+                            let data = {};
+                            data['matchkey_id'] = req.params.matchKey;
+                            data['question'] = key1.question;
+                            data['option_A'] = key1.option_A;
+                            data['option_B'] = key1.option_B;
+                            data['option_C'] = key1.option_C;
+                            data['option_D'] = key1.option_D;
+                            data['answer'] = key1.answer;
+                            data['point'] = key1.point;
+                            data['global_quizId'] = mongoose.Types.ObjectId(key1._id);
+                            const insertData = new quizModel(data);
+                            let saveInsert = await insertData.save();
+                        }
+                    }
+                    return {
+                        status: true,
+                        message: 'Questions imported successfully'
+                    }
+                }
+                return {
+                    status: false,
+                    message: 'Question not Found ..error..'
+                }
+
+            }
+            return {
+                status: false,
+                message: 'Questions not imported ..error..'
+            }
+        } catch (error) {
+            throw error;
+        }
     }
 }
 module.exports = new quizServices();

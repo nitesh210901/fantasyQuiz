@@ -13,16 +13,16 @@
 
                                             <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
                                             <span class=" text-capitalize">
-                                        Series Manager
+                                        Global Quiz Manager
                                 </span>
                                         </h1>
                                         <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
-                                            Create New Series
+                                            Create New Global Quiz
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-auto mb-md-0 mb-3">
-                                    <a href="/view-series" class="btn btn-sm  btn-sm rounded-pill btn-light font-weight-bold text-primary float-right"><i class="fad fa-eye"></i>&nbsp; View All Series</a>
+                                    <a href="/view-all-global-questions" class="btn btn-sm  btn-sm rounded-pill btn-light font-weight-bold text-primary float-right"><i class="fad fa-eye"></i>&nbsp; View All Global Quiz</a>
                                 </div>
                             </div>
                         </div>
@@ -31,49 +31,67 @@
 
 
                         <div class="card">
-                            <div class="card-header">Create Series</div>
-                            <form method="post" action="/add-series" accept-charset="UTF-8" id="j-forms" class="card-body">
+                            <div class="card-header">Create Quiz</div>
+                            <form method="post" action="/add-global-question" accept-charset="UTF-8" id="j-forms" class="card-body">
                                 <% if(msg){%>
                                     <span style="color: red;">**<%=msg %>**</span>
                                     <%}%>
                                         <div class="sbp-preview">
                                             <div class="sbp-preview-content p-2">
                                                 <div class="row mx-0">
+
                                                     <div class="col-12">
                                                         <div class="form-group my-3">
-                                                            <label for="job-title">Series Name*</label>
-                                                            <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Series Title" name="seriesName" required>
+                                                            <label for="job-title">Question*</label>
+                                                            <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Question" name="question" required>
                                                         </div>
                                                     </div>
+
                                                     <div class="col-12">
-                                                         <div class="form-group my-3"> 
-                                                             <label for="">Fantasy Type*</label> 
-                                                             <select class="form-control form-control-solid" name="fantasy_type"  required> 
-                                                                 <option value="Cricket" selected>Cricket</option> 
-                                                                 <option value="overfantasy">Over Fantasy</option>
-                                                                 <!-- <option value="Football">Football</option>  -->
-                                                            </select>
-                                                             
-                                                        </div> 
+                                                        <div class="form-group my-3">
+                                                            <label for="job-title">Point*</label>
+                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Point" name="point" required>
+                                                        </div>
+                                                    </div>
+                        
+                                                    <div class="col-md-6 col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="example-datetime-local-input">Option A*</label>
+                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option A"  autocomplete="off" value="" name="option_A" required>
+                                                        </div>
                                                     </div>
                                                     <div class="col-md-6 col-12">
                                                         <div class="form-group my-3">
-                                                            <label for="example-datetime-local-input">Start Date*</label>
-                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Start Date" id="example-datetime-local-input" autocomplete="off" value="" name="startdate" required>
+                                                            <label for="example-datetime-local-input2">Option B*</label>
+                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option B" value="" name="option_B" autocomplete="off" required>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-6 col-12">
                                                         <div class="form-group my-3">
-                                                            <label for="example-datetime-local-input2">End Date*</label>
-                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter End Date" value="" name="enddate" autocomplete="off" id="example-datetime-local-input2" required>
+                                                            <label for="example-datetime-local-input">Option C*</label>
+                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option C"  autocomplete="off" value="" name="option_C" required>
                                                         </div>
                                                     </div>
+                                                    <div class="col-md-6 col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="example-datetime-local-input2">Option D*</label>
+                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option D" value="" name="option_D" autocomplete="off" required>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="job-title">Answer*</label>
+                                                            <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Answer" name="answer" required>
+                                                        </div>
+                                                    </div>
+
                                                     <div class="col-12 text-right mt-4 mb-2">
                                                         <button class="btn btn-sm btn-success text-uppercase"><i class="far fa-check-circle"></i>&nbsp;Submit</button>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                    </div>
                         </div>
                     </div>
                 </main>

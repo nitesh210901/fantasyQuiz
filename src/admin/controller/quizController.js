@@ -4,6 +4,7 @@ const quizModel = require("../../models/quizModel");
 const quizServices = require('../services/quizService');
 const resultServices = require('../services/resultServices');
 const listMatchModel = require("../../models/listMatchesModel");
+const globalQuizModel = require("../../models/globalQuizModel");
 class quizController {
   constructor() {
     return {
@@ -16,7 +17,16 @@ class quizController {
       deletequiz: this.deletequiz.bind(this),
       quizautoupdateMatchFinalStatus: this.quizautoupdateMatchFinalStatus.bind(this),
       quizupdateMatchFinalStatus: this.quizupdateMatchFinalStatus.bind(this),
-      
+      ViewallGlobalQuestions_page: this.ViewallGlobalQuestions_page.bind(this),
+      globalQuestionsDatatable: this.globalQuestionsDatatable.bind(this),
+      addGlobalQuestionPage: this.addGlobalQuestionPage.bind(this),
+      addGlobalQuestion: this.addGlobalQuestion.bind(this),
+      editglobalquestion_page: this.editglobalquestion_page.bind(this),
+      editGlobalQuestionData: this.editGlobalQuestionData.bind(this),
+      deleteGlobalQuestion: this.deleteGlobalQuestion.bind(this),
+      globalQuestionMuldelete: this.globalQuestionMuldelete.bind(this),
+      importGlobalQuestionPage: this.importGlobalQuestionPage.bind(this),
+      importQuestionData:this.importQuestionData.bind(this)
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -24,7 +34,7 @@ class quizController {
 
   async AddQuizPage(req, res, next) {
       try {
-      const listmatch = await listMatchModel.find({ isQuiz: 1 ,launch_status:"launched"})    
+      const listmatch = await listMatchModel.find({ isQuiz: 1,is_deleted: false})    
       res.locals.message = req.flash();
       res.render("quiz/add_quiz", {
         sessiondata: req.session.data,
@@ -186,7 +196,6 @@ class quizController {
     
     async quizupdateMatchFinalStatus(req, res, next) {
         try {
-    
           res.locals.message = req.flash();
           if (req.params.status == "winnerdeclared") {
             if (
@@ -238,5 +247,220 @@ class quizController {
           res.redirect("/");
         }
       }
+      
+  async ViewallGlobalQuestions_page(req, res, next) {
+    try {
+        res.locals.message = req.flash();
+        res.render("quiz/viewallglobalquestions", { sessiondata: req.session.data });
+      } catch (error) {
+        req.flash('error','something is wrong please try again later');
+        res.redirect("/");
+    }
+  }
+  async globalQuestionsDatatable(req, res, next) {
+    try {
+        let limit1 = req.query.length;
+        let start = req.query.start;
+        let sortObject = {},
+            dir, join
+        let conditions = {};
+        if(req.query.fantasy_type){
+            conditions.fantasy_type = req.query.fantasy_type 
+        }
+        globalQuizModel.countDocuments(conditions).exec((err, rows) => {
+            let totalFiltered = rows;
+            let data = [];
+            let count = 1;
+            globalQuizModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').exec((err, rows1) => {
+             
+                if (err) console.log(err);
+                    rows1.forEach(async(index)=>{
+                    data.push({
+                        's_no': `<div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input checkbox" name="checkCat" id="check${index._id}" value="${index._id}">
+                        <label class="custom-control-label" for="check${index._id}"></label></div>`,
+                        "count" :count,
+                        "question" :`${index.question}`,
+                        "answer":`${index.answer}`,
+                         "action":`<div class="btn-group dropdown">
+                         <button class="btn btn-primary text-uppercase rounded-pill btn-sm btn-active-pink dropdown-toggle dropdown-toggle-icon" data-toggle="dropdown" type="button" aria-expanded="true" style="padding:5px 11px">
+                             Action <i class="dropdown-caret"></i>
+                         </button>
+                         <ul class="dropdown-menu" style="opacity: 1;">
+                             <li><a class="dropdown-item waves-light waves-effect" href="/edit-global-question/${index._id}">Edit</a></li>
+                             <li> <a class="dropdown-item waves-light waves-effect" onclick="delete_sweet_alert('/delete-global-question?globelQuestionId=${index._id}', 'Are you sure you want to delete this data?')">Delete</a></li>
+                         </ul>
+                       </div>`,
+                    });
+                    count++;
+
+                    if (count > rows1.length) {
+                        let json_data = JSON.stringify({
+                            "recordsTotal": rows,
+                            "recordsFiltered": totalFiltered,
+                            "data": data
+                        });
+                        res.send(json_data);
+                    }
+                });
+            });
+        });
+
+    } catch (error) {
+        throw error;
+    }
+
+  }
+  
+      async addGlobalQuestionPage(req, res, next) {
+        try { 
+        res.locals.message = req.flash();
+        res.render("quiz/addglobalquestion", {
+          sessiondata: req.session.data,
+          data: undefined,
+          msg: undefined
+        });
+      } catch (error) {
+        req.flash("error", "Something went wrong please try again");
+        res.redirect("/");
+      }
+  }
+  
+  async addGlobalQuestion(req, res, next) {
+    try {
+        const data = await quizServices.addGlobalQuestion(req);
+        if (data.status) {
+            req.flash('success',data.message)
+            res.redirect("/add-global-question");
+        }else if (data.status == false) {
+            req.flash('error',data.message)
+            res.redirect("/add-global-question");
+        }
+    } catch (error) {
+        req.flash('error','something is wrong please try again later');
+        res.redirect('/add-global-question');
+    }
+  }
+  async editglobalquestion_page(req, res, next) {
+    try {
+        res.locals.message = req.flash();
+        const getdata = await quizServices.editglobalquestion(req);
+        if (getdata.status== true) {
+            res.render('quiz/editGlobelQuestion',{ sessiondata: req.session.data, data:getdata.data});
+        }else if(getdata.status == false){
+            req.flash('warning',getdata.message);
+            res.redirect('/view-all-global-questions');
+        }
+
+    } catch (error) {
+        //  next(error);
+        req.flash('error','Something went wrong please try again');
+        res.redirect("/view-all-global-questions");
+    }
+  }
+  async editGlobalQuestionData(req, res, next) {
+    try {
+        res.locals.message = req.flash();
+        const editQuestionData=await quizServices.editGlobalQuestionData(req);
+        if(editQuestionData.status == true){
+            req.flash('success',editQuestionData.message);
+            res.redirect(`/edit-global-question/${req.body.globelQuestionId}`);
+        }else if(editQuestionData.status == false){
+            req.flash('error',editQuestionData.message);
+            res.redirect(`/edit-global-question/${req.body.globelQuestionId}`);
+        }
+    } catch (error) {
+        //  next(error);
+        req.flash('error','Something went wrong please try again');
+        res.redirect("/view-all-global-questions");
+    }
+  }
+  
+  async deleteGlobalQuestion(req,res,next){
+    try {
+        const deleteQuestions=await quizServices.deleteGlobalQuestion(req);
+        if(deleteQuestions){
+            res.redirect("/view-all-global-questions")
+        }
+    } catch (error) {
+        //  next(error);
+        req.flash('error','Something went wrong please try again');
+        res.redirect("/view-all-global-questions");
+}
+  }
+  
+  async globalQuestionMuldelete(req,res,next){
+    try {
+        const deleteManyQuestions=await quizServices.globalQuestionMuldelete(req);
+        res.send({data:deleteManyQuestions});
+    } catch (error) {
+        //  next(error);
+        req.flash('error','Something went wrong please try again');
+        res.redirect("/view-all-global-questions");
+}
+  }
+  
+  async importGlobalQuestionPage(req, res, next) {
+    try {
+      res.locals.message = req.flash();
+      const getlunchedMatches=await quizServices.createCustomQuestions(req);
+      if (getlunchedMatches.status == true) {
+          let mkey=req.query.matchkey
+          let objfind={};
+            //  if(req.query.entryfee && req.query.entryfee != ""){
+            //   objfind.entryfee= req.query.entryfee
+            //   }
+            //   if(req.query.win_amount && req.query.win_amount != ""){
+            //   objfind.win_amount= req.query.win_amount
+            //   }
+            //   if(req.query.team_limit && req.query.team_limit != ""){
+            //   objfind.team_limit= req.query.team_limit
+            //   }
+          res.render("quiz/importGlobalQuestion",{ sessiondata: req.session.data, listmatches:getlunchedMatches.data,matchkey:mkey,matchData:getlunchedMatches.matchData,dates:getlunchedMatches.dates,objfind});
+
+      }else if(getlunchedMatches.status == false){
+
+          req.flash('error',getlunchedMatches.message);
+          res.redirect('/');
+      }
+
+    } catch (error) {
+      console.log(error);
+        //  next(error);
+        req.flash('error','Something went wrong please try again');
+        res.redirect("/");
+    }
+  //   try {
+  //   const listmatches = await listMatchModel.find({ isQuiz: 1, is_deleted: false })   
+  //   res.locals.message = req.flash();
+  //   res.render("quiz/importGlobalQuestion", {
+  //     sessiondata: req.session.data,
+  //     msg: undefined,
+  //     listmatches: listmatches
+  //   });
+  // } catch (error) {
+  //   // next(error);
+  //   req.flash("error", "Something went wrong please try again");
+  //   res.redirect("/");
+  // }
+  }
+
+  async importQuestionData(req,res,next){
+    try{
+        res.locals.message = req.flash();
+        const data=await quizServices.importQuestionData(req);
+        if(data.status == true){
+            req.flash('success',data.message)
+            res.redirect(`/Import-global-questions?matchkey=${req.params.matchKey}`);
+        }else{
+            req.flash('error',data.message)
+            res.redirect(`/Import-global-questions?matchkey=${req.params.matchKey}`);
+        }
+    }catch(error){
+        //  next(error);
+        req.flash('error','Something went wrong please try again');
+        res.redirect("/Import-global-questions");
+    }
+}
 }
 module.exports = new quizController();
