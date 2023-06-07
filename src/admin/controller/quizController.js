@@ -406,17 +406,7 @@ class quizController {
       const getlunchedMatches=await quizServices.createCustomQuestions(req);
       if (getlunchedMatches.status == true) {
           let mkey=req.query.matchkey
-          let objfind={};
-            //  if(req.query.entryfee && req.query.entryfee != ""){
-            //   objfind.entryfee= req.query.entryfee
-            //   }
-            //   if(req.query.win_amount && req.query.win_amount != ""){
-            //   objfind.win_amount= req.query.win_amount
-            //   }
-            //   if(req.query.team_limit && req.query.team_limit != ""){
-            //   objfind.team_limit= req.query.team_limit
-            //   }
-          res.render("quiz/importGlobalQuestion",{ sessiondata: req.session.data, listmatches:getlunchedMatches.data,matchkey:mkey,matchData:getlunchedMatches.matchData,dates:getlunchedMatches.dates,objfind});
+          res.render("quiz/importGlobalQuestion",{ sessiondata: req.session.data, listmatches:getlunchedMatches.data,matchkey:mkey,quizData:getlunchedMatches.quizData});
 
       }else if(getlunchedMatches.status == false){
 
@@ -430,19 +420,6 @@ class quizController {
         req.flash('error','Something went wrong please try again');
         res.redirect("/");
     }
-  //   try {
-  //   const listmatches = await listMatchModel.find({ isQuiz: 1, is_deleted: false })   
-  //   res.locals.message = req.flash();
-  //   res.render("quiz/importGlobalQuestion", {
-  //     sessiondata: req.session.data,
-  //     msg: undefined,
-  //     listmatches: listmatches
-  //   });
-  // } catch (error) {
-  //   // next(error);
-  //   req.flash("error", "Something went wrong please try again");
-  //   res.redirect("/");
-  // }
   }
 
   async importQuestionData(req,res,next){

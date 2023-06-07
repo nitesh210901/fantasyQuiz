@@ -892,91 +892,28 @@ class quizServices {
             let getlistofMatches
             let anArray = [];
             if (req.query.matchkey) {
-                // let qukey = req.query.matchkey
-                // let objfind={};
-                // objfind.matchkey= mongoose.Types.ObjectId(qukey)
-                // if(req.query.entryfee && req.query.entryfee != ""){
-                // objfind.entryfee= Number(req.query.entryfee)
-                // }
-                // if(req.query.win_amount && req.query.win_amount != ""){
-                // objfind.win_amount= Number(req.query.win_amount)
-                // }
-                // if(req.query.team_limit && req.query.team_limit != ""){
-                // objfind.team_limit= Number(req.query.team_limit)
-                // }
-                // console.log('objfind',objfind);
-                // getlistofMatches = await matchchallengersModel.find(objfind);
-                // console.log("getlistofMatches.....>",getlistofMatches)
-                // for await (let keyy of getlistofMatches) {
-                //     let obj = {};
-                //     let newDate = moment(keyy.createdAt).format('MMM Do YY');
-                //     let day = moment(keyy.createdAt).format('dddd');
-                //     let time = moment(keyy.createdAt).format('h:mm:ss a');
-                //     if (keyy.is_expert == 1) {
-                //         obj.newDate = newDate;
-                //         obj.day = day;
-                //         obj.time = time;
-                //         obj.contest_cat = keyy.contest_cat;
-                //         obj.matchkey = keyy.matchkey;
-                //         obj.fantasy_type = keyy.fantasy_type
-                //         obj.entryfee = keyy.entryfee;
-                //         obj.win_amount = keyy.win_amount;
-                //         obj.status = keyy.status;
-                //         obj.contest_type = keyy.contest_type;
-                //         obj.winning_percentage = keyy.winning_percentage;
-                //         obj.is_bonus = keyy.is_bonus;
-                //         obj.bonus_percentage = keyy.bonus_percentage;
-                //         obj.amount_type = keyy.amount_type;
-                //         obj.c_type = keyy.c_type;
-                //         obj.is_private = keyy.is_private;
-                //         obj.is_running = keyy.is_running;
-                //         obj.confirmed_challenge = keyy.confirmed_challenge;
-                //         obj.multi_entry = keyy.multi_entry;
-                //         obj._id = keyy._id;
-                //         obj.joinedusers = keyy.joinedusers;
-                //         obj.team_limit = keyy.team_limit;
-
-                //     } else {
-                //         obj.newDate = newDate;
-                //         obj.day = day;
-                //         obj.time = time;
-                //         obj._id = keyy._id;
-                //         obj.contest_cat = keyy.contest_cat;
-                //         obj.challenge_id = keyy.challenge_id;
-                //         obj.matchkey = keyy.matchkey;
-                //         obj.fantasy_type = keyy.fantasy_type;
-                //         obj.entryfee = keyy.entryfee;
-                //         obj.win_amount = keyy.win_amount;
-                //         obj.maximum_user = keyy.maximum_user;
-                //         obj.status = keyy.status;
-                //         obj.joinedusers = keyy.joinedusers;
-                //         obj.contest_type = keyy.contest_type;
-                //         obj.contest_name = keyy?.contest_name;
-                //         obj.mega_status = keyy.mega_status;
-                //         obj.winning_percentage = keyy.winning_percentage;
-                //         obj.is_bonus = keyy.is_bonus;
-                //         obj.bonus_percentage = keyy.bonus_percentage;
-                //         obj.pricecard_type = keyy.pricecard_type;
-                //         obj.minimum_user = keyy.minimum_user;
-                //         obj.confirmed_challenge = keyy.confirmed_challenge;
-                //         obj.multi_entry = keyy.multi_entry;
-                //         obj.team_limit = keyy.team_limit;
-                //         obj.c_type = keyy.c_type;
-                //         obj.is_private = keyy.is_private;
-                //         obj.is_running = keyy.is_running;
-                //         obj.is_deleted = keyy.is_deleted;
-                //         obj.matchpricecards = keyy.matchpricecards;
-                //         obj.amount_type = keyy.amount_type;
-                //     }
-                //     anArray.push(obj)
-                // }
-
+                let qukey = req.query.matchkey
+                let objfind={};
+                objfind.matchkey= mongoose.Types.ObjectId(qukey)
+                getlistofMatches = await globalQuizModel.find(objfind);
+                for await (let keyy of getlistofMatches) {
+                    let obj = {};
+                        obj._id = keyy._id
+                        obj.question = keyy.question;
+                        obj.option_A = keyy.option_A;
+                        obj.option_B = keyy.option_B;
+                        obj.option_C = keyy.option_C;
+                        obj.option_D = keyy.option_D;
+                        obj.answer = keyy.answer;
+                        obj.point = keyy.point;
+                        anArray.push(obj)
+                }
             } else {
                 getlistofMatches = []
             }
             if (getLunchedMatch.length>0) {
                 return {
-                    matchData: anArray,
+                    quizData: anArray,
                     matchkey: req.body.matchkey,
                     data: getLunchedMatch,
                     status: true
@@ -991,7 +928,6 @@ class quizServices {
             throw error;
         }
     }
-
     async importQuestionData(req) {
         try {
             let listmatchData = await listMatches.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey), isQuiz: 1, is_deleted: false });

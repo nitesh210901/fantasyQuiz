@@ -282,6 +282,13 @@ class quizfantasyServices {
             }
 
             let listmatchData = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(matchkey) });
+            if (!listmatchData) {
+                return {
+                    message: 'Match Not Found',
+                    status: false,
+                    data: {}
+                }
+            }
             const matchTime = await this.getMatchTime(listmatchData.start_date);
             if (matchTime === false) {
                 return {
