@@ -26,10 +26,9 @@ let stockcategorySchema = new Schema({
         type: Number,
         default: 0
     },
-    // has_leaderBoard:{
-    //     type:String,
-    //     default:"no"
-    // }
+    stocks_id: [{
+        type: String
+    }]
 }, {
     timestamps: true,
     versionKey: false

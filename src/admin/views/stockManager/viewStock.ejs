@@ -1,0 +1,482 @@
+<%- include("../../partials/head") %>
+
+    <%- include("../../partials/bodyStartWithNavBar/") %>
+        <%- include("../../partials/sideNav") %>
+            <div id="layoutSidenav_content">
+                <main>
+
+                    <div class="page-header pb-10 page-header-dark bg-info">
+                        <div class="container-fluid">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="page-header-content">
+                                        <h1 class="page-header-title fs-md-35 fs-20">
+
+                                            <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
+                                            <span class=" text-capitalize">
+                                                Stock Manager
+                                            </span>
+                                        </h1>
+                                        <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                                            View all stocks
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <div class="col-auto mb-md-0 mb-3">
+                                    <a href="/view-selectstockcategory"
+                                        class="btn btn-sm btn-light font-weight-bold text-uppercase text-primary text-uppercase"
+                                        data-toggle="tooltip" title="Select Category Stock"><i
+                                            class="fas fa-plus"></i>&nbsp;Category</a>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-fluid mt-n10">
+
+                        <style>
+                            #dataTable_paginate {
+                                display: none;
+                            }
+                        </style>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card mb-3">
+                                    <div class="card-heading p-3">
+                                        <form method="get" action="/viewStockCategory">
+                                            <div class="sbp-preview position-relative">
+                                                <div class="form-group mb-0">
+                                                    <div class="row mx-0 align-items-end">
+
+                                                        <div class="col-md">
+                                                            <div class="form-group my-3">
+                                                                <label for="Match Status"
+                                                                    class="control-label text-bold">Select
+                                                                    Category</label>
+                                                                <select
+                                                                    class="form-control form-control-solid selectpicker show-tick"
+                                                                    data-container="body" data-live-search="true"
+                                                                    title="Select Status" data-hide-disabled="true"
+                                                                    name="status" id="stockcategory">
+                                                                    <% if(categories) {%>
+                                                                        <%for(let i of categories) {%>
+                                                                            <option disabled selected> Select Category
+                                                                            </option>
+                                                                            <option value="<%= i._id%>">
+                                                                                <%=i.name%>
+                                                                            </option>
+                                                                            <%}%>
+                                                                                <% }%>
+
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <div class="row w-100 align-items-center mx-0">
+                                    <div class="col-md col-12 mb-md-0 mb-2 text-md-left text-center">Stock Categories
+                                    </div>
+                                    <div class="col-md-auto col-12 px-md-3 px-0 text-center">
+                                        <button type="submit" class="btn btn-sm btn-danger text-uppercase rounded-pill"
+                                            id="check" onclick="selectCategory()" font-weight-600 disabled><i
+                                                class="fad fa-trash-alt"></i>&nbsp;
+                                            Submit</a></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+
+
+                                <div class="datatable table-responsive">
+                                    <table class="table table-bordered table-hover text-nowrap" id="stockTable"
+                                        width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th class="my_tabl">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input sel_all"
+                                                            id="select_all2">
+                                                        <label class="custom-control-label" for="select_all2"></label>
+                                                    </div>
+                                                </th>
+                                                <th>Sno.</th>
+                                                <th>Instrument Token</th>
+                                                <th>Exchange Token</th>
+                                                <th>Trading Symbol</th>
+                                                <th>Name</th>
+                                                <th>Expiry</th>
+                                                <th>Strike</th>
+                                                <th>Tick size</th>
+                                                <th>Lot size</th>
+                                                <th>Instrument Type</th>
+                                                <th>Segment</th>
+                                                <th>exchange</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th class="my_tabl">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input sel_all"
+                                                            id="select_all2">
+                                                        <label class="custom-control-label" for="select_all2"></label>
+                                                    </div>
+                                                </th>
+                                                <th>Sno.</th>
+                                                <th>Instrument Token</th>
+                                                <th>Exchange Token</th>
+                                                <th>Trading Symbol</th>
+                                                <th>Name</th>
+                                                <th>Expiry</th>
+                                                <th>Strike</th>
+                                                <th>Strike</th>
+                                                <th>Tick size</th>
+                                                <th>Instrument Type</th>
+                                                <th>Segment</th>
+                                                <th>exchange</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <!-- <span class="float-right"></span> -->
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <script type="text/javascript">
+                            $(document).ready(function () {
+                                $('#select_all2').on('click', function () {
+                                    if (this.checked) {
+                                        $('.checkbox').each(function () {
+                                            this.checked = true;
+                                        });
+                                    } else {
+                                        $('.checkbox').each(function () {
+                                            this.checked = false;
+                                        });
+                                    }
+                                });
+
+                                $('.checkbox').on('click', function () {
+                                    if ($('.checkbox:checked').length == $('.checkbox').length) {
+                                        $('#select_all, #select_all2').prop('checked', true);
+                                    } else {
+                                        $('#select_all, #select_all2').prop('checked', false);
+                                    }
+                                });
+                            });
+                        </script>
+
+
+
+                        <script type="text/javascript">
+                            $(document).ready(function () {
+                                let searchName = $("#name").val();
+                                $.fn.dataTable.ext.errMode = 'none';
+                                $('#stockTable').DataTable({
+                                    searching: false,
+                                    language: {
+                                        zeroRecords: "No records to display",
+                                    },
+                                    ajax: {
+                                        url: `/viewStockDatabale`,
+                                        type: 'get',
+                                        dataSrc: 'data',
+                                        error: function () {
+                                            console.log(error)
+                                        }
+                                    },
+                                    "lengthMenu": [
+                                        [10, 25, 50, 100, 1000, 10000],
+                                        [10, 25, 50, 100, 1000, 10000]
+                                    ],
+                                    columns: [
+                                        {
+                                            data: "s_no", orderable: false
+                                        },
+
+                                        {
+                                            data: "count"
+                                        },
+                                        {
+                                            data: "instrument_token"
+                                        },
+                                        {
+                                            data: "exchange_token"
+                                        },
+                                        {
+                                            data: "tradingsymbol"
+                                        },
+                                        {
+                                            data: "name"
+                                        },
+                                        {
+                                            data: "expiry"
+                                        },
+                                        {
+                                            data: "strike"
+                                        },
+                                        {
+                                            data: "tick_size"
+                                        },
+                                        {
+                                            data: "lot_size"
+                                        },
+                                        {
+                                            data: "instrument_type"
+                                        },
+                                        {
+                                            data: "segment"
+                                        },
+                                        {
+                                            data: "exchange"
+                                        }]
+                                })
+
+                            });
+
+                        </script>
+                    </div>
+                </main>
+                <%- include("../../partials/footer") %>
+
+                    <script>
+
+                        $(window).on('load', function () {
+
+                            $('#preloader_admin').hide();
+
+                        })
+                    </script>
+
+
+                    <script>
+                        $('#b1').click(function () {
+                            const swalWithBootstrapButtons = Swal.mixin({
+                                customClass: {
+                                    confirmButton: 'btn btn-sm btn-success',
+                                    cancelButton: 'btn btn-sm btn-danger'
+                                },
+                                buttonsStyling: false
+                            })
+
+                            swalWithBootstrapButtons.fire({
+                                title: 'Are you sure?',
+                                text: "You won't be able to revert this!",
+                                icon: 'success',
+                                showCancelButton: true,
+                                confirmButtonText: 'Yes, delete it!',
+                                cancelButtonText: 'No, cancel!',
+                                reverseButtons: true
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    swalWithBootstrapButtons.fire(
+                                        'Deleted!',
+                                        'Your file has been deleted.',
+                                        'success'
+                                    )
+                                } else if (
+                                    /* Read more about handling dismissals below */
+                                    result.dismiss === Swal.DismissReason.cancel
+                                ) {
+                                    swalWithBootstrapButtons.fire(
+                                        'Cancelled',
+                                        'Your imaginary file is safe :)',
+                                        'error'
+                                    )
+                                }
+                            })
+                        });
+                    </script>
+
+
+
+
+                    <script>
+                        $(document).ready(function () {
+
+                            if ($('#accordionSidenavPages a').hasClass('active')) {
+                                $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
+                                $('#accordionSidenavPages a.active').parent().parent().addClass('show');
+                                // console.log(id);
+                            } else {
+                                $('#takeonebar').addClass('slamdown');
+                            }
+                        });
+
+                    </script>
+
+                    <script>
+                        $(document).on('click', 'input[name="checkCat"], #select_all, #select_all2', function () {
+                            var total_checked_checkbox = $('input[name="checkCat"]:checked').length;
+
+                            if (total_checked_checkbox > 0) {
+                                $('#check').prop('disabled', false);
+                            } else {
+                                $('#check').prop('disabled', true);
+                            }
+                        });
+                    </script>
+
+
+
+                    <script type="text/javascript">
+                        $(document).ready(function () {
+                            $('#select_all, #select_all2').on('click', function () {
+                                if (this.checked) {
+                                    $('.checkbox').each(function () {
+                                        this.checked = true;
+                                    });
+                                } else {
+                                    $('.checkbox').each(function () {
+                                        this.checked = false;
+                                    });
+                                }
+                            });
+
+                            $('.checkbox').on('click', function () {
+                                if ($('.checkbox:checked').length == $('.checkbox').length) {
+                                    $('#select_all, #select_all2').prop('checked', true);
+                                } else {
+                                    $('#select_all, #select_all2').prop('checked', false);
+                                }
+                            });
+                        });
+                    </script>
+
+                    <script>
+                        $(document).on('click', 'input[name="checkCat"], #select_all, #select_all2', function () {
+                            var total_checked_checkbox = $('input[name="checkCat"]:checked').length;
+
+                            if (total_checked_checkbox > 0) {
+                                $('#check').prop('disabled', false);
+                            } else {
+                                $('#check').prop('disabled', true);
+                            }
+                        });
+                    </script>
+
+
+                    <script>
+                        function delete_sweet_alert(url, msg) {
+                            // sweet alert
+                            const swalWithBootstrapButtons = Swal.mixin({
+                                customClass: {
+                                    confirmButton: 'btn btn-sm btn-success ml-2',
+                                    cancelButton: 'btn btn-sm btn-danger'
+                                },
+                                buttonsStyling: false
+                            })
+
+                            swalWithBootstrapButtons.fire({
+                                title: msg,
+                                text: "You won't be able to revert this!",
+                                icon: 'success',
+                                showCancelButton: true,
+                                confirmButtonText: 'Yes',
+                                cancelButtonText: 'No',
+                                reverseButtons: true
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+
+                                    swalWithBootstrapButtons.fire(
+                                        '',
+                                        'Successfully Done',
+                                        'success'
+                                    );
+
+                                    window.location.href = url;
+
+
+                                } else if (
+                                    /* Read more about handling dismissals below */
+                                    result.dismiss === Swal.DismissReason.cancel
+                                ) {
+                                    swalWithBootstrapButtons.fire(
+                                        'Cancelled',
+                                        'Cancelled successfully :)',
+                                        'error'
+                                    );
+                                    return false;
+                                }
+                            })
+                        }
+                    </script>
+
+                    <script>
+
+                        function selectCategory() {
+                            var pCheck = [];
+                            let stockcategory = $('#stockcategory').val();
+                            $.each($("input[name='checkCat']:checked"), function () {
+                                pCheck.push($(this).val());
+
+                            });
+                            // sweet alert
+                            const swalWithBootstrapButtons = Swal.mixin({
+                                customClass: {
+                                    confirmButton: 'btn btn-sm btn-success ml-2',
+                                    cancelButton: 'btn btn-sm btn-danger'
+                                },
+                                buttonsStyling: false
+                            })
+
+                            swalWithBootstrapButtons.fire({
+                                title: 'Are you sure?',
+                                text: "You won't be able to revert this!",
+                                icon: 'success',
+                                showCancelButton: true,
+                                confirmButtonText: 'Yes, save category!',
+                                cancelButtonText: 'No, cancel!',
+                                reverseButtons: true
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // console.log("pCheck..........",pCheck)
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: '/save-stockcategory',
+                                        data: { stocks_id: pCheck,category_id:stockcategory },
+                                        success: function (data) {
+                                            // console.log("data..many deleet............",data)
+                                            if (data) {
+
+                                                swalWithBootstrapButtons.fire(
+                                                    'Saved!',
+                                                    'Stock Category Added successfully.',
+                                                    'success'
+                                                )
+
+                                                window.location.reload();
+
+                                            }
+                                        }
+                                    });
+
+                                } else if (
+                                    /* Read more about handling dismissals below */
+                                    result.dismiss === Swal.DismissReason.cancel
+                                ) {
+                                    swalWithBootstrapButtons.fire(
+                                        'Cancelled',
+                                        'Cancelled successfully :)',
+                                        'error'
+                                    )
+                                }
+                            });
+
+
+                        }
+                    </script>

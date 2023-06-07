@@ -3,6 +3,7 @@ const stockCategoryService = require('../services/stockCategoryService');
 const mongoose = require("mongoose");
 const contestCategoryModel = require("../../models/contestcategoryModel");
 const stockCategoryModel = require("../../models/stockcategoryModel");
+const stockModel = require("../../models/stockModel");
 
 class stockCategory {
     constructor() {
@@ -14,8 +15,150 @@ class stockCategory {
             editStockCategory: this.editStockCategory.bind(this),
             deleteStockCategory: this.deleteStockCategory.bind(this),
             editStockCategoryData: this.editStockCategoryData.bind(this),
+            viewStockDatabale: this.viewStockDatabale.bind(this),
+            viewStock: this.viewStock.bind(this),
         }
     }
+
+    
+
+
+    async viewStock(req, res) {
+        try {
+            res.locals.message = req.flash();
+            let name = req.query.name;
+            res.render("stockManager/viewStock", { sessiondata: req.session.data, name });
+
+        } catch (error) {
+            req.flash('error', 'Something went wrong please try again');
+            res.redirect("/");
+        }
+    }
+
+    async viewStockDatabale(req, res, next) {
+        try {
+            let limit1 = req.query.length;
+            let start = req.query.start;
+            let sortObject = {},
+                dir, join
+            let conditions = {};
+            if (req.query.searchName) {
+                let searchName = req.query.searchName;
+                conditions.name = { $regex: new RegExp("^" + searchName.toLowerCase(), "i") }
+            }
+            stockModel.countDocuments(conditions).exec((err, rows) => {
+                let totalFiltered = rows;
+                let data = [];
+                let count = 1;
+                stockModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 }).exec(async (err, rows1) => {
+                    console.log('-----------------------',rows)
+                    if (err) console.log(err);
+                    for (let index of rows1) {
+
+                        let image, leaderBoard, L_status, l_board;
+                        if (index.image) {
+                            image = `<img src="${index.image}" class="w-40px view_team_table_images h-40px rounded-pill">`
+                        } else {
+                            image = `<img src="/uploadImage/defaultImage.jpg" class="w-40px view_team_table_images h-40px rounded-pill">`
+                        }
+                       
+                        data.push({
+                            'count': count,
+                            'instrument_token': index.instrument_token,
+                            'exchange_token': index.exchange_token,
+                            'tradingsymbol': index.tradingsymbol,
+                            'name': index.name,
+                            "expiry": index.expiry,
+                            "strike": index.strike,
+                            "tick_size": index.tick_size,
+                            "lot_size": index.lot_size,
+                            "instrument_type": index.instrument_type,
+                            "segment": index.segment,
+                            "exchange": index.exchange,
+                        });
+                        count++;
+
+                        if (count > rows1.length) {
+                            let json_data = JSON.stringify({
+                                "recordsTotal": rows,
+                                "recordsFiltered": totalFiltered,
+                                "data": data
+                            });
+                            res.send(json_data);
+
+                        }
+                    }
+                });
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async stockCategoryTable(req, res, next) {
+        try {
+            let limit1 = req.query.length;
+            let start = req.query.start;
+            let sortObject = {},
+                dir, join
+            let conditions = {};
+            if (req.query.searchName) {
+                let searchName = req.query.searchName;
+                conditions.name = { $regex: new RegExp("^" + searchName.toLowerCase(), "i") }
+            }
+            stockCategoryModel.countDocuments(conditions).exec((err, rows) => {
+                let totalFiltered = rows;
+                let data = [];
+                let count = 1;
+                stockCategoryModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 }).exec(async (err, rows1) => {
+
+                    if (err) console.log(err);
+                    for (let index of rows1) {
+
+                        let image, leaderBoard, L_status, l_board;
+                        if (index.image) {
+                            image = `<img src="${index.image}" class="w-40px view_team_table_images h-40px rounded-pill">`
+                        } else {
+                            image = `<img src="/uploadImage/defaultImage.jpg" class="w-40px view_team_table_images h-40px rounded-pill">`
+                        }
+                       
+                        data.push({
+                            'count': count,
+                            'name': index.name,
+                            'sub_title': index.sub_title,
+                            'image': image,
+                            // 'leaderboard': L_status,
+                            "Order": index.Order,
+                            'action': ` 
+                            <a class="btn w-35px h-35px mr-1 btn-orange text-uppercase btn-sm"
+                            data-toggle="tooltip" title="Edit"
+                            href="/edit-stock-category?stockCatId=${index._id}"><i class="fas fa-pencil"></i>
+                        </a>
+                        <a class="btn w-35px h-35px mr-1 btn-danger text-uppercase btn-sm"
+                            data-toggle="tooltip" title="Delete"
+                            onclick="delete_sweet_alert('/delete-stock-category?stockCatId=${index._id}', 'Are you sure you want to delete this data?')">
+                            <i class="far fa-trash-alt"></i>
+                        </a>`
+                        });
+                        count++;
+
+                        if (count > rows1.length) {
+                            let json_data = JSON.stringify({
+                                "recordsTotal": rows,
+                                "recordsFiltered": totalFiltered,
+                                "data": data
+                            });
+                            res.send(json_data);
+
+                        }
+                    }
+                });
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+    
     async stockCategoryPage(req, res, next) {
         try {
             res.locals.message = req.flash();
@@ -27,6 +170,7 @@ class stockCategory {
             res.redirect("/");
         }
     }
+    
     async createStockCategory(req, res, next) {
         try {
             res.locals.message = req.flash();
@@ -38,6 +182,7 @@ class stockCategory {
             res.redirect("/viewStockCategory");
         }
     }
+
     async addStockCategoryData(req, res, next) {
         try {
             res.locals.message = req.flash();
@@ -51,6 +196,7 @@ class stockCategory {
             res.redirect("/viewStockCategory");
         }
     }
+
     async editStockCategoryData(req, res, next) {
         try {
             res.locals.message = req.flash();
@@ -69,6 +215,7 @@ class stockCategory {
             res.redirect("/viewStockCategory");
         }
     }
+
     async stockCategoryTable(req, res, next) {
         try {
             let limit1 = req.query.length;
@@ -143,6 +290,7 @@ class stockCategory {
             throw error;
         }
     }
+
     async editStockCategory(req, res, next) {
         try {
             res.locals.message = req.flash();
