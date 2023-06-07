@@ -52,8 +52,8 @@
                                                           <!-- <option disabled selected> Fantasy Type </option> -->
                                                           <option value="Cricket" <%=fantasy_type=='cricket' ? 'selected' :'' %>
                                                               >Cricket</option>
-                                                          <option value="quiz" <%=fantasy_type=='quiz' ? 'selected'
-                                                              : '' %>>Quiz</option>
+                                                          <option value="overfantasy" <%=fantasy_type=='overfantasy' ? 'selected'
+                                                              : '' %>>Over Fantasy</option>
                                                       </select>
                                                       <%}else{%>
                                                           <select class="form-control form-control-solid " title="Fantasy Type"
@@ -61,7 +61,7 @@
                                                               onchange="this.form.submit()">
                                                               <!-- <option disabled selected> Fantasy Type </option> -->
                                                               <option value="Cricket">Cricket</option>
-                                                              <option value="quiz">Quiz</option>
+                                                              <option value="overfantasy">Over Fantasy</option>
                                                           </select>
                                                           <%}%>
                                               </div>
@@ -71,19 +71,16 @@
                                           <select class="form-control form-control-solid " title="Select Match" id="matchkey"
                                               data-container="body" name="matchkey" onchange="this.form.submit()">
                                               <option value="" disabled selected> Select Match </option>
-                                              <% if(listmatches){ console.log("listmatches"+listmatches,"fantasy_type",fantasy_type)%>
-                                                  <% for(let key of listmatches){ 
-                                                    console.log("key.name",key.name,"fantasy_type",fantasy_type,"key.fantasy_type",key.fantasy_type)%>
-                                                    <%if(key.fantasy_type==fantasy_type){
-                                                      console.log("cricket")%>
+                                              <% if(listmatches){%>
+                                                  <% for(let key of listmatches){%>
+                                                    <%if(key.fantasy_type==fantasy_type){%>
                                                     
                                                       <option value=<%=key._id %>
                                                           <%= matchkey==key._id ? 'selected' : '' %>> <%=key.name %>
                                                       </option>
                                                       <%}%>
                                                       <%if(fantasy_type==undefined){
-                                                        if(key.fantasy_type=="Cricket"){
-                                                        console.log("cricket")%>
+                                                        if(key.fantasy_type=="Cricket"){%>
                                                       
                                                         <option value=<%=key._id %>
                                                             <%= matchkey==key._id ? 'selected' : '' %>> <%=key.name %>
@@ -264,12 +261,12 @@
                                               <% if(key.contest_type == 'Amount') {%>
                                           <li><a class="nav-link"
                                               href="/addEditmatchpricecard/<%=key._id %>?matchkey=<%=key.matchkey %>"
-                                              style="">Add/Edit Price Card</a></li>
+                                              >Add/Edit Price Card</a></li>
                                               <%} %>
                                               <% if(key.confirmed_challenge == 0) {%>
                                           <li><a class="nav-link"
                                               href="/makeConfirmed/<%=key._id %>?matchkey=<%=key.matchkey %>"
-                                              style="">Confirm Contest</a></li>
+                                              >Confirm Contest</a></li>
                                               <% }%>
                                               <li><a class="dropdown-item waves-light waves-effect" style="cursor: pointer; color: blue;"  data-toggle="modal" data-target="#joinedusers<%=i %>">Add Join User</a></li>
                                         </ul>
@@ -462,7 +459,7 @@
               }
             }
 
-          </script>
+</script>
   
 
         

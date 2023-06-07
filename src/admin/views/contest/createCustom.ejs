@@ -53,8 +53,8 @@
                                                   <!-- <option disabled selected> Fantasy Type </option> -->
                                                   <option value="Cricket" <%=fantasy_type=='cricket' ? 'selected' :'' %>
                                                       >Cricket</option>
-                                                  <option value="quiz" <%=fantasy_type=='quiz' ? 'selected'
-                                                      : '' %>>Quiz</option>
+                                                  <option value="overfantasy" <%=fantasy_type=='overfantasy' ? 'selected'
+                                                      : '' %>>Over Fantasy</option>
                                               </select>
                                               <%}else{%>
                                                   <select class="form-control form-control-solid " title="Fantasy Type"
@@ -62,7 +62,7 @@
                                                       onchange="this.form.submit()">
                                                       <!-- <option disabled selected> Fantasy Type </option> -->
                                                       <option value="Cricket">Cricket</option>
-                                                      <option value="quiz">Quiz</option>
+                                                      <option value="overfantasy">Over Fantasy</option>
                                                   </select>
                                                   <%}%>
                                       </div>
@@ -78,7 +78,7 @@
                     <!-- end overfantasy filtring-->
                     <form method="POST" action="/add_custom_contest_data" class="card-body">
                       
-                          <%if(fantasy_type==="quiz"){%>
+                          <%if(fantasy_type==="overfanasty"){%>
                             <input name="fantasy_type" type="hidden" value="<%= fantasy_type%>">
                           <%}%>
                           <%if(fantasy_type===undefined){%>

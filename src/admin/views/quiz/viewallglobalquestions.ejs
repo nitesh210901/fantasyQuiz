@@ -14,63 +14,24 @@
 
                       <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
                       <span class=" text-capitalize">
-                        Contest Manager
+                        Quiz Manager
                       </span>
                     </h1>
                     <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
-                      View all global contests
+                      View all global Questions
                     </div>
                   </div>
                 </div>
                 <div class="col-auto mb-md-0 mb-3">
-                  <a href="/add-global-contest-challengers"
+                  <a href="/add-global-question"
                     class="btn btn-sm btn-light font-weight-bold text-uppercase text-primary text-uppercase"
-                    data-toggle="tooltip" title="Add New Global Contest"><i class="fa fa-plus"></i>&nbsp; Add</a>
+                    data-toggle="tooltip" title="Add New Global Question"><i class="fa fa-plus"></i>&nbsp; Add</a>
                 </div>
               </div>
             </div>
           </div>
           <!-- over fantasy start -->
           <div class="col-md-12">
-            <div class="card mb-3">
-                <div class="card-heading p-3">
-                    <form method="get" action="/view-all-global-contests-challengers">
-                        <div class="sbp-preview position-relative">
-                            <div class="form-group mb-0">
-                                <div class="row mx-0 align-items-end">
-
-                                    <div class="col-md">
-                                        <div class="form-group my-3">
-                                            <label for="Contest Name" class="text-bold">Fantasy
-                                                Type</label>
-                                            <div class="form-group my-3">
-                                              <% if(fantasy_type){ %>
-                                                <select name="fantasy_type" id="fantasy_type" class="form-control form-control-solid" aria-label="Default select example">
-                                                  <option value="cricket"<%=fantasy_type=='cricket' ? 'selected':'' %>>Cricket</option>
-                                                  <option value="quiz"<%=fantasy_type=='overfantasy' ? 'selected': '' %>>Over Fantasy</option>
-                                                </select>
-                                              <%}else{%>
-                                                <select name="fantasy_type" id="fantasy_type" class="form-control form-control-solid" aria-label="Default select example">
-                                                  <option value="cricket">Cricket</option>
-                                                  <option value="overfantasy">Over Fantasy</option>
-                                                </select>
-                                              <%}%>
-                                                  
-                                          </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-auto text-right h-100 mb-3">
-                                        <button type="submit" class="btn btn-success  btn-sm rounded-pill"><i class="far fa-check-circle"></i>&nbsp;
-                                            Search</button>
-                                        <a href="/view-contest-Category" class="btn btn-warning  btn-sm rounded-pill"><i class="fa fa-undo"></i>&nbsp;Reset</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-            </div>
         </div>
 
           <!-- over fantasy end -->
@@ -101,17 +62,8 @@
                           </div>
                         </th>
                         <th data-toggle="tooltip" title="S. No.">#</th>
-                        <th data-toggle="tooltip" title="Contest Category">C. C.</th>
-                        <th data-toggle="tooltip" title="Entry Fee">E. Fee</th>
-                        <th data-toggle="tooltip" title="Winning  Amount">W. Amt.</th>
-                        <th data-toggle="tooltip" title="Max  Users">M. Users</th>
-                        <th data-toggle="tooltip" title="Multi  Entry">M. Entry</th>
-                        <th data-toggle="tooltip" title="Running">R.</th>
-                        <th data-toggle="tooltip" title="Confirm">C.</th>
-                        <th data-toggle="tooltip" title="Bonus">B.</th>
-                        <th data-toggle="tooltip" title="Amount Type">A.T.</th>
-                        <th data-toggle="tooltip" title="Price  Card">P. Card</th>
-                        <th data-toggle="tooltip" title="Contest Type"> C. T.</th>
+                        <th data-toggle="tooltip" title="Contest Category">Question</th>
+                        <th data-toggle="tooltip" title="Entry Fee">Answer</th>
                         <th data-toggle="tooltip" title="Action">Action</th>
                       </tr>
                     </thead>
@@ -126,17 +78,8 @@
                           </div>
                         </th>
                         <th data-toggle="tooltip" title="S. No.">#</th>
-                        <th data-toggle="tooltip" title="Contest Category">C. C.</th>
-                        <th data-toggle="tooltip" title="Entry Fee">E. Fee</th>
-                        <th data-toggle="tooltip" title="Winning  Amount">W. Amt.</th>
-                        <th data-toggle="tooltip" title="Max  Users">M. Users</th>
-                        <th data-toggle="tooltip" title="Multi  Entry">M. Entry</th>
-                        <th data-toggle="tooltip" title="Running">R.</th>
-                        <th data-toggle="tooltip" title="Confirm">C.</th>
-                        <th data-toggle="tooltip" title="Bonus">B.</th>
-                        <th data-toggle="tooltip" title="Amount Type">A.T.</th>
-                        <th data-toggle="tooltip" title="Price  Card">P. Card</th>
-                        <th data-toggle="tooltip" title="Contest Type"> C. T.</th>
+                        <th data-toggle="tooltip" title="Contest Category">Question</th>
+                        <th data-toggle="tooltip" title="Entry Fee">Answer</th>
                         <th data-toggle="tooltip" title="Action">Action</th>
                       </tr>
                     </tfoot>
@@ -180,8 +123,6 @@
             });
           </script> -->
           <!-- over fantsy end -->
-
-
           <script type="text/javascript">
             $(document).ready(function () {
               var fantasy_type = $('#fantasy_type').val();
@@ -192,24 +133,15 @@
               zeroRecords: "No records to display",
             },
                 "ajax": {
-                  "url": '/global-challengers-datatable?fantasy_type='+fantasy_type,
+                  "url": '/global-questions-datatable?fantasy_type='+fantasy_type,
                   "dataType": "json",
                   "type": "POST",
                 },
                 "columns": [
                   { "data": "s_no" ,orderable: false  },
                   { "data": "count" },
-                  { "data": "cat" },
-                  { "data": "entryfee" },
-                  { "data": "win_amount" },
-                  { "data": "maximum_user" },
-                  { "data": "multi_entry" },
-                  { "data": "is_running" },
-                  { "data": "confirmed_challenge" },
-                  { "data": "is_bonus" },
-                  { "data": "amount_type" },
-                  { "data": "edit" ,orderable: false},
-                  { "data": "contest_type", },
+                  { "data": "question" },
+                  { "data": "answer" },
                   { "data": "action", orderable: false }
                 ]
 
@@ -247,6 +179,7 @@
                $.each($("input[name='checkCat']:checked"), function () {
                  p.push($(this).val());
                });
+               console.log("ppppppppp",p)
                if (p != "") {
                  const swalWithBootstrapButtons = Swal.mixin({
                    customClass: {
@@ -269,14 +202,14 @@
 
                      $.ajax({
                        type: 'POST',
-                       url: '/delete-multi-global-challengers',
+                       url: '/delete-multi-global-question',
                        data: p,
                        success: function (data) {
                          if (data == 1) {
 
                            swalWithBootstrapButtons.fire(
                              'Deleted!',
-                             'Contest deleted successfully.',
+                             'Question deleted successfully.',
                              'success'
                            )
 
@@ -300,7 +233,7 @@
 
                }
                else {
-                 Swal.fire('Please select atlease one contest to delete');
+                 Swal.fire('Please select atlease one Question to delete');
                }
             }
           </script>
@@ -606,7 +539,6 @@
               }
             });
 
-          
         }
       </script>
   
