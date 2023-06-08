@@ -165,6 +165,7 @@ class quizController {
           res.redirect("/view_quiz");
         }
     }
+    
     async quizautoupdateMatchFinalStatus(req, res, next) {
         try {
           const matches = await listMatchModel.find({ status: 'completed', launch_status: 'launched', final_status: 'IsReviewed' });
