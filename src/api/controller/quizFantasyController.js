@@ -21,6 +21,7 @@ class matchController {
             quizPointCalculator: this.quizPointCalculator.bind(this),
             quiz_refund_amount: this.quiz_refund_amount.bind(this),
             joinQuizContest: this.joinQuizContest.bind(this),
+            getMyQuizJoinedContest: this.getMyQuizJoinedContest.bind(this),
         }
     }
 
@@ -188,5 +189,18 @@ class matchController {
             next(error);
         }
     }
+
+    async getMyQuizJoinedContest(req, res, next) {
+        try {
+            const data = await quizfantasyServices.getMyQuizJoinedContest(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }    
 }
 module.exports = new matchController();
