@@ -35,7 +35,7 @@ class matchController {
 
     async getAllNewContests(req, res, next) {
         try {
-            const data = await contestservices.getAllNewContests(req);
+            const data = await quizfantasyServices.getAllNewContests(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {

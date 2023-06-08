@@ -8,6 +8,7 @@ require('../../models/challengersModel');
 require('../../models/playerModel');
 require('../../models/teamModel');
 const matchchallengesModel = require('../../models/matchChallengersModel');
+const contestCategory = require('../../models/contestcategoryModel');
 const TransactionModel = require('../../models/transactionModel');
 const leaderBoardModel = require(`../../models/leaderboardModel`)
 const refundModel = require('../../models/refundModel');
@@ -29,7 +30,6 @@ const matchServices = require("./matchServices")
 class quizfantasyServices {
     constructor() {
         return {
-
             quizGetmatchlist: this.quizGetmatchlist.bind(this),
             latestJoinedMatches: this.latestJoinedMatches.bind(this),
             quizAllCompletedMatches: this.quizAllCompletedMatches.bind(this),
@@ -42,7 +42,6 @@ class quizfantasyServices {
             quizLivematches: this.quizLivematches.bind(this),
             pointcount: this.pointcount.bind(this),
             getQuestionList: this.getQuestionList.bind(this),
-            getAllNewContests:this.getAllNewContests.bind(this),
             findArrayIntersection:this.findArrayIntersection.bind(this),
             quizPointCalculator: this.quizPointCalculator.bind(this),
             quiz_refund_amount: this.quiz_refund_amount.bind(this),
@@ -52,183 +51,29 @@ class quizfantasyServices {
             findUsableBalanceMoney: this.findUsableBalanceMoney.bind(this),
             findJoinLeaugeExist: this.findJoinLeaugeExist.bind(this),
             getMatchTime: this.getMatchTime.bind(this),
+            getAllNewContests: this.getAllNewContests.bind(this),
             
         }
     }
 
-    async getAllNewContests(req) {
-        try {
-            // await this.updateJoinedusers(req);
-            let finalData = [], contest_arr = [], aggpipe = [];
-            aggpipe.push({
-                $lookup: {
-                    from: "matchchallenges",
-                    let: {
-                        contestcat: "$_id",
-                        matchkey: mongoose.Types.ObjectId(req.query.matchkey),
-                    },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        {
-                                            $eq: ["$$matchkey", "$matchkey"],
-                                        },
-                                        {
-                                            $eq: [
-                                                "$$contestcat",
-                                                "$contest_cat",
-                                            ],
-                                        }, {
-                                            $eq: ["opened", "$status"],
-                                        },
-                                        {
-                                            $eq: [0, '$is_private'],
-                                        }
-                                    ],
-                                },
-                            },
-                        },
-                        {
-                            $lookup: {
-                                from: "joinedleauges",
-                                let: {
-                                    challengeId: "$_id",
-                                    matchkey: '$matchkey',
-                                    userId: mongoose.Types.ObjectId(req.user._id),
-                                },
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            $expr: {
-                                                $and: [
-                                                    {
-                                                        $eq: [
-                                                            "$$matchkey",
-                                                            "$matchkey",
-                                                        ],
-                                                    },
-                                                    {
-                                                        $eq: [
-                                                            "$$challengeId",
-                                                            "$challengeid",
-                                                        ],
-                                                    },
-
-                                                    {
-                                                        $eq: [
-                                                            "$$userId",
-                                                            "$userid",
-                                                        ],
-                                                    },
-                                                ],
-                                            },
-                                        },
-                                    }, {
-                                        $project: {
-                                            refercode: 1
-                                        }
-                                    },
-                                ],
-                                as: 'joinedleauge'
-                            },
-                        },
-                        {
-                            $sort: { win_amount: -1 },
-                        },
-                    ],
-                    as: "contest",
-                }
-            });
-            aggpipe.push({
-                $addFields: {
-                    challengeSize: {
-                        $size: "$contest"
-                    }
-                }
-            })
-            aggpipe.push({
+    async getJoinleague(userId, matchkey) {
+        const total_joinedcontestData = await JoinLeaugeModel.aggregate([
+            {
                 $match: {
-                    challengeSize: { $gt: 0 }
+                    userid: mongoose.Types.ObjectId(userId),
+                    matchkey: mongoose.Types.ObjectId(matchkey)
                 }
-            })
-
-            aggpipe.push({
-                $sort: {
-                    Order: 1
+            },
+            {
+                $group: {
+                    _id: "$challengeid",
                 }
-            })
-            const categoryData = await contestCategory.aggregate(aggpipe);
-            if (categoryData.length == 0) {
-                return {
-                    message: "No Challenge Available For This Match",
-                    status: true,
-                    data: []
-                }
+            }, {
+                $count: "total_count"
             }
-            let [total_teams, total_joinedcontestData] = await Promise.all([
-                JoinQuizTeamModel.countDocuments({ userid: req.user._id, matchkey: req.query.matchkey }),
-                this.getJoinleague(req.user._id, req.query.matchkey)
-            ]);
-
-            for (let cat of categoryData) {
-                let i = 0;
-                cat.catid = cat._id;
-                cat.cat_order = cat.Order;
-                cat.catname = cat.name;
-                cat.image = cat.image ? `${constant.BASE_URL}${cat.image}` : `${constant.BASE_URL}logo.png`;
-                for (let matchchallenge of cat.contest) {
-                    i++;
-                    let isselected = false,
-                        refercode = '',
-                        winners = 0;
-                    const price_card = [];
-                    if (matchchallenge?.joinedleauge && matchchallenge.joinedleauge.length > 0) {
-                        refercode = matchchallenge?.joinedleauge[0].refercode;
-                        if (matchchallenge.multi_entry == 1 && matchchallenge.joinedleauge.length < 11) {
-                            if (matchchallenge.contest_type == 'Amount') {
-                                if (matchchallenge.joinedleauge.length == 11 || matchchallenge.joinedusers == matchchallenge.maximum_user)
-                                    isselected = true;
-                            } else if (matchchallenge.contest_type == 'Percentage') {
-                                if (matchchallenge.joinedleauge.length == 11) isselected = true;
-                            } else isselected = false;
-                        } else isselected = true;
-                    }
-                    matchchallenge.gift_image = "";
-                    matchchallenge.gift_type = "amount";
-                    let find_gift = matchchallenge.matchpricecards.find(function (x) { return x.gift_type == "gift" });
-                    if (find_gift) {
-                        matchchallenge.gift_image = `${constant.BASE_URL}${find_gift.image}`;
-                        matchchallenge.gift_type = find_gift.gift_type;
-                    }
-                    let team_limits;
-                    if (matchchallenge.multi_entry == 0) {
-                        team_limits = 1
-                    } else {
-                        team_limits = matchchallenge.team_limit
-                    }
-                    matchchallenge.isselected = isselected;
-                    matchchallenge.team_limits = team_limits;
-                    matchchallenge.refercode = refercode;
-                    matchchallenge.matchchallengeid = matchchallenge._id;
-                    matchchallenge.status = 1;
-                    matchchallenge.joinedleauges = matchchallenge.joinedleauge.length;
-                    matchchallenge.total_joinedcontest = total_joinedcontestData || 0;
-                    matchchallenge.total_teams = total_teams || 0;
-
-                }
-            }
-            return {
-                message: 'Contest of A Perticular Match',
-                status: true,
-                data: categoryData
-            }
-        } catch (error) {
-            console.log('error', error);
-        }
+        ])
+        return total_joinedcontestData[0]?.total_count;
     }
-
 
     async getQuestionList(req) {
         try {
@@ -265,7 +110,7 @@ class quizfantasyServices {
             quizObjectIdArray = [];
             if (quizArray.length < 10) {
                 return {
-                    message: 'Select atleast 10 Questions.',
+                    message: 'Select atleast 11 Questions.',
                     status: false,
                     data: {}
                 };
@@ -2448,6 +2293,266 @@ class quizfantasyServices {
 
         } catch (error) {
             throw error;
+        }
+    }
+
+    async updateJoinedusers(req) {
+        try {
+            console.log("--updateJoinedusers----")
+            const query = {};
+            query.matchkey = req.query.matchkey
+            query.contest_type = 'Amount'
+            query.status = 'opened'
+            const matchchallengesData = await matchchallengesModel.find(query);
+            if (matchchallengesData.length > 0) {
+                for (let matchchallenge of matchchallengesData) {
+                    const totalJoinedUserInLeauge = await JoinLeaugeModel.find({ challengeid: mongoose.Types.ObjectId(matchchallenge._id) });
+                    if (matchchallenge.maximum_user == totalJoinedUserInLeauge.length) {
+                        const update = {
+                            $set: {
+                                'status': 'closed',
+                                'is_duplicated': 1,
+                                'joinedusers': totalJoinedUserInLeauge.length,
+                            },
+                        };
+                        // console.log("--matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1--",matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1)
+                        if (matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1) {
+                            let newmatchchallenge = {};
+                            // delete newmatchchallenge._id;
+                            // delete newmatchchallenge.createdAt;
+                            // delete newmatchchallenge.updatedAt;
+                            newmatchchallenge.joinedusers = 0;
+                            newmatchchallenge.contestid = matchchallenge.contestid
+                            newmatchchallenge.contest_cat = matchchallenge.contest_cat
+                            newmatchchallenge.challenge_id = matchchallenge.challenge_id
+                            newmatchchallenge.matchkey = matchchallenge.matchkey
+                            newmatchchallenge.fantasy_type = matchchallenge.fantasy_type
+                            newmatchchallenge.entryfee = matchchallenge.entryfee
+                            newmatchchallenge.win_amount = matchchallenge.win_amount
+                            newmatchchallenge.multiple_entryfee = matchchallenge.multiple_entryfee
+                            newmatchchallenge.expert_teamid = matchchallenge.expert_teamid
+                            newmatchchallenge.maximum_user = matchchallenge.maximum_user
+                            newmatchchallenge.status = matchchallenge.status
+                            newmatchchallenge.created_by = matchchallenge.created_by
+                            newmatchchallenge.contest_type = matchchallenge.contest_type
+                            newmatchchallenge.expert_name = matchchallenge.expert_name
+                            newmatchchallenge.contest_name = matchchallenge.contest_name || ''
+                            newmatchchallenge.amount_type = matchchallenge.amount_type
+                            newmatchchallenge.mega_status = matchchallenge.mega_status
+                            newmatchchallenge.winning_percentage = matchchallenge.winning_percentage
+                            newmatchchallenge.is_bonus = matchchallenge.is_bonus
+                            newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
+                            newmatchchallenge.pricecard_type = matchchallenge.pricecard_type
+                            newmatchchallenge.minimum_user = matchchallenge.minimum_user
+                            newmatchchallenge.confirmed_challenge = matchchallenge.confirmed_challenge
+                            newmatchchallenge.multi_entry = matchchallenge.multi_entry
+                            newmatchchallenge.team_limit = matchchallenge.team_limit
+                            newmatchchallenge.image = matchchallenge.image
+                            newmatchchallenge.c_type = matchchallenge.c_type
+                            newmatchchallenge.is_private = matchchallenge.is_private
+                            newmatchchallenge.is_running = matchchallenge.is_running
+                            newmatchchallenge.is_expert = matchchallenge.is_expert
+                            newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
+                            newmatchchallenge.matchpricecards = matchchallenge.matchpricecards
+                            newmatchchallenge.is_expert = matchchallenge.is_expert
+                            newmatchchallenge.team1players = matchchallenge.team1players
+                            newmatchchallenge.team2players = matchchallenge.team2players
+                            // console.log("---newmatchchallenge--",newmatchchallenge)
+                            let data = await matchchallengesModel.findOne({
+                                matchkey: matchchallenge.matchkey,
+                                fantasy_type: matchchallenge.fantasy_type,
+                                entryfee: matchchallenge.entryfee,
+                                win_amount: matchchallenge.win_amount,
+                                maximum_user: matchchallenge.maximum_user,
+                                joinedusers: 0,
+                                status: matchchallenge.status,
+                                is_duplicated: { $ne: 1 }
+                            });
+                            if (!data) {
+                                let createNewContest = new matchchallengesModel(newmatchchallenge);
+                                let mynewContest = await createNewContest.save();
+                            }
+                            // console.log("---createNewContest----",mynewContest)
+                        }
+                        await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(matchchallenge._id) }, update);
+                    }
+                }
+
+            }
+        } catch (error) {
+            throw error;
+        }
+
+    };
+    async getAllNewContests(req) {
+        try {
+            await this.updateJoinedusers(req);
+            let finalData = [], contest_arr = [], aggpipe = [];
+            aggpipe.push({
+                $lookup: {
+                    from: "matchchallenges",
+                    let: {
+                        contestcat: "$_id",
+                        matchkey: mongoose.Types.ObjectId(req.query.matchkey),
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        {
+                                            $eq: ["$$matchkey", "$matchkey"],
+                                        },
+                                        {
+                                            $eq: [
+                                                "$$contestcat",
+                                                "$contest_cat",
+                                            ],
+                                        }, {
+                                            $eq: ["opened", "$status"],
+                                        },
+                                        {
+                                            $eq: [0, '$is_private'],
+                                        }
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            $lookup: {
+                                from: "joinedleauges",
+                                let: {
+                                    challengeId: "$_id",
+                                    matchkey: '$matchkey',
+                                    userId: mongoose.Types.ObjectId(req.user._id),
+                                },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    {
+                                                        $eq: [
+                                                            "$$matchkey",
+                                                            "$matchkey",
+                                                        ],
+                                                    },
+                                                    {
+                                                        $eq: [
+                                                            "$$challengeId",
+                                                            "$challengeid",
+                                                        ],
+                                                    },
+
+                                                    {
+                                                        $eq: [
+                                                            "$$userId",
+                                                            "$userid",
+                                                        ],
+                                                    },
+                                                ],
+                                            },
+                                        },
+                                    }, {
+                                        $project: {
+                                            refercode: 1
+                                        }
+                                    },
+                                ],
+                                as: 'joinedleauge'
+                            },
+                        },
+                        {
+                            $sort: { win_amount: -1 },
+                        },
+                    ],
+                    as: "contest",
+                }
+            });
+            aggpipe.push({
+                $addFields: {
+                    challengeSize: {
+                        $size: "$contest"
+                    }
+                }
+            })
+            aggpipe.push({
+                $match: {
+                    challengeSize: { $gt: 0 }
+                }
+            })
+
+            aggpipe.push({
+                $sort: {
+                    Order: 1
+                }
+            })
+            const categoryData = await contestCategory.aggregate(aggpipe);
+            if (categoryData.length == 0) {
+                return {
+                    message: "No Challenge Available For This Match",
+                    status: true,
+                    data: []
+                }
+            }
+            let [total_teams, total_joinedcontestData] = await Promise.all([
+                JoinQuizTeamModel.countDocuments({ userid: req.user._id, matchkey: req.query.matchkey }),
+                this.getJoinleague(req.user._id, req.query.matchkey)
+            ]);
+            for (let cat of categoryData) {
+                let i = 0;
+                cat.catid = cat._id;
+                cat.cat_order = cat.Order;
+                cat.catname = cat.name;
+                cat.image = cat.image ? `${constant.BASE_URL}${cat.image}` : `${constant.BASE_URL}logo.png`;
+                for (let matchchallenge of cat.contest) {
+                    i++;
+                    let isselected = false,
+                        refercode = '',
+                        winners = 0;
+                    const price_card = [];
+                    if (matchchallenge?.joinedleauge && matchchallenge.joinedleauge.length > 0) {
+                        refercode = matchchallenge?.joinedleauge[0].refercode;
+                        if (matchchallenge.multi_entry == 1 && matchchallenge.joinedleauge.length < 11) {
+                            if (matchchallenge.contest_type == 'Amount') {
+                                if (matchchallenge.joinedleauge.length == 11 || matchchallenge.joinedusers == matchchallenge.maximum_user)
+                                    isselected = true;
+                            } else if (matchchallenge.contest_type == 'Percentage') {
+                                if (matchchallenge.joinedleauge.length == 11) isselected = true;
+                            } else isselected = false;
+                        } else isselected = true;
+                    }
+                    matchchallenge.gift_image = "";
+                    matchchallenge.gift_type = "amount";
+                    let find_gift = matchchallenge.matchpricecards.find(function (x) { return x.gift_type == "gift" });
+                    if (find_gift) {
+                        matchchallenge.gift_image = `${constant.BASE_URL}${find_gift.image}`;
+                        matchchallenge.gift_type = find_gift.gift_type;
+                    }
+                    let team_limits;
+                    if (matchchallenge.multi_entry == 0) {
+                        team_limits = 1
+                    } else {
+                        team_limits = matchchallenge.team_limit
+                    }
+                    matchchallenge.isselected = isselected;
+                    matchchallenge.team_limits = team_limits;
+                    matchchallenge.refercode = refercode;
+                    matchchallenge.matchchallengeid = matchchallenge._id;
+                    matchchallenge.status = 1;
+                    matchchallenge.joinedleauges = matchchallenge.joinedleauge.length;
+                    matchchallenge.total_joinedcontest = total_joinedcontestData || 0;
+                    matchchallenge.total_teams = total_teams || 0;
+
+                }
+            }
+            return {
+                message: 'Contest of A Perticular Match',
+                status: true,
+                data: categoryData
+            }
+        } catch (error) {
+            console.log('error', error);
         }
     }
     //overviewendteam    

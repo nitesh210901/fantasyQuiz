@@ -147,7 +147,6 @@ class contestServices {
                 JoinTeamModel.countDocuments({ userid: req.user._id, matchkey: req.query.matchkey }),
                 this.getJoinleague(req.user._id, req.query.matchkey)
             ]);
-
             for (let cat of categoryData) {
                 let i = 0;
                 cat.catid = cat._id;
