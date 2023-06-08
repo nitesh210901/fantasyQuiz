@@ -1073,9 +1073,10 @@ class challengersService {
     }
     async importchallengersData(req) {
         try {
-            const findmatch = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey) });
-            let listmatchData = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey), isQuiz: 1, is_deleted: false });
-            
+            let findmatch = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey), isQuiz: 0, is_deleted: false });
+            if (!findmatch) {
+                findmatch = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey), isQuiz: 1, is_deleted: false });
+            } 
             if (findmatch) {
                 const findleauges = await challengersModel.find({ fantasy_type: { $regex: new RegExp(findmatch.fantasy_type.toLowerCase(), "i") } });
                 let anArray = [];
@@ -1102,7 +1103,7 @@ class challengersService {
                             data['matchkey'] = mongoose.Types.ObjectId(req.params.matchKey);
                             data['contest_name'] = key1.contest_name;
                             data['amount_type'] = key1.amount_type;
-                            if (listmatchData) {
+                            if (findmatch.isQuiz===1) {
                                 data['isQuiz'] = 1
                             } else {
                                 data['isQuiz'] = 0;
@@ -1111,8 +1112,6 @@ class challengersService {
                             let saveInsert = await insertData.save();
 
                             let findpricecrads = await priceCardModel.find({ challengersId: key1._id });
-                            // console.log("findpricecrads..................priceCard.........///////........", findpricecrads)
-
                             if (findpricecrads.length > 0) {
                                 for await (let key2 of findpricecrads) {
                                     let pdata = {};
@@ -1138,7 +1137,6 @@ class challengersService {
                                             matchpricecards: pdata
                                         }
                                     })
-                                    // console.log("updateInsert.................", updateInsert)
                                 }
                             }
                         }
@@ -1166,7 +1164,6 @@ class challengersService {
     async add_CustomContest(req) {
         try {
             const getLunchedMatchinAddContest = await listMatchesModel.find({ status: "notstarted", launch_status: "launched",final_status:{$ne:"IsCanceled"}  }, { fantasy_type: 1, name: 1 });
-        //    console.log("getLunchedMatchinAddContest",getLunchedMatchinAddContest)
             const getContest = await contestCategoryModel.find({}, { name: 1 });
 
             if (getLunchedMatchinAddContest) {
