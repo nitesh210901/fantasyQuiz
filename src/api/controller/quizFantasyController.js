@@ -145,7 +145,8 @@ class matchController {
                 start_date: { $gte: currentDate },
                 launch_status: 'launched',
                 final_status: { $nin: ['winnerdeclared','IsCanceled'] },
-                status: { $ne: 'completed' }
+                status: { $ne: 'completed' },
+                isQuiz:1
             })
             let data;
             if (listmatches.length > 0) {
