@@ -141,7 +141,7 @@ class matchController {
             const currentDate = moment().format('YYYY-MM-DD 00:00:00');
             console.log(currentDate)
             const listmatches = await listMatchesModel.find({
-                fantasy_type: "quiz",
+                fantasy_type: "Cricket",
                 start_date: { $gte: currentDate },
                 launch_status: 'launched',
                 final_status: { $nin: ['winnerdeclared','IsCanceled'] },
