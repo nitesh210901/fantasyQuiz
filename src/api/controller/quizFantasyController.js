@@ -193,6 +193,7 @@ class matchController {
     async getMyQuizJoinedContest(req, res, next) {
         try {
             const data = await quizfantasyServices.getMyQuizJoinedContest(req);
+            return res.status(200).json(data);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: data.status }, data));
             } else {

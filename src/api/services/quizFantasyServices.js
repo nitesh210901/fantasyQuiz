@@ -53,6 +53,7 @@ class quizfantasyServices {
             getMatchTime: this.getMatchTime.bind(this),
             getAllNewContests: this.getAllNewContests.bind(this),
             getMyQuizJoinedContest: this.getMyQuizJoinedContest.bind(this),
+            getUserRank: this.getUserRank.bind(this),
             
         }
     }
@@ -2556,6 +2557,78 @@ class quizfantasyServices {
             console.log('error', error);
         }
     }
+
+    async getUserRank(rankArray) {
+        //console.log("rankArray",rankArray)
+        // if (rankArray.length == 0) return [];
+        // let lrsno = 0,
+        //     uplus = 0,
+        //     sno = 0;
+        // const getUserRank = [];
+        // for await (const rankData of rankArray) {
+        //     const found = getUserRank.some((ele) => { 
+        //         //console.log("ele",ele.points,"rankData.points",rankData.points,"==",ele.points == rankData.points)
+        //         ele.points == rankData.points });
+        //     //console.log("found",found)
+        //     if (found) {
+        //         console.log("a")
+        //         uplus++;
+        //     } else {
+        //         console.log("b")
+        //         lrsno++;
+        //         //console.log("lrsno",lrsno,"uplus",uplus)
+        //         lrsno = lrsno + uplus;
+                
+        //         uplus = 0;
+        //     }
+        //     //console.log("--->",lrsno)
+        //     getUserRank.push({
+        //         rank: lrsno,
+        //         points: rankData.points,
+        //         userid: rankData.userid,
+        //         userjoinedleaugeId: rankData.userjoinedleaugeId,
+        //         userTeamNumber: rankData.userTeamNumber,
+        //     });
+        //     sno++;
+        //     if (sno == rankArray.length) {
+        //         return getUserRank;
+        //     }
+        // }
+        //sahil rank code
+        if (rankArray.length == 0) return [];
+let lrsno = 0,
+    uplus = 0,
+    sno = 0;
+const getUserRank = [];
+for await (const rankData of rankArray) {
+    const found = getUserRank.some((ele) => {
+        return ele.points == rankData.points && ele.rank <= lrsno;
+    });
+    if (found) {
+        //console.log("a");
+        uplus++;
+    } else {
+        //console.log("b");
+        lrsno++;
+        lrsno = lrsno + uplus;
+        uplus = 0;
+    }
+    getUserRank.push({
+        rank: lrsno,
+        points: rankData.points,
+        userid: rankData.userid,
+        userjoinedleaugeId: rankData.userjoinedleaugeId,
+        userTeamNumber: rankData.userTeamNumber,
+    });
+    sno++;
+    if (sno == rankArray.length) {
+        return getUserRank;
+    }
+}
+
+        //sahil rank code end
+        return true;
+    };
     //overviewendteam    
     async getMyQuizJoinedContest(req) {
         try {
@@ -2639,7 +2712,7 @@ class quizfantasyServices {
                     },
                     {
                         $lookup: {
-                            from: 'jointeams',
+                            from: 'joinquizteams',
                             let: { teamid: '$teamid' },
                             pipeline: [{
                                 $match: {
@@ -2783,7 +2856,6 @@ class quizfantasyServices {
                 const getRank = getUserCurrentRank.find(item => {
                     return item.userid.toString() == req.user._id.toString();
                 });
-                
 
 
                 const tmpObj = {
@@ -2899,7 +2971,7 @@ class quizfantasyServices {
                         false;
                 }
                 // ------------count of contest and team------------
-                const total_teams = await JoinTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
+                const total_teams = await JoinQuizTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
                 const total_joinedcontestData = await JoinLeaugeModel.aggregate([
                     {
                         $match: {
