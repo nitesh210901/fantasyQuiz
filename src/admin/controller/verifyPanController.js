@@ -107,16 +107,16 @@ class verifyManagerController {
               data.push({
                 S_NO: count,
                 UID: `<a href="/getUserDetails/${index._id}">${index._id}</a>`,
-                Name: index.pancard.pan_name || "",
+                Name: index.pancard?.pan_name || "",
                 Email: index.email,
                 Mobile_No: index.mobile || "",
-                DOB: index.pancard.pan_dob || "",
-                PAN_Number: index.pancard.pan_number || "",
-                Image: `<a href="/${index.pancard.image}" target="_blank"><img src="${index.pancard.image}" class="w-40px view_team_table_images h-40px rounded-pill"></img></a>`,
+                DOB: index.pancard?.pan_dob || "",
+                PAN_Number: index.pancard?.pan_number || "",
+                Image: `<a href="/${index.pancard?.image}" target="_blank"><img src="${index.pancard?.image}" class="w-40px view_team_table_images h-40px rounded-pill"></img></a>`,
                 status: appendField,
-                Comment: index.pancard.comment || "",
+                Comment: index.pancard?.comment || "",
                 Uploading_Date: `<span class="text-danger">${moment(
-                  index.pancard.created_at
+                  index.pancard?.created_at
                 ).format("YYYY-MM-DD HH:mm")}</span>`,
                 Action: `<a href= "/viewpandetails/${index._id}"><i class="fas fa-2x fa-eye custom"></i></a>`,
               });
@@ -761,14 +761,14 @@ class verifyManagerController {
           data.push({
             S_NO: count,
             UID: index._id,
-            Name: index.pancard.pan_name || "",
+            Name: index.pancard?.pan_name || "",
             Email: index.email,
             Mobile_No: index.mobile || "",
-            DOB: index.pancard.pan_dob || "",
-            PAN_Number: index.pancard.pan_number || "",
+            DOB: index.pancard?.pan_dob || "",
+            PAN_Number: index.pancard?.pan_number || "",
             status: appendField,
             Comment: index.pancard.comment || "",
-            Uploading_Date: moment(index.pancard.created_at).format(
+            Uploading_Date: moment(index.pancard?.created_at).format(
               "YYYY-MM-DD HH:mm"
             ),
           });
