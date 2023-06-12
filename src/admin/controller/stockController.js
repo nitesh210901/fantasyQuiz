@@ -16,8 +16,9 @@ class stockCategory {
         try {
             res.locals.message = req.flash();
             let name = req.query.name;
+            let catName = req.query.status;
             const categories = await stockCategoryModel.find({}, {name:1});
-            res.render("stockManager/viewStock", { sessiondata: req.session.data, name , categories});
+            res.render("stockManager/viewStock", { sessiondata: req.session.data, name , categories, catName});
 
         } catch (error) {
             req.flash('error', 'Something went wrong please try again');
@@ -25,27 +26,65 @@ class stockCategory {
         }
     }
 
-    async viewStockDatabale(req, res, next) {
+    async viewStockDatabale(req, res) {
         try {
             let limit1 = req.query.length;
             let start = req.query.start;
-            let sortObject = {},
-                dir, join
             let conditions = {};
-            if (req.query.searchName) {
-                let searchName = req.query.searchName;
-                conditions.name = { $regex: new RegExp("^" + searchName.toLowerCase(), "i") }
+            let rows;
+            if (req.query.stockcategory) {
+                let stockcategory = req.query.stockcategory;
+                rows = await stockCategoryModel.aggregate(
+                    [
+                        // {
+                        //   '$match': {
+                        //     '_id': stockcategory
+                        //   }
+                        // }, 
+                        {
+                          '$addFields': {
+                            'sidArray': {
+                              '$map': {
+                                'input': '$stocks_id', 
+                                'as': 'item', 
+                                'in': {
+                                  '$toObjectId': '$$item'
+                                }
+                              }
+                            }
+                          }
+                        }, {
+                          '$lookup': {
+                            'from': 'stocks', 
+                            'let': {
+                              'sid': '$sidArray'
+                            }, 
+                            'pipeline': [
+                              {
+                                '$match': {
+                                  '$expr': {
+                                    '$in': [
+                                      '$_id', '$$sid'
+                                    ]
+                                  }
+                                }
+                              }
+                            ], 
+                            'as': 'result'
+                          }
+                        }
+                    ]
+                )
+            }else{
+                rows = stockModel.countDocuments(conditions);
+                rows = stockModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 });
             }
-            stockModel.countDocuments(conditions).exec((err, rows) => {
                 let totalFiltered = rows;
                 let data = [];
                 let count = 1;
-                stockModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 }).exec(async (err, rows1) => {
-                    console.log('-----------------------',rows)
-                    if (err) console.log(err);
-                    for (let index of rows1) {
+                    for (let index of rows) {
 
-                        let image, leaderBoard, L_status, l_board;
+                        let image;
                         if (index.image) {
                             image = `<img src="${index.image}" class="w-40px view_team_table_images h-40px rounded-pill">`
                         } else {
@@ -71,7 +110,7 @@ class stockCategory {
                         });
                         count++;
 
-                        if (count > rows1.length) {
+                        if (count > rows.length) {
                             let json_data = JSON.stringify({
                                 "recordsTotal": rows,
                                 "recordsFiltered": totalFiltered,
@@ -81,8 +120,6 @@ class stockCategory {
 
                         }
                     }
-                });
-            });
         } catch (error) {
             throw error;
         }
