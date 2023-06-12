@@ -36,7 +36,7 @@ class matchController {
 
     async getAllNewContests(req, res, next) {
         try {
-            const data = await contestservices.getAllNewContests(req);
+            const data = await quizfantasyServices.getAllNewContests(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
@@ -141,11 +141,12 @@ class matchController {
             const currentDate = moment().format('YYYY-MM-DD 00:00:00');
             console.log(currentDate)
             const listmatches = await listMatchesModel.find({
-                fantasy_type: "quiz",
+                fantasy_type: "Cricket",
                 start_date: { $gte: currentDate },
                 launch_status: 'launched',
                 final_status: { $nin: ['winnerdeclared','IsCanceled'] },
-                status: { $ne: 'completed' }
+                status: { $ne: 'completed' },
+                isQuiz:1
             })
             let data;
             if (listmatches.length > 0) {
@@ -193,6 +194,7 @@ class matchController {
     async getMyQuizJoinedContest(req, res, next) {
         try {
             const data = await quizfantasyServices.getMyQuizJoinedContest(req);
+            return res.status(200).json(data);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: data.status }, data));
             } else {
