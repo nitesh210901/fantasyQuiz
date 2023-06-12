@@ -14,16 +14,16 @@
 
                       <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
                       <span class=" text-capitalize">
-                        Player Manager
+                        Stock Manager
                       </span>
                     </h1>
                     <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
-                      View All Players
+                      View Stock By Category
                     </div>
                   </div>
                 </div>
                 <div class="col-auto mb-md-0 mb-3">
-                  <a href="/add_player_page" class="btn btn-sm btn-light font-weight-bold text-uppercase text-primary text-uppercase"><i class="fa fa-plus"></i>&nbsp; Add New Player</a>
+                  <a href="/add_Stock_category" class="btn btn-sm btn-light font-weight-bold text-uppercase text-primary text-uppercase"><i class="fa fa-plus"></i>&nbsp; ADD STOCk In CATEGORY</a>
               </div>
               </div>
             </div>
@@ -41,17 +41,17 @@
                           <div class="row mx-0">
                             <div class="col-md">
                               <div class="form-group">
-                                <label for="Select Category" class=" text-bold" for="role">Select Category</label>
-                                <select class="form-control form-control-solid selectpicker show-tick sCat" id="catId"
+                                <label for="Select Category" class=" text-bold">Select Category</label>
+                                <select class="form-control" id="catId"
                                     data-container="body" data-live-search="true"
-                                    title="Select Status" data-hide-disabled="true"
-                                    name="status" >
+                                    title="Select Category" data-hide-disabled="true"
+                                    name="category" >
                                     <option disabled selected> Select Category
                                     </option>
                                         <% if(categories) {%>
                                             <%for(let i of categories) {
                                                 %>
-                                                <option value="<%= i._id%>" <%= catName == i._id.toString()?'selected':"" %>>
+                                                <option value="<%= i._id%>" <%= catName === i._id.toString()?'selected':"" %>>
                                                     <%=i.name%> 
                                                 </option>
                                             <%}%>
@@ -78,7 +78,7 @@
             <div class="card mb-4">
               <div class="card-header">
                 <div class="row w-100 align-items-center mx-0">
-                  <div class="col-md col-12 mb-md-0 mb-2 text-md-left text-center">View All Players</div>
+                  <div class="col-md col-12 mb-md-0 mb-2 text-md-left text-center">ADD</div>
                 </div>
               </div>
               <div class="card-body">
@@ -144,7 +144,7 @@
               zeroRecords: "No records to display",
             },
                   "ajax": {
-                    "url": `/viewStockDatabale?stockcategory='${elem}` ,
+                    "url": `/viewStockDatabale?stockcategory=${elem}`,
                     "dataType": "json",
                     "type": "GET",
                   },
