@@ -39,20 +39,21 @@
                                     <!-- over fantasy start-->
                                     <div class="col-md-6">
                                         <div class="form-group my-3 fs-13" id="fantasy_type">
-                                          <label class="label-control text-bold">Fantasy Type*</label><br>
-                                          <div class="custom-control custom-radio custom-control-inline">
-                                            <input type="radio" name="fantasy_type"  value="Cricket" id="customRadio13"
-                                               class="custom-control-input" checked />
-                                            <label class="custom-control-label" for="customRadio13">Cricket</label>
-                                          </div>
-                                          <div class="custom-control custom-radio custom-control-inline">
-                                            <input type="radio" name="fantasy_type" value="overfantasy" id="customRadio14"
-                                              class="custom-control-input">
-                                            <label class="custom-control-label" for="customRadio14">Over Fantasy</label>
-                                          </div>
+                                            <label class="label-control text-bold">Fantasy Type*</label><br>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" name="fantasy_type" value="Cricket"
+                                                    id="customRadio13" class="custom-control-input" checked />
+                                                <label class="custom-control-label" for="customRadio13">Cricket</label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" name="fantasy_type" value="overfantasy"
+                                                    id="customRadio14" class="custom-control-input">
+                                                <label class="custom-control-label" for="customRadio14">Over
+                                                    Fantasy</label>
+                                            </div>
                                         </div>
-                                      </div>
-                                      
+                                    </div>
+
                                     <!-- over fantasy end -->
 
                                     <div class="datatable table-responsive">
@@ -92,129 +93,8 @@
                             </div>
 
                             <script type="text/javascript">
-                                //anaylysing sahil
-                                let Value="Cricket"            
-                $("input[name=fantasy_type]").change(function () {
-                  if ($('input[name=fantasy_type]:checked').val() == "Cricket") {
-                     Value="Cricket" 
-                    console.log("value"+Value)
-                    //$(document).ready(
-                        function abc() {
-                                    console.log("value in ajax"+Value)
-                                    $.fn.dataTable.ext.errMode = 'none';
-                                    const table = $('#dataTablematch').DataTable()
-                                    table.ajax.url(`/view_AllUpcomingMatches-data-table/?val=${Value}`)
-                                    table.ajax.reload()
-                                    // $('#dataTablematch').DataTable({
-                                    //     searching: true,
-                                    //     language: {
-                                    //         zeroRecords: "No records to display",
-                                    //     },
-                                    //     ajax: {
-                                    //         url: `/view_AllUpcomingMatches-data-table/?val=${Value}`,
-                                    //         type: 'post',
-                                    //         dataSrc: 'data',
-                                    //         error: function () {
-                                    //             console.log(error)
-                                    //         }
-                                    //     },
-                                    //     "lengthMenu": [
-                                    //         [10, 25, 50, 100, 1000, 10000],
-                                    //         [10, 25, 50, 100, 1000, 10000]
-                                    //     ],
-                                    //     columns: [{
-                                    //         data: "count"
-                                    //     },
-                                    //     {
-                                    //         data:"Match Type"
-                                    //     }, 
-                                        
-                                    //     {
-                                    //         data: "match"
-                                    //     }, 
-                                        
-                                    //     {
-                                    //         data: "start_date"
-                                    //     }, {
-                                    //         data: "squadstatus"
-                                    //     }, {
-                                    //         data: "Actions", orderable: false
-                                    //     },]
-                                    // })
-                                }
-                                abc();//ss);
-                    
-                  }
-                  else
-                  {if ($('input[name=fantasy_type]:checked').val() == "quiz")
-                  { Value="quiz" 
-                    console.log("value"+Value)
-                    //$(document).ready(
-                        function def() {
-                                    console.log("value in ajax"+Value)
-                                    $.fn.dataTable.ext.errMode = 'none';
-                                    const table = $('#dataTablematch').DataTable()
-                                    table.ajax.url(`/view_AllUpcomingMatches-data-table/?val=${Value}`)
-                                    table.ajax.reload()
-                                    // $('#dataTablematch').DataTable({
-                                    //     searching: true,
-                                    //     language: {
-                                    //         zeroRecords: "No records to display",
-                                    //     },
-                                    //     ajax: {
-                                    //         url: `/view_AllUpcomingMatches-data-table/?val=${Value}`,
-                                    //         type: 'post',
-                                    //         dataSrc: 'data',
-                                    //         error: function () {
-                                    //             console.log(error)
-                                    //         }
-                                    //     },
-                                    //     "lengthMenu": [
-                                    //         [10, 25, 50, 100, 1000, 10000],
-                                    //         [10, 25, 50, 100, 1000, 10000]
-                                    //     ],
-                                    //     columns: [{
-                                    //         data: "count"
-                                    //     },
-                                    //     {
-                                    //         data:"Match Type"
-                                    //     }, 
-                                        
-                                    //     {
-                                    //         data: "match"
-                                    //     }, 
-                                        
-                                    //     {
-                                    //         data: "start_date"
-                                    //     }, {
-                                    //         data: "squadstatus"
-                                    //     }, {
-                                    //         data: "Actions", orderable: false
-                                    //     },]
-                                    // })
-                                }//ww);
-                                def();
-
-                  }
-                    
-
-                  }//ddd
-                })
-                  
-              
-                                
-                                
-
-
-
-
-
-
-
-
-                                // anaylysing sahil
                                 $(document).ready(function () {
-                                    console.log("value in ajax"+Value)
+                                    console.log("value in ajax" + Value)
                                     $.fn.dataTable.ext.errMode = 'none';
                                     $('#dataTablematch').DataTable({
                                         searching: true,
@@ -237,18 +117,18 @@
                                             data: "count"
                                         },
                                         {
-                                            data:"Match Type"
-                                        }, 
-                                        
+                                            data: "Match Type"
+                                        },
+
                                         {
                                             data: "match"
-                                        }, 
-                                        
+                                        },
+
                                         {
                                             data: "start_date"
-                                        }, 
+                                        },
                                         {
-                                            data:"match_order"
+                                            data: "match_order"
                                         },
                                         {
                                             data: "squadstatus"
@@ -258,34 +138,7 @@
                                     })
                                 });
 
-
-
-
-
-
-                                
                             </script>
                         </div>
                 </main>
                 <%- include("../../partials/footer") %>
-
-                    <script>
-                        $(window).on('load', function () {
-
-                            $('#preloader_admin').hide();
-
-                        })
-                    </script>
-                    <script>
-                        $(document).ready(function () {
-
-                            if ($('#accordionSidenavPages a').hasClass('active')) {
-                                $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
-                                $('#accordionSidenavPages a.active').parent().parent().addClass('show');
-                                // console.log(id);
-                            } else {
-                                $('#takeonebar').addClass('slamdown');
-                            }
-                        });
-
-                    </script>
