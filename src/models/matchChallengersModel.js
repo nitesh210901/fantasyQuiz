@@ -79,6 +79,10 @@ let matchchallengesSchema = new Schema({
         type: String,
         default: 'cricket'
     },
+    type_contest: {
+        type: String,
+        default: 'cricket'
+    },
     entryfee: {
         type: Number,
         default: ''
@@ -206,10 +210,6 @@ let matchchallengesSchema = new Schema({
     team2players:{
         type:Array,
         default:[]
-    },
-    isQuiz: {
-        type: Number,
-        default:0
     }
 }, {
     timestamps: true,

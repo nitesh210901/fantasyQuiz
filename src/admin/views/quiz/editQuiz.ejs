@@ -118,15 +118,15 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-12">
+                                                    <div class="col-md">
                                                         <div class="form-group my-3">
-                                                            <label for="job-title">Answer*</label>
-                                                            <% if(data.answer) {%>
-                                                            <input class="form-control form-control-solid" id="job-title" type="text" value="<%=data.answer %>" placeholder="Enter Answer" name="answer" required>
-                                                            <%}else{ %>
-                                                            <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Answer" name="answer" required>
-                                                             
-                                                                <% }%> 
+                                                            <label for="Answer*" style="color:black;">Answer*</label>
+                                                            <select class="form-control form-control-solid " title="Fantasy Type" id="matchkey_id" data-container="body" name="answer">
+                                                             <option value="option_A" <%=data.answer ==="option_A" ? 'selected' : '' %>>Option A</option>
+                                                             <option value="option_B" <%=data.answer ==="option_B" ? 'selected' : '' %>>Option B</option>
+                                                             <option value="option_C" <%=data.answer ==="option_C" ? 'selected' : '' %>>Option C</option>
+                                                             <option value="option_D" <%=data.answer ==="option_D" ? 'selected' : '' %>>Option D</option>       
+                                                            </select>    
                                                         </div>
                                                     </div>
 

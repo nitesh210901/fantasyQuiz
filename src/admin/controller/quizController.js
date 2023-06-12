@@ -26,7 +26,9 @@ class quizController {
       deleteGlobalQuestion: this.deleteGlobalQuestion.bind(this),
       globalQuestionMuldelete: this.globalQuestionMuldelete.bind(this),
       importGlobalQuestionPage: this.importGlobalQuestionPage.bind(this),
-      importQuestionData:this.importQuestionData.bind(this)
+      importQuestionData:this.importQuestionData.bind(this),
+      importGlobalContestPage:this.importGlobalContestPage.bind(this),
+      quizimportchallengersData:this.quizimportchallengersData.bind(this)
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -34,7 +36,9 @@ class quizController {
 
   async AddQuizPage(req, res, next) {
       try {
-      const listmatch = await listMatchModel.find({ isQuiz: 1,is_deleted: false})    
+      // const listmatch = await listMatchModel.find({ isQuiz: 1, is_deleted: false })   
+      let curTime = moment().format("YYYY-MM-DD HH:mm:ss");
+      const listmatch = await listMatchModel.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime } ,isQuiz:1}, { name: 1 });  
       res.locals.message = req.flash();
       res.render("quiz/add_quiz", {
         sessiondata: req.session.data,
@@ -43,7 +47,7 @@ class quizController {
         listmatch: listmatch
       });
     } catch (error) {
-      // next(error);
+      console.log(error);
       req.flash("error", "Something went wrong please try again");
       res.redirect("/");
     }
@@ -117,8 +121,9 @@ class quizController {
     
     async editQuiz(req, res, next) {
         try {
-            res.locals.message = req.flash();
-            const listmatch = await listMatchModel.find({ isQuiz: 1 ,launch_status:"launched"})
+          res.locals.message = req.flash();
+          let curTime = moment().format("YYYY-MM-DD HH:mm:ss");
+            const listmatch = await listMatchModel.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime } ,isQuiz:1}, { name: 1 });  
             const data = await quizServices.editQuiz(req);
             if (data) {
                 res.render("quiz/editQuiz", { sessiondata: req.session.data, msg: undefined, data ,listmatch});
@@ -423,6 +428,7 @@ class quizController {
     }
   }
 
+
   async importQuestionData(req,res,next){
     try{
         res.locals.message = req.flash();
@@ -438,6 +444,57 @@ class quizController {
         //  next(error);
         req.flash('error','Something went wrong please try again');
         res.redirect("/Import-global-questions");
+    }
+  }
+  
+  async importGlobalContestPage(req,res,next){
+    try {
+        res.locals.message = req.flash();
+        const getlunchedMatches=await quizServices.quizcreateCustomContest(req);
+
+        if (getlunchedMatches.status == true) {
+            let mkey=req.query.matchkey
+            let fantasy_type=req.query.fantasy_type;
+            let objfind={};
+               if(req.query.entryfee && req.query.entryfee != ""){
+                objfind.entryfee= req.query.entryfee
+                }
+                if(req.query.win_amount && req.query.win_amount != ""){
+                objfind.win_amount= req.query.win_amount
+                }
+                if(req.query.team_limit && req.query.team_limit != ""){
+                objfind.team_limit= req.query.team_limit
+                }
+            res.render("quiz/quizcreateCustomContest",{ sessiondata: req.session.data, listmatches:getlunchedMatches.data,matchkey:mkey,matchData:getlunchedMatches.matchData,dates:getlunchedMatches.dates,fantasy_type,objfind});
+
+        }else if(getlunchedMatches.status == false){
+
+            req.flash('error',getlunchedMatches.message);
+            res.redirect('/');
+        }
+
+    }catch(error){
+        //  next(error);
+        req.flash('error','Something went wrong please try again');
+        res.redirect("/");
+    }
+  }
+  
+  async quizimportchallengersData(req,res,next){
+    try{
+        res.locals.message = req.flash();
+        const data=await quizServices.quizimportchallengersData(req);
+        if(data.status == true){
+            req.flash('success',data.message)
+            res.redirect(`/Import-global-contest?matchkey=${req.params.matchKey}`);
+        }else{
+            req.flash('error',data.message)
+            res.redirect(`/Import-global-contest?matchkey=${req.params.matchKey}`);
+        }
+    }catch(error){
+        //  next(error);
+        req.flash('error','Something went wrong please try again');
+        res.redirect("/Import-global-contest");
     }
 }
 }
