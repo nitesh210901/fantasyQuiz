@@ -97,6 +97,12 @@ class quizController {
                     data.push({
                         "count": count,
                         "question": index.question,
+                        "options": `<ol>
+                        <li>${index.option_A}</li>
+                        <li>${index.option_B}</li>
+                        <li>${index.option_C}</li>
+                        <li>${index.option_D}</li>
+                        </ol>`,
                         "answer": index.answer,
                         "Action": `<a href="/edit-quiz/${index._id}" class="btn btn-sm btn-orange w-35px h-35px text-uppercase text-nowrap" data-toggle="tooltip" title="Edit"><i class="fad fa-pencil"></i></a>
                         <a  onclick="delete_sweet_alert('/deletequiz?quizId=${index._id}', 'Are you sure you want to delete this data?')" class="btn btn-sm btn-danger w-35px h-35px text-uppercase"><i class='fas fa-trash-alt'></i></a>`
