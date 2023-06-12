@@ -53,8 +53,6 @@
                                                   <!-- <option disabled selected> Fantasy Type </option> -->
                                                   <option value="Cricket" <%=fantasy_type=='cricket' ? 'selected' :'' %>
                                                       >Cricket</option>
-                                                  <option value="overfantasy" <%=fantasy_type=='overfantasy' ? 'selected'
-                                                      : '' %>>Over Fantasy</option>
                                               </select>
                                               <%}else{%>
                                                   <select class="form-control form-control-solid " title="Fantasy Type"
@@ -62,7 +60,6 @@
                                                       onchange="this.form.submit()">
                                                       <!-- <option disabled selected> Fantasy Type </option> -->
                                                       <option value="Cricket">Cricket</option>
-                                                      <option value="overfantasy">Over Fantasy</option>
                                                   </select>
                                                   <%}%>
                                       </div>
@@ -77,10 +74,6 @@
                   </form>
                     <!-- end overfantasy filtring-->
                     <form method="POST" action="/add_custom_contest_data" class="card-body">
-                      
-                          <%if(fantasy_type==="overfanasty"){%>
-                            <input name="fantasy_type" type="hidden" value="<%= fantasy_type%>">
-                          <%}%>
                           <%if(fantasy_type===undefined){%>
                           <input name="fantasy_type" type="hidden" value="Cricket">
                           <%}%>
@@ -180,6 +173,16 @@
                                 </select>
                               </div>
                             </div>
+                            <div class="col-12">
+                              <div class="form-group my-3"> 
+                                  <label for="">Contest Type*</label> 
+                                  <select class="form-control form-control-solid" name="type_contest" required=""> 
+                                      <option value="Cricket" selected="" dis="">Normal</option> 
+                                      <option value="Quiz" selected="" dis="">Quiz</option> 
+                                 </select>
+                                  
+                             </div> 
+                           </div>
                             <div class="col-md-12 col-12">
                               <div class="form-group my-3">
                                 <label class="label-control text-bold">Contest Name*</label>

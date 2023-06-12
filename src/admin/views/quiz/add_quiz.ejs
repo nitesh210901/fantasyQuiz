@@ -94,10 +94,16 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-12">
+                                                    <div class="col-md">
                                                         <div class="form-group my-3">
-                                                            <label for="job-title">Answer*</label>
-                                                            <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Answer" name="answer" required>
+                                                            <label for="Answer*" style="color:black;">Answer*</label>
+                                                            <select class="form-control form-control-solid " title="Fantasy Type" id="matchkey_id" data-container="body" name="answer">
+                                                             <option value="" selected disabled>Select Your Answer</option>
+                                                             <option value="option_A">Option A</option>
+                                                             <option value="option_B">Option B</option>
+                                                             <option value="option_C">Option C</option>
+                                                             <option value="option_D">Option D</option>       
+                                                            </select>    
                                                         </div>
                                                     </div>
 
@@ -120,9 +126,6 @@
 
                         })
                     </script>
-
-
-                   
                     <script>
                         $('#special').on('click', function() {
                             mySelect.find('option:selected').prop('disabled', true);
@@ -139,9 +142,6 @@
                             maxOptions: 1
                         });
                     </script>
-
-
-
                     <script>
                         $(document).ready(function() {
 

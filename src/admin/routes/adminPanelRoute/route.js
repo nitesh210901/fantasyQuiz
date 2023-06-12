@@ -496,6 +496,9 @@ router.get("/delete-global-question", auth, getUrl, QuizController.deleteGlobalQ
 router.post("/delete-multi-global-question", auth, QuizController.globalQuestionMuldelete);
 router.get("/Import-global-questions", auth, QuizController.importGlobalQuestionPage);
 router.get("/importmatchQuestion/:matchKey", auth, getUrl, QuizController.importQuestionData);
+router.get("/Import-global-contest", auth, getUrl, QuizController.importGlobalContestPage);
+router.get("/quizimportmatchData/:matchKey", auth, getUrl, QuizController.quizimportchallengersData);
+
 // router.get("/update-quiz-status/:id", auth, getUrl, QuizController.updateStatusforQuiz);
 //-----cricket api controller (3rd party api)------------//
 // router.get("/listMatches", cricketApiController.listOfMatches);

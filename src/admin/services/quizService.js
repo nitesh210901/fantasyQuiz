@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const moment = require("moment");
 
 const quizModel = require('../../models/quizModel');
+const matchchallengersModel = require("../../models/matchChallengersModel")
+const challengersModel = require("../../models/challengersModel")
+const priceCardModel = require("../../models/priceCardModel")
 const globalQuizModel = require('../../models/globalQuizModel');
 const listMatches = require('../../models/listMatchesModel');
 const joinLeague = require('../../models/JoinLeaugeModel')
@@ -31,6 +34,8 @@ class quizServices {
             globalQuestionMuldelete: this.globalQuestionMuldelete.bind(this),
             createCustomQuestions: this.createCustomQuestions.bind(this),
             importQuestionData: this.importQuestionData.bind(this),
+            quizcreateCustomContest: this.quizcreateCustomContest.bind(this),
+            quizimportchallengersData: this.quizimportchallengersData.bind(this),
         }
     }
 
@@ -982,6 +987,197 @@ class quizServices {
             return {
                 status: false,
                 message: 'Questions not imported ..error..'
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async quizcreateCustomContest(req) {
+        try {
+            let curTime = moment().format("YYYY-MM-DD HH:mm:ss");
+            const getLunchedMatch = await listMatches.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime } ,isQuiz:1}, {name: 1 });
+            let getlistofMatches
+            let anArray = [];
+            if (req.query.matchkey) {
+                let qukey = req.query.matchkey
+                let objfind={};
+                objfind.matchkey= mongoose.Types.ObjectId(qukey)
+                if(req.query.entryfee && req.query.entryfee != ""){
+                objfind.entryfee= Number(req.query.entryfee)
+                }
+                if(req.query.win_amount && req.query.win_amount != ""){
+                objfind.win_amount= Number(req.query.win_amount)
+                }
+                if(req.query.team_limit && req.query.team_limit != ""){
+                objfind.team_limit= Number(req.query.team_limit)
+                }
+                objfind.type_contest = "Quiz"
+                getlistofMatches = await matchchallengersModel.find(objfind);
+                for await (let keyy of getlistofMatches) {
+                    let obj = {};
+                    let newDate = moment(keyy.createdAt).format('MMM Do YY');
+                    let day = moment(keyy.createdAt).format('dddd');
+                    let time = moment(keyy.createdAt).format('h:mm:ss a');
+                    if (keyy.is_expert == 1) {
+                        obj.newDate = newDate;
+                        obj.day = day;
+                        obj.time = time;
+                        obj.contest_cat = keyy.contest_cat;
+                        obj.matchkey = keyy.matchkey;
+                        obj.fantasy_type = keyy.fantasy_type
+                        obj.entryfee = keyy.entryfee;
+                        obj.win_amount = keyy.win_amount;
+                        obj.status = keyy.status;
+                        obj.contest_type = keyy.contest_type;
+                        obj.winning_percentage = keyy.winning_percentage;
+                        obj.is_bonus = keyy.is_bonus;
+                        obj.bonus_percentage = keyy.bonus_percentage;
+                        obj.amount_type = keyy.amount_type;
+                        obj.c_type = keyy.c_type;
+                        obj.is_private = keyy.is_private;
+                        obj.is_running = keyy.is_running;
+                        obj.confirmed_challenge = keyy.confirmed_challenge;
+                        obj.multi_entry = keyy.multi_entry;
+                        obj._id = keyy._id;
+                        obj.joinedusers = keyy.joinedusers;
+                        obj.team_limit = keyy.team_limit;
+
+                    } else {
+                        obj.newDate = newDate;
+                        obj.day = day;
+                        obj.time = time;
+                        obj._id = keyy._id;
+                        obj.contest_cat = keyy.contest_cat;
+                        obj.challenge_id = keyy.challenge_id;
+                        obj.matchkey = keyy.matchkey;
+                        obj.fantasy_type = keyy.fantasy_type;
+                        obj.entryfee = keyy.entryfee;
+                        obj.win_amount = keyy.win_amount;
+                        obj.maximum_user = keyy.maximum_user;
+                        obj.status = keyy.status;
+                        obj.joinedusers = keyy.joinedusers;
+                        obj.contest_type = keyy.contest_type;
+                        obj.contest_name = keyy?.contest_name;
+                        obj.mega_status = keyy.mega_status;
+                        obj.winning_percentage = keyy.winning_percentage;
+                        obj.is_bonus = keyy.is_bonus;
+                        obj.bonus_percentage = keyy.bonus_percentage;
+                        obj.pricecard_type = keyy.pricecard_type;
+                        obj.minimum_user = keyy.minimum_user;
+                        obj.confirmed_challenge = keyy.confirmed_challenge;
+                        obj.multi_entry = keyy.multi_entry;
+                        obj.team_limit = keyy.team_limit;
+                        obj.c_type = keyy.c_type;
+                        obj.is_private = keyy.is_private;
+                        obj.is_running = keyy.is_running;
+                        obj.is_deleted = keyy.is_deleted;
+                        obj.matchpricecards = keyy.matchpricecards;
+                        obj.amount_type = keyy.amount_type;
+                    }
+                    anArray.push(obj)
+                }
+            } else {
+                getlistofMatches = []
+            }
+            // console.log("anArray.................//////////.anArray.............................................", anArray)
+            if (getLunchedMatch) {
+                return {
+                    matchData: anArray,
+                    matchkey: req.body.matchkey,
+                    data: getLunchedMatch,
+                    status: true
+                }
+            } else {
+                return {
+                    status: false,
+                    message: 'can not get list-Matches data'
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+    async quizimportchallengersData(req) {
+        try {
+            
+            let findmatch = await listMatches.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey), isQuiz: 1, is_deleted: false });
+            if (findmatch) {
+                const findleauges = await challengersModel.find({ fantasy_type: { $regex: new RegExp(findmatch.fantasy_type.toLowerCase(), "i") } ,type_contest: "Quiz"});
+                let anArray = [];
+                if (findleauges.length > 0) {
+                    for await (let key1 of findleauges) {
+                        const findchallengeexist = await matchchallengersModel.find({ matchkey: mongoose.Types.ObjectId(req.params.matchKey), challenge_id: mongoose.Types.ObjectId(key1._id),type_contest:"Quiz" });
+                        if (findchallengeexist.length == 0) {
+                            let data = {};
+                            data['challenge_id'] = mongoose.Types.ObjectId(key1._id);
+                            data['contest_cat'] = mongoose.Types.ObjectId(key1.contest_cat);
+                            data['contest_type'] = key1.contest_type;
+                            data['winning_percentage'] = key1.winning_percentage;
+                            data['is_bonus'] = key1.is_bonus;
+                            data['bonus_percentage'] = key1.bonus_percentage;
+                            data['pricecard_type'] = key1.pricecard_type;
+                            data['entryfee'] = key1.entryfee;
+                            data['win_amount'] = key1.win_amount;
+                            data['maximum_user'] = key1.maximum_user;
+                            data['status'] = 'opened';
+                            data['confirmed_challenge'] = key1.confirmed_challenge;
+                            data['is_running'] = key1.is_running;
+                            data['multi_entry'] = key1.multi_entry;
+                            data['team_limit'] = key1.team_limit;
+                            data['matchkey'] = mongoose.Types.ObjectId(req.params.matchKey);
+                            data['contest_name'] = key1.contest_name;
+                            data['amount_type'] = key1.amount_type;
+                            data['type_contest'] = key1.type_contest;
+                            
+                            const insertData = new matchchallengersModel(data);
+                            let saveInsert = await insertData.save();
+
+                            let findpricecrads = await priceCardModel.find({ challengersId: key1._id });
+                            if (findpricecrads.length > 0) {
+                                for await (let key2 of findpricecrads) {
+                                    let pdata = {};
+                                    pdata['challengeId'] = mongoose.Types.ObjectId(key2.challengersId);
+                                    pdata['matchkey'] = mongoose.Types.ObjectId(req.params.matchKey);
+                                    pdata['winners'] = key2.winners;
+                                    pdata['price'] = key2.price;
+                                    if (key2.price_percent) {
+                                        pdata['price_percent'] = key2.price_percent;
+                                    }
+                                    if (key1.amount_type == "prize") {
+                                        pdata['prize_name'] = key2.prize_name;
+                                        pdata['image'] = key2.image;
+                                    }
+                                    pdata["gift_type"] = key2.gift_type || "amount";
+                                    pdata['min_position'] = key2.min_position;
+                                    pdata['max_position'] = key2.max_position;
+                                    pdata['total'] = key2.total;
+                                    pdata['type'] = key2.type;
+
+                                    const updateInsert = await matchchallengersModel.updateOne({ _id: mongoose.Types.ObjectId(saveInsert._id) }, {
+                                        $push: {
+                                            matchpricecards: pdata
+                                        }
+                                    })
+                                }
+                            }
+                        }
+                    }
+                    return {
+                        status: true,
+                        message: 'Challenge imported successfully'
+                    }
+
+                }
+                return {
+                    status: false,
+                    message: 'Challenge not Found ..error..'
+                }
+
+            }
+            return {
+                status: false,
+                message: 'Challenge not imported ..error..'
             }
         } catch (error) {
             throw error;

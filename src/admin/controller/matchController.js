@@ -531,7 +531,7 @@ async quiz(req, res, next) {
             const data = await matchServices.launch(req);
             if (data.status === true) {
                 req.flash('success', 'Match Launched ..!!');
-                res.redirect(`/Import-global-questions?matchkey=${req.params.id}`);
+                res.redirect(`/Import-global-contest?matchkey=${req.params.id}`);
             }
             else if (data === true) {
                 req.flash('success', 'Match Launched ..!!');

@@ -99,7 +99,6 @@ class challengersController {
                     }
                 }
             }else if(postGlobelchallengers.status == false){
-              console.log("mmm",postGlobelchallengers.message)
                 req.flash('error',postGlobelchallengers.message);
                 res.redirect('/add-global-contest-challengers');
             }
@@ -386,8 +385,6 @@ class challengersController {
             }else{
                 req.flash('error',data.message)
                 res.redirect(`/create-custom-contest?matchkey=${req.params.matchKey}`);
-                
-                
             }
         }catch(error){
             //  next(error);
