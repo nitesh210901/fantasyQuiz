@@ -16,22 +16,6 @@ class stockCategory {
             deleteStockCategory: this.deleteStockCategory.bind(this),
             editStockCategoryData: this.editStockCategoryData.bind(this),
             viewStockDatabale: this.viewStockDatabale.bind(this),
-            viewStock: this.viewStock.bind(this),
-        }
-    }
-
-    
-
-
-    async viewStock(req, res) {
-        try {
-            res.locals.message = req.flash();
-            let name = req.query.name;
-            res.render("stockManager/viewStock", { sessiondata: req.session.data, name });
-
-        } catch (error) {
-            req.flash('error', 'Something went wrong please try again');
-            res.redirect("/");
         }
     }
 

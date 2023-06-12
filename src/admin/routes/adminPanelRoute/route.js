@@ -534,6 +534,8 @@ router.get("/launch-contest/:id", auth, stockContestController.launchStockContes
 router.get("/viewStocks", auth, stockController.viewStock);
 router.post("/save-stockcategory", auth, stockController.saveStockCategory);
 router.get("/viewStockDatabale", auth, getUrl, stockController.viewStockDatabale);
+router.get("/add_Stock_category", auth, getUrl, stockController.addStockCategoryPage);
+router.get("/viewCategoryStockDatabale", auth, getUrl, stockController.viewCategoryStockDatabale);
 
 
 // ---------------------------------Stock Category Manager-----------------------------------------
