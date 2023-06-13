@@ -48,8 +48,7 @@ class stockCategory {
           let start = req.query.start;
           let conditions = {};
           let rows;
-          let stockCategory = req.query.stockcategory;
-
+        let stockCategory = req.query.stockcategory;
           if(stockCategory != 'null') {
               let stockcategory = req.query.stockcategory;
               rows = await stockCategoryModel.aggregate(
@@ -58,7 +57,8 @@ class stockCategory {
                     '$match': {
                       '_id': new mongoose.Types.ObjectId(stockcategory)
                     }
-                  }, {
+                  },
+                  {
                     '$addFields': {
                       'sidArray': {
                         '$map': {
