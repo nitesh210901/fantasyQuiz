@@ -14,7 +14,10 @@ class matchController {
             stockJoinContest: this.stockJoinContest.bind(this),
             getStockContestCategory: this.getStockContestCategory.bind(this),
             saveStocks: this.saveStocks.bind(this),
-
+            getAllNewStock: this.getAllNewStock.bind(this),
+            getStockCategory: this.getStockCategory.bind(this),
+            getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
+            myJoinedStockContests: this.myJoinedStockContests.bind(this)
         }
     }
 
@@ -93,6 +96,59 @@ class matchController {
         } catch (error) {
             console.log(error);
             throw error;
+        }
+    }
+
+    async getAllNewStock(req, res, next) {
+        try {
+            const data = await stockContestService.getAllNewStock(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getStockCategory(req, res){
+        try {
+            const data = await stockContestService.getStockCategory(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    async getStockAccordingCategory(req, res){
+        try {
+            const data = await stockContestService.getStockAccordingCategory(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+    async myJoinedStockContests(req, res, next) {
+        try {
+            const data = await stockContestService.myJoinedStockContests(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
+        } catch (error) {
+            next(error);
         }
     }
 }

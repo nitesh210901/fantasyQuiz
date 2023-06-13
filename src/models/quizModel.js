@@ -2,42 +2,26 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 let quizSchema = new Schema({
-    matchkey_id: {
+    matchkey: {
         type : mongoose.Types.ObjectId
     },
     question: {
         type: String,
         default:""
     },
-    option_A: {
-        type: String,
-        default:""
-    },
-    option_B: {
-        type: String,
-        default:""
-    },
-    option_C: {
-        type: String,
-        default:""
-    },
-    option_D: {
-        type: String,
-        default:""
-    },
+    options: [],
     answer: {
         type: String,
         default:""
     },
-    point: {
+    entryfee: {
         type: Number,
-        default:0
+        default: 0
     },
-    global_quizId: {
-        type: mongoose.Schema.Types.ObjectId,
-        default:null,
-        ref:"global_quizzes"
-    }
+    multiply : {
+        type: Number,
+        default: 0
+    },
 }, {
     timestamps: true,
     versionKey: false

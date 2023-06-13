@@ -58,24 +58,29 @@
                                                     <div class="col-12">
                                                         <div class="form-group my-3">
                                                             <label for="job-title">Question*</label>
-                                                            <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Question" name="question" required>
+                                                            <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Question" name="question">
+                                                        </div>
+                                                    </div>
+                        
+                                                    <div class="col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="example-datetime-local-input">Options 1</label>
+                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="" name="options[]">
                                                         </div>
                                                     </div>
 
                                                     <div class="col-12">
                                                         <div class="form-group my-3">
-                                                            <label for="job-title">Point*</label>
-                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Point" name="point" required>
+                                                            <label for="example-datetime-local-input">Options 2</label>
+                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="" name="options[]">
+                                                            <button type="button" id="add">Add</button>
                                                         </div>
                                                     </div>
-                        
-                                                    <div class="col-md-6 col-12">
-                                                        <div class="form-group my-3">
-                                                            <label for="example-datetime-local-input">Option A*</label>
-                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option A"  autocomplete="off" value="" name="option_A" required>
-                                                        </div>
+                                                    <div class="col-12" id="items">
                                                     </div>
-                                                    <div class="col-md-6 col-12">
+
+
+                                                    <!-- <div class="col-md-6 col-12">
                                                         <div class="form-group my-3">
                                                             <label for="example-datetime-local-input2">Option B*</label>
                                                             <input class="form-control form-control-solid" type="text" placeholder="Enter Option B" value="" name="option_B" autocomplete="off" required>
@@ -92,18 +97,30 @@
                                                             <label for="example-datetime-local-input2">Option D*</label>
                                                             <input class="form-control form-control-solid" type="text" placeholder="Enter Option D" value="" name="option_D" autocomplete="off" required>
                                                         </div>
-                                                    </div>
+                                                    </div> -->
 
                                                     <div class="col-md">
                                                         <div class="form-group my-3">
                                                             <label for="Answer*" style="color:black;">Answer*</label>
-                                                            <select class="form-control form-control-solid " title="Fantasy Type" id="matchkey_id" data-container="body" name="answer">
-                                                             <option value="" selected disabled>Select Your Answer</option>
-                                                             <option value="option_A">Option A</option>
-                                                             <option value="option_B">Option B</option>
-                                                             <option value="option_C">Option C</option>
-                                                             <option value="option_D">Option D</option>       
+                                                            <select class="form-control form-control-solid " title="Fantasy Type" id="answerId" data-container="body" name="answer">
+                                                             <option value="" selected disabled>Select Your Answer</option>       
+                                                             <option value="option_1">Option 1</option>       
+                                                             <option value="option_2">Option 2</option>       
                                                             </select>    
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="job-title">Entry Fee*</label>
+                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" name="entryfee">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-3">
+                                                        <div class="form-group my-2">
+                                                            <label class="control-label text-bold">Multiply*</label>
+                                                           <input required=""  class="form-control form-control-solid" name="multiply" type="number">*Entry Fee
                                                         </div>
                                                     </div>
 
@@ -119,6 +136,29 @@
 
                 <%- include("../../partials/alertMsg") %>
                 <%- include("../../partials/footer") %>
+                <script>
+                    // let template = `<div class="form-group my-3">
+                    //                     <label for="example-datetime-local-input">Options</label>
+                    //                     <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="" name="options[]">
+                    //                     <button class="remove">X</button>
+                    //                 </div>`
+                     i = 2 
+                    $("#add").on("click", ()=>{
+                        ++i
+                        $("#items").append(`<div class="form-group my-3">
+                                        <label for="example-datetime-local-input">Options ${i}</label>
+                                        <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="" name="options[]">
+                                        <button class="remove">X</button>
+                                    </div>`);
+                        $("#answerId").append(`<option value="option_${i}">Option ${i}</option>`)
+                    })
+                    $("body").on("click", ".remove", (e)=>{
+                        $(`#answerId option[value="option_${i}"]`).remove();
+                        --i
+                        $(e.target).parent("div").remove();
+                    })
+                    
+                </script>
                     <script>
                         $(window).on('load', function() {
 
@@ -126,6 +166,7 @@
 
                         })
                     </script>
+                    
                     <script>
                         $('#special').on('click', function() {
                             mySelect.find('option:selected').prop('disabled', true);
@@ -154,10 +195,7 @@
                             }
                         });
                     </script>
-                   
-
-
-                    <script type="text/javascript">
+                        <script type="text/javascript">
                         $.datetimepicker.setLocale('en');
                         $('.datetimepickerget').datetimepicker({
                             lang: 'en',

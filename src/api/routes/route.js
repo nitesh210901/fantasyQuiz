@@ -341,6 +341,9 @@ router.get('/get-stock-contest',  stockController.listStockContest);
 router.post('/stock-create-team', auth, stockController.stockCreateTeam);
 router.post('/join-stock-contest', auth, stockController.stockJoinContest);
 router.get('/get-stock-contest-category', auth, stockController.getStockContestCategory);
+router.get('/getAllContestStock', auth, stockController.getAllNewStock);
 router.get("/saveStocks", auth, stockController.saveStocks);
-
+router.get("/get-stock-category", auth, stockController.getStockCategory);
+router.get("/getallstockaccordingcategory", auth, stockController.getStockAccordingCategory);
+router.get('/myjoinedstockcontests', auth, stockController.myJoinedStockContests);
 module.exports = router;
