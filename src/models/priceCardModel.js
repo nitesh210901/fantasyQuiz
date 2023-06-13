@@ -57,7 +57,6 @@ let pricecards = new Schema({
         type:String,
         default:""
     }
-
 }, {
     timestamps: true,
     versionKey: false

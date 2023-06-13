@@ -31,7 +31,7 @@ class seriesController {
 
     async addSeries(req, res, next) {
         try {
-            // console.log('req-------------controller', req.body);
+            console.log('req-------------controller', req.body);
             const data = await seriesServices.addSeries(req);
          
             if (data.status) {
@@ -42,6 +42,7 @@ class seriesController {
                 res.redirect("/add-series");
             }
         } catch (error) {
+            console.log(error);
             req.flash('error','something is wrong please try again later');
             res.redirect('/add-series');
         }
