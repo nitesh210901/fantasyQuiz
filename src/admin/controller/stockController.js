@@ -14,7 +14,7 @@ class stockCategory {
         }
     }
 
-    async addStockCategoryPage(req, res) {
+  async addStockCategoryPage(req, res) {
       try {
           res.locals.message = req.flash();
           let name = req.query.name;
@@ -32,8 +32,9 @@ class stockCategory {
           res.locals.message = req.flash();
           let name = req.query.name;
           let catName = req.query.category;
+          let stockType = req.query.stocktype;
           const categories = await stockCategoryModel.find({}, {name:1});
-          res.render("stockManager/viewStock", { sessiondata: req.session.data, name , categories, catName});
+          res.render("stockManager/viewStock", { sessiondata: req.session.data, name , categories, catName, stockType});
 
       } catch (error) {
           req.flash('error', 'Something went wrong please try again');
@@ -46,16 +47,16 @@ class stockCategory {
 
           let limit1 = req.query.length;
           let start = req.query.start;
-          let conditions = {};
           let rows;
-        let stockCategory = req.query.stockcategory;
+          let stockCategory = req.query.stockcategory;
+          let stockType = req.query.stockType;
           if(stockCategory != 'null') {
               let stockcategory = req.query.stockcategory;
               rows = await stockCategoryModel.aggregate(
                 [
                   {
                     '$match': {
-                      '_id': new mongoose.Types.ObjectId(stockcategory)
+                      '_id': new mongoose.Types.ObjectId(stockcategory),
                     }
                   },
                   {
@@ -101,6 +102,12 @@ class stockCategory {
                 ]
               )
           }else{
+            let conditions
+              if(stockType != 'null'){
+                conditions = {"exchange" : stockType}
+              } else{
+                conditions = {}
+              }
               rows = await stockModel.countDocuments(conditions);
               rows = await stockModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 });
           }

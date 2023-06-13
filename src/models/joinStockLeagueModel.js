@@ -56,7 +56,7 @@ let joinedleaugeSchema = new Schema({
         type: Number,
         default: 0
     },
-    matchkey: {
+    contestId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'contest_stock',
         index:true

@@ -41,8 +41,7 @@
                           <div class="row mx-0">
                             <div class="col-md">
                               <div class="form-group">
-                                <label for="Select Category" class=" text-bold">Select Category</label>
-                                <select class="form-control" id="catId"
+                                <select class="form-control mt-2" id="catId"
                                     data-container="body" data-live-search="true"
                                     title="Select Category" data-hide-disabled="true"
                                     name="category" >
@@ -57,14 +56,24 @@
                                             <%}%>
                                         <% }%>
                                 </select>
+
+                                <select class="form-control mt-4" id="stockType"
+                                    data-container="body" data-live-search="true"
+                                    title="Select Stock Type" data-hide-disabled="true"
+                                    name="stocktype" >
+                                    <option disabled selected> Select Stock Type
+                                    </option>
+                                        <option value="NSE" <%= stockType === "NSE"?'selected':"" %>>NSE</option>
+                                        <option value="MCX" <%= stockType === "MCX"?'selected':"" %>>MCX</option>
+                                        <option value="COMMODITIES" <%= stockType === "COMMODITIES"?'selected':"" %>>COMMODITIES</option>
+                                </select>
                               </div>
                             </div>
 
                             <div class="col-12 text-right mt-4 mb-2">
                               <button class="btn btn-sm btn-success text-uppercase"><i class="far fa-check-circle"
                                   type="submit"></i>&nbsp;Submit</button>
-                              <a href="/view-all-players" class="btn btn-sm btn-warning text-uppercase"><i
-                                  class="far fa-undo"></i>&nbsp; Reset</a>
+                              
                             </div>
                           </div>
                         </div>
@@ -136,15 +145,14 @@
             <script type="text/javascript">
               $(document).ready(function () {
                 const elem = $('#catId').val();
-                console.log(elem)
+                const elem2 = $('#stockType').val();
                 $.fn.dataTable.ext.errMode = 'none';
                 $('#stockTable').DataTable({
-        
                   language: {
-              zeroRecords: "No records to display",
-            },
+                  zeroRecords: "No records to display",
+                },
                   "ajax": {
-                    "url": `/viewStockDatabale?stockcategory=${elem}`,
+                    "url": `/viewStockDatabale?stockcategory=${elem}&stockType=${elem2}`,
                     "dataType": "json",
                     "type": "GET",
                   },

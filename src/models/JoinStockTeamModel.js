@@ -11,9 +11,9 @@ let JoinStockTeamSchema = new Schema({
         type: String,
         default: "stock"
       },
-    matchkey: {
+      contestId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'listMatches',
+        ref: 'stock_contest',
         index: true
     },
     teamnumber: {
