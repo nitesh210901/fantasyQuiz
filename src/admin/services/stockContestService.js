@@ -146,7 +146,7 @@ class challengersService {
                             status: true,
                             renderStatus: req.body.contest_type,
                             data: saveInsert,
-                            message: 'Stock Contest Create successfully'
+                            message: 'Stock Contest Created successfully'
                         };
                     }
 
