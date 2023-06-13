@@ -58,7 +58,8 @@ class stockCategory {
                     '$match': {
                       '_id': new mongoose.Types.ObjectId(stockcategory),
                     }
-                  }, {
+                  },
+                  {
                     '$addFields': {
                       'sidArray': {
                         '$map': {

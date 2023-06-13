@@ -70,16 +70,18 @@
 
       <th class="myclass">Sno.</th>
       <th class="myclass1">Question</th>
+      <th class="myclass3">Options</th>
       <th class="myclass2">Answer</th>
       <th class="myclass4">Action</th>
     </tr>
     </thead>
      <tbody>
-  </tbody>
+  </tbody>  
   <tfoot>
       <tr>
           <th>Sno.</th>
           <th>Question</th>
+          <th>Options</th>
           <th>Answer</th>
           <th>Action</th>
       </tr>
@@ -116,7 +118,10 @@ $(document).ready(function() {
         }, {
             data: "question"
         },{
-            data: "answer"
+            data: "options"
+        },
+        {
+          data:"answer"
         },
         {
             data: "Action",orderable: false
