@@ -20,50 +20,56 @@ class overfantasyServices {
             listStockContest: this.listStockContest.bind(this),
             stockJoinContest: this.stockJoinContest.bind(this),
             findUsableBonusMoney: this.findUsableBonusMoney.bind(this),
-            getStockContestCategory: this.getStockContestCategory.bind(this)
+            getStockContestCategory: this.getStockContestCategory.bind(this),
+            getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
         }
     }
-    async listStockContest(req){
+    
+
+    async listStockContest(req) {
         try {
-            const data = await stockContestModel.aggregate([
-                [
-                    {
-                        '$match': {
-                        'launch_status':true,
-                        'isEnable': true, 
-                        'isCancelled': false,
-                        'start_date':{$gte:moment().format('YYYY-MM-DD HH:mm:ss')}
-                      }
-                    }, {
-                      '$sort': {
-                          'bonus_percentage': -1,
-                          'confirmed_challenge':-1
-                      }
-                    }
-                  ]
-            ]);
-            if(data){
-                return {
-                    message: 'All Contests',
-                    status: true,
-                    data: data
+            const { stock_contest_cat } = req.body;
+            let matchpipe = [];
+            let date = moment().format('YYYY-MM-DD HH:mm:ss');
+            console.log(`date`, date);
+            let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
+            matchpipe.push({
+                $match: { fantasy_type: 'stock' }
+            });
+            matchpipe.push({
+                $match: {
+                    $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+                    final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
                 }
-            }else{
-                return {
-                    message: 'All Contests',
-                    status: true,
-                    data:{}
+            });
+
+            matchpipe.push({
+                $sort: {
+                    start_date: 1,
+                },
+            });
+            
+            matchpipe.push({
+                $sort: {
+                    match_order: 1
                 }
-            }
+            });
+
+
+            const result = await stockContestModel.aggregate(matchpipe);
+            console.log('niteshhhh', result)
+            result.sort(function (a, b) {
+                return b.match_order
+            });
+            if (result.length > 0) return result
+
+            else return [];
         } catch (error) {
-            console.log(error);
             throw error;
         }
     }
-
     async stockCreateTeam(req) {
         try {
-
             const { matchkey, stock, teamnumber, contestId } = req.body;
             let stockArray = stock.map(item => item.stockId);
 
@@ -82,7 +88,7 @@ class overfantasyServices {
                 stockObjectIdArray.push(mongoose.Types.ObjectId(stockId.stockId));
             }
             
-            const joinlist = await joinStockTeamModel.find({ matchkey: matchkey, userid: req.user._id }).sort({ teamnumber: -1 });
+            const joinlist = await joinStockTeamModel.find({ contestId: contestId, userid: req.user._id }).sort({ teamnumber: -1 });
             
             const duplicateData = await this.checkForDuplicateTeam(joinlist, stockArray, teamnumber);
             if (duplicateData === false) {
@@ -110,7 +116,7 @@ class overfantasyServices {
             data['stock'] = stock;
             data['type'] = "stock";
             const joinTeam = await joinStockTeamModel.findOne({
-                matchkey: matchkey,
+                contestId: contestId,
                 teamnumber: parseInt(teamnumber),
                 userid: req.user._id,
             }).sort({ teamnumber: -1 });
@@ -131,7 +137,7 @@ class overfantasyServices {
                 }
             } else {
                 const joinTeam = await joinStockTeamModel.find({
-                    matchkey: matchkey,
+                    contestId: contestId,
                     userid: req.user._id,
                 });
                 if (joinTeam.length > 0) {
@@ -208,8 +214,7 @@ class overfantasyServices {
             let totalchallenges = 0,
             totalmatches = 0,
             totalseries = 0,
-            joinedMatch = 0,
-            joinedSeries = 0;
+            joinedMatch = 0;
             
             const chkContest = await stockContestModel.findOne({_id:stockContestId, isCancelled:false, isEnable:true, launch_status:true, final_status: 'pending' });
             if(!chkContest){
@@ -403,9 +408,9 @@ class overfantasyServices {
                     tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
                     let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
                     if (result == 1) {
-                        joinedMatch = await joinStockLeagueModel.find({ matchkey: stockContestId, userid: req.user._id }).limit(1).count();
+                        joinedMatch = await joinStockLeagueModel.find({ contestId: stockContestId, userid: req.user._id }).limit(1).count();
                     }
-                    const joinedLeauges = await joinStockLeagueModel.find({ matchkey:  stockContestId}).count();
+                    const joinedLeauges = await joinStockLeagueModel.find({ contestId:  stockContestId}).count();
                     const joinUserCount = joinedLeauges + 1;
                    
                     if (chkContest.contest_type == 'Amount' && joinUserCount > chkContest.maximum_user) {
@@ -452,7 +457,7 @@ class overfantasyServices {
                     const joinLeaugeResult = await joinStockLeagueModel.create({
                         userid: req.user._id,
                         teamid: jointeamId,
-                        matchkey: stockContestId,
+                        contestId: stockContestId,
                         transaction_id: tranid,
                         refercode: referCode,
                         leaugestransaction: {
@@ -465,12 +470,12 @@ class overfantasyServices {
                     await stockLeaderBoardModel.create({
                         userId: req.user._id,
                         teamId: jointeamId,
-                        matchkey: stockContestId,
+                        contestId: stockContestId,
                         user_team: user.team,
                         teamnumber: jointeamsData.teamnumber,
                         joinId: joinLeaugeResult._id
                     });
-                    const joinedLeaugesCount = await joinStockLeagueModel.find({ matchkey: stockContestId }).count();
+                    const joinedLeaugesCount = await joinStockLeagueModel.find({ contestId: stockContestId }).count();
                     if (result == 1) {
                         totalchallenges = 1;
                         if (joinedMatch == 0) {
@@ -485,19 +490,19 @@ class overfantasyServices {
                         mainwin = mainwin + resultForWinning.cons_win;
                         if (chkContest.contest_type == 'Amount' && joinedLeaugesCount == chkContest.maximum_user && chkContest.is_running != 1) {
                             // console.log(`---------------------8TH IF--------${chkContest.is_running}---------`);
-                            await stockContestModel.findOneAndUpdate({ matchkey: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
+                            await stockContestModel.findOneAndUpdate({ contestId: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
                                 status: 'closed',
                                 joinedusers: joinedLeaugesCount,
                             }, { new: true });
                         } else {
                             // console.log(`---------------------8TH IF/ELSE--------${chkContest.is_running}---------`);
-                            const gg = await stockContestModel.findOneAndUpdate({ matchkey: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
+                            const gg = await stockContestModel.findOneAndUpdate({ contestId: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
                                 status: 'opened',
                                 joinedusers: joinedLeaugesCount,
                             }, { new: true });
                         }
                     } else
-                        await stockContestModel.findOneAndUpdate({ matchkey: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
+                        await stockContestModel.findOneAndUpdate({ contestId: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
                             status: 'opened',
                             joinedusers: joinedLeaugesCount,
                         }, { new: true });
@@ -559,7 +564,6 @@ class overfantasyServices {
             throw error;
         }
     }
-
 
     async findUsableBalanceMoney(resultForBonus, balance) {
         if (balance >= resultForBonus.reminingfee)
@@ -632,12 +636,13 @@ class overfantasyServices {
             throw error;
         }
     }
+
     async findJoinLeaugeExist(matchkey, userId, teamId, challengeDetails) {
         if (!challengeDetails || challengeDetails == null || challengeDetails == undefined) return 4;
 
         const joinedLeauges = await joinStockLeagueModel.find({
-            matchkey: matchkey,
-            challengeid: challengeDetails._id,
+            contestId: contestId,
+            contestId: challengeDetails._id,
             userid: userId,
         });
         console.log(joinedLeauges)
@@ -658,5 +663,6 @@ class overfantasyServices {
             }
         }
     }
+
 }
 module.exports = new overfantasyServices();

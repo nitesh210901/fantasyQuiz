@@ -14,7 +14,7 @@ class matchController {
             stockJoinContest: this.stockJoinContest.bind(this),
             getStockContestCategory: this.getStockContestCategory.bind(this),
             saveStocks: this.saveStocks.bind(this),
-
+            getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
         }
     }
 
@@ -24,7 +24,8 @@ class matchController {
             const data = await convertCsv().fromString(stockdata.data);
             let arr = [];
             for(let i of data){
-                if(i.exchange === 'NSE'){
+                if(i.exchange === 'NSE' || i.exchange === 'MCX'){
+                    i['type'] = i.exchange;
                     arr.push(stockModel.updateOne(
                     { instrument_token: i.instrument_token },
                     { $set: i },
@@ -33,7 +34,7 @@ class matchController {
             }
             Promise.allSettled(arr).then((values) => {
                 return res.status(200).json(Object.assign({ success: true }));
-              });
+            });
               return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             console.log(error);
@@ -95,5 +96,6 @@ class matchController {
             throw error;
         }
     }
+
 }
 module.exports = new matchController();

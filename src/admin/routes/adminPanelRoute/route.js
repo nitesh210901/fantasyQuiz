@@ -537,7 +537,6 @@ router.get("/viewStockDatabale", auth, getUrl, stockController.viewStockDatabale
 router.get("/add_Stock_category", auth, getUrl, stockController.addStockCategoryPage);
 router.get("/viewCategoryStockDatabale", auth, getUrl, stockController.viewCategoryStockDatabale);
 
-
 // ---------------------------------Stock Category Manager-----------------------------------------
 router.get("/viewStockCategory", auth, getUrl, stockCategoryController.stockCategoryPage);
 router.get("/create-stock-category", auth, getUrl, stockCategoryController.createStockCategory);

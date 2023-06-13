@@ -4,6 +4,9 @@ const Schema = mongoose.Schema;
 const constant = require('../config/const_credential');
 
 let stockModelSchema = new Schema({
+    type:{
+        type:String
+    },
     instrument_token:{
         type:String
     },
