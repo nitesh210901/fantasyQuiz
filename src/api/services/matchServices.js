@@ -1207,6 +1207,7 @@ class matchServices {
             throw error;
         }
     }
+    
     async updateTotalPoints(req) {
         try {
             //sahil redis

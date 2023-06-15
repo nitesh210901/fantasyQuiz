@@ -104,7 +104,8 @@ let stockContestModel = new Schema({
         default:''
     },
     status:{
-        type: String
+        type: String,
+        default:'notstarted'
     },
     launch_status:{
         type: Boolean,

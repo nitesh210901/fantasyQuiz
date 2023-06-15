@@ -17,7 +17,12 @@ class matchController {
             getAllNewStock: this.getAllNewStock.bind(this),
             getStockCategory: this.getStockCategory.bind(this),
             getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
-            myJoinedStockContests: this.myJoinedStockContests.bind(this)
+            myJoinedStockContests: this.myJoinedStockContests.bind(this),
+            getMyStockTeam: this.getMyStockTeam.bind(this),
+            getSingleContestDetails: this.getSingleContestDetails.bind(this),
+            viewStockTeam: this.viewStockTeam.bind(this),
+            completeContest: this.completeContest.bind(this),
+            myContestleaderboard: this.myContestleaderboard.bind(this),
         }
     }
 
@@ -140,6 +145,7 @@ class matchController {
             throw error;
         }
     }
+
     async myJoinedStockContests(req, res, next) {
         try {
             const data = await stockContestService.myJoinedStockContests(req);
@@ -148,6 +154,69 @@ class matchController {
             } else {
                 return res.status(200).json(Object.assign({ success: true }, data));
             }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getMyStockTeam(req, res, next) {
+        try {
+            const data = await stockContestService.getMyStockTeam(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getSingleContestDetails(req, res, next) {
+        try {
+            const data = await stockContestService.getSingleContestDetails(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async viewStockTeam(req, res, next) {
+        try {
+            const data = await stockContestService.viewStockTeam(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async completeContest(req, res, next) {
+        try {
+            const data = await stockContestService.completeContest(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+    
+    async myContestleaderboard(req, res, next) {
+        try {
+            const data = await stockContestService.myContestleaderboard(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);
         }
