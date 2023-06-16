@@ -18,13 +18,12 @@ class matchController {
             getStockCategory: this.getStockCategory.bind(this),
             getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
             myJoinedStockContests: this.myJoinedStockContests.bind(this),
-            getMyStockTeam: this.getMyStockTeam.bind(this),
             getSingleContestDetails: this.getSingleContestDetails.bind(this),
             viewStockTeam: this.viewStockTeam.bind(this),
             completeContest: this.completeContest.bind(this),
-            myContestleaderboard: this.myContestleaderboard.bind(this),
             getStockMyTeams: this.getStockMyTeams.bind(this),
-            myStockLeaderboard: this.myStockLeaderboard.bind(this),
+            myContestleaderboard: this.myContestleaderboard.bind(this),
+            updateResultStocks: this.updateResultStocks.bind(this),
         }
     }
 
@@ -217,6 +216,15 @@ class matchController {
     async myContestleaderboard(req, res, next) {
         try {
             const data = await stockContestService.myContestleaderboard(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updateResultStocks(req, res, next) {
+        try {
+            const data = await stockContestService.updateResultStocks(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);
