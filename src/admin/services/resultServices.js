@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
 const moment = require('moment');
+var KiteTicker = require("kiteconnect").KiteTicker;
 const axios = require("axios")
 const randomstring = require("randomstring");
 const profitLossModel = require("../../models/profitLoss");
 const constant = require('../../config/const_credential');
 const randomizePlayerSelectionClassic = require("../services/randomizePlayerSelectionClassic");
 const listMatches = require('../../models/listMatchesModel');
+const stockContestModel = require('../../models/stockContestModel');
 const seriesModel = require("../../models/addSeriesModel");
 const matchPlayers = require('../../models/matchPlayersModel');
 const resultMatch = require('../../models/resultMatchModel')
@@ -66,6 +68,7 @@ class resultServices {
             importPlayer:this.importPlayer.bind(this),
             callingForExtraPlayer:this.callingForExtraPlayer.bind(this),
             userTeamModified: this.userTeamModified.bind(this),
+            updateResultStocks: this.updateResultStocks.bind(this),
         }
     }
 
@@ -2631,6 +2634,48 @@ class resultServices {
             console.log(error)
         }
     }
+
+    async updateResultStocks(req) {
+        try {
+            const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
+
+            const listContest = await stockContestModel.find({
+                fantasy_type: "Stocks",
+                start_date: { $gte: currentDate },
+                launch_status: 'launched',
+                final_status: { $nin: ['winnerdeclared','IsCanceled'] },
+                status: { $ne: 'completed' }
+            });
+
+            if (listContest.length > 0) {
+                for (let index of listContest) {
+                    let matchTimings = index.start_date;
+                    let contestId = index._id;
+                    const currentDate1 = moment().format('YYYY-MM-DD HH:mm:ss');
+                    if (currentDate1 >= matchTimings) {
+                        this.getSockScoresUpdates(contestId);
+                    }
+                }
+
+            }
+            return listContest;
+
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    async getScoresUpdates(real_matchkey, matchkey) {
+        try {
+            
+        } catch (error) {
+            console.log("error"+error);
+            throw error;
+        }
+    }
+    
+    
 }
 
 module.exports = new resultServices();

@@ -353,6 +353,15 @@ router.get("/saveStocks", auth, stockController.saveStocks);
 router.get("/get-stock-category", auth, stockController.getStockCategory);
 router.get("/getallstockaccordingcategory", auth, stockController.getStockAccordingCategory);
 router.get('/myjoinedstockcontests', auth, stockController.myJoinedStockContests);
+<<<<<<< HEAD
+router.get('/get-my-stock-team', auth, stockController.getMyStockTeam);
+router.get('/get-single-contest-details', auth, stockController.getSingleContestDetails);
+router.get('/view-stock-team', auth, stockController.viewStockTeam);
+router.get('/completed-contest', auth, stockController.completeContest);
+router.get('/my-contest-leaderboard', auth, stockController.myContestleaderboard);
+
+=======
 router.get('/getStockMyTeams', auth, stockController.getStockMyTeams);
 router.get('/myStockLeaderboard', auth, stockController.myStockLeaderboard);
+>>>>>>> dd486b9613ef931270cc4b85753211964408af1c
 module.exports = router;

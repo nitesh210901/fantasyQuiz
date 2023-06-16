@@ -218,4 +218,14 @@ exports.saveStocks = new CronJob("30 8 * * *", async function () {
         console.log("error", error)
         return error;
     }
-})
+});
+
+
+exports.updateResultOfStocks = new CronJob('*/1 * * * *', async function () {
+    try {
+        console.log('<------ update stock result cron ------>');
+        resultServices.updateResultStocks();
+    } catch (error) {
+        return error;
+    }
+});
