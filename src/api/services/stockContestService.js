@@ -11,6 +11,9 @@ const randomstring = require("randomstring");
 const stockLeaderBoardModel = require('../../models/stockLeaderboardModel');
 const stockModel = require('../../models/stockModel');
 
+
+
+
 class overfantasyServices {
     constructor() {
         return {
@@ -26,6 +29,7 @@ class overfantasyServices {
             completeContest: this.completeContest.bind(this),
             myContestleaderboard: this.myContestleaderboard.bind(this),
             getStockMyTeams: this.getStockMyTeams.bind(this),
+            updateResultStocks: this.updateResultStocks.bind(this),
             // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
             // getMyStockTeam: this.getMyStockTeam.bind(this),
         }
@@ -1318,86 +1322,84 @@ class overfantasyServices {
 
 async getSockScoresUpdates(contestId, investment) {
     try {
+      
         const constedleaugeData = await joinStockLeagueModel.aggregate([
-            {
-              '$match': {
-                'contestId': new mongoose.Types.ObjectId(contestId)
-              }
-            }, {
-              '$lookup': {
-                'from': 'stock_contests', 
-                'localField': 'contestId', 
-                'foreignField': '_id', 
-                'as': 'contestData'
-              }
-            }, {
-              '$unwind': {
-                'path': '$contestData'
-              }
-            }, {
-              '$lookup': {
-                'from': 'joinstockteams', 
-                'localField': 'teamid', 
-                'foreignField': '_id', 
-                'as': 'teamData'
-              }
-            }, {
-              '$addFields': {
-                'teamData': {
-                  '$map': {
-                    'input': '$teamData', 
-                    'as': 'item', 
-                    'in': {
-                      'stock': '$$item.stock'
-                    }
+          {
+            '$match': {
+              'contestId': new mongoose.Types.ObjectId(contestId)
+            }
+          }, {
+            '$lookup': {
+              'from': 'stock_contests', 
+              'localField': 'contestId', 
+              'foreignField': '_id', 
+              'as': 'contestData'
+            }
+          }, {
+            '$lookup': {
+              'from': 'joinstockteams', 
+              'localField': 'teamid', 
+              'foreignField': '_id', 
+              'as': 'teamData'
+            }
+          }, {
+            '$addFields': {
+              'stock': {
+                '$getField': {
+                  'field': 'stock', 
+                  'input': {
+                    '$arrayElemAt': [
+                      '$teamData', 0
+                    ]
                   }
                 }
-              }
-            }, {
-              '$addFields': {
-                'teamData': {
-                  '$arrayElemAt': [
-                    '$teamData', 0
-                  ]
-                }
-              }
-            }, {
-              '$unwind': {
-                'path': '$teamData.stock'
-              }
-            }, {
-              '$addFields': {
-                'stockid': '$teamData.stock.stockId'
-              }
-            }, {
-              '$lookup': {
-                'from': 'stocks', 
-                'let': {
-                  'id': '$stockid'
-                }, 
-                'pipeline': [
-                  {
-                    '$match': {
-                      '$expr': {
-                        '$eq': [
-                          '$_id', '$$id'
-                        ]
-                      }
-                    }
-                  }
-                ], 
-                'as': 'stocks'
               }
             }
-          ]);
-          console.log(constedleaugeData,'+++++++++++++++++++++');
-
+          }, {
+            '$addFields': {
+              'stockId': {
+                '$map': {
+                  'input': '$stock', 
+                  'as': 'item', 
+                  'in': '$$item.stockId'
+                }
+              }
+            }
+          }, {
+            '$lookup': {
+              'from': 'stocks', 
+              'let': {
+                'id': '$stockId'
+              }, 
+              'pipeline': [
+                {
+                  '$match': {
+                    '$expr': {
+                      '$in': [
+                        '$_id', '$$id'
+                      ]
+                    }
+                  }
+                }
+              ], 
+              'as': 'stockTeam'
+            }
+          }, {
+            '$project': {
+              'stock': 0, 
+              'stockId': 0
+            }
+          }
+        ]);
+        return constedleaugeData;
           
 
     } catch (error) {
         console.log("error"+error);
         throw error;
     }
+
+   
 }
 }
 module.exports = new overfantasyServices();
