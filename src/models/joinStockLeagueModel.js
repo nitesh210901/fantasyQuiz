@@ -43,11 +43,6 @@ let joinedleaugeSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'
     },
-    challengeid: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'matchchallenges',
-        index:true
-    },
     teamid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'team'

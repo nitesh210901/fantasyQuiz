@@ -21,21 +21,13 @@ class overfantasyServices {
             stockJoinContest: this.stockJoinContest.bind(this),
             findUsableBonusMoney: this.findUsableBonusMoney.bind(this),
             getStockContestCategory: this.getStockContestCategory.bind(this),
-<<<<<<< HEAD
             getSingleContestDetails: this.getSingleContestDetails.bind(this),
             viewStockTeam: this.viewStockTeam.bind(this),
             completeContest: this.completeContest.bind(this),
             myContestleaderboard: this.myContestleaderboard.bind(this),
+            getStockMyTeams: this.getStockMyTeams.bind(this),
             // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
             // getMyStockTeam: this.getMyStockTeam.bind(this),
-=======
-            getAllNewStock: this.getAllNewStock.bind(this),
-            updateJoinedusers: this.updateJoinedusers.bind(this),
-            getStockCategory: this.getStockCategory.bind(this),
-            getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
-            myJoinedStockContests: this.myJoinedStockContests.bind(this),
-            getStockMyTeams: this.getStockMyTeams.bind(this),
->>>>>>> dd486b9613ef931270cc4b85753211964408af1c
         }
     }
     
@@ -826,7 +818,6 @@ class overfantasyServices {
             throw error;
         }
     }
-<<<<<<< HEAD
 
     async completeContest(req) {
         try {
@@ -918,76 +909,10 @@ class overfantasyServices {
             }
 
 
-=======
-    async getStockMyTeams(req) {
-        try {
-            let { teamId } = req.query
-            let userId = req.user._id
-            let pipeline = []
-            pipeline.push({
-                '$match': {
-                    '_id': mongoose.Types.ObjectId(teamId),
-                    'userId':mongoose.Types.ObjectId(userId)
-                }
-              }, {
-                '$addFields': {
-                  'stockId': {
-                    '$map': {
-                      'input': '$stock', 
-                      'as': 'item', 
-                      'in': {
-                        '$toObjectId': '$$item.stockId'
-                      }
-                    }
-                  }
-                }
-              }, {
-                '$lookup': {
-                  'from': 'stocks', 
-                  'let': {
-                    'id': '$stockId'
-                  }, 
-                  'pipeline': [
-                    {
-                      '$match': {
-                        '$expr': {
-                          '$in': [
-                            '$_id', '$$id'
-                          ]
-                        }
-                      }
-                    }
-                  ], 
-                  'as': 'stocks'
-                }
-              }, {
-                '$unwind': {
-                  'path': '$stocks'
-                }
-              }, {
-                '$replaceRoot': {
-                  'newRoot': '$stocks'
-                }
-            })
-            let stocks = await joinStockTeamModel.aggregate(pipeline)
-            if (stocks.length == 0) {
-                return {
-                    message: 'Teams Not Available',
-                    status: false,
-                    data: [],
-                }
-            }
-            return {
-                message: 'Teams Data',
-                status: true,
-                data: stocks
-             }
->>>>>>> dd486b9613ef931270cc4b85753211964408af1c
         } catch (error) {
             throw error;
         }
     }
-<<<<<<< HEAD
 
     async myContestleaderboard(req) {
         try {
@@ -1265,238 +1190,6 @@ class overfantasyServices {
                   '$limit': 200
                 }
               ]);
-=======
-    async myStockLeaderboard(req) {
-        try {
-            console.log(req.user._id)
-            const { matchchallengeid, matchkey } = req.query;
-            const aggPipe = [];
-            let sortarray = [];
-            const joinedleaugeA = await JoinLeaugeModel.aggregate([
-                {
-                    '$match': {
-                        'matchkey': mongoose.Types.ObjectId(matchkey),
-                        'challengeid': mongoose.Types.ObjectId(matchchallengeid)
-                    }
-                }, {
-                    '$lookup': {
-                        'from': 'users',
-                        'localField': 'userid',
-                        'foreignField': '_id',
-                        'as': 'userdata'
-                    }
-                }, {
-                    '$lookup': {
-                        'from': 'jointeams',
-                        'localField': 'teamid',
-                        'foreignField': '_id',
-                        'as': 'jointeamdata'
-                    }
-                }, {
-                    '$unwind': {
-                        'path': '$userdata'
-                    }
-                }, {
-                    '$unwind': {
-                        'path': '$jointeamdata',
-                        'preserveNullAndEmptyArrays': true
-                    }
-                }, {
-                    '$addFields': {
-                        'usernumber': {
-                            '$cond': {
-                                'if': {
-                                    '$eq': [
-                                        '$userid', mongoose.Types.ObjectId(req.user._id)
-                                    ]
-                                },
-                                'then': 1,
-                                'else': 0
-                            }
-                        },
-                        'image': {
-                            '$cond': {
-                                'if': {
-                                    '$and': [
-                                        {
-                                            '$ne': [
-                                                '$userdata.image', null
-                                            ]
-                                        }, {
-                                            '$ne': [
-                                                '$userdata.image', ''
-                                            ]
-                                        }
-                                    ]
-                                },
-                                'then': '$userdata.image',
-                                'else': 'https://admin.mygames11.com/default_profile.png'
-                            }
-                        }
-                    }
-                }, {
-                    '$match': {
-                        'userid': mongoose.Types.ObjectId(req.user._id)
-                    }
-                }, {
-                    '$sort': {
-                        'usernumber': -1,
-                        'userid': -1,
-                        'jointeamdata.teamnumber': 1
-                    }
-                }, {
-                    '$project': {
-                        'joinleaugeid': '$_id',
-                        '_id': 0,
-                        'joinTeamNumber': {
-                            '$ifNull': [
-                                '$teamnumber', 0
-                            ]
-                        },
-                        'jointeamid': {
-                            '$ifNull': [
-                                '$teamid', ''
-                            ]
-                        },
-                        'userid': {
-                            '$ifNull': [
-                                '$userid', ''
-                            ]
-                        },
-                        'team': {
-                            '$ifNull': [
-                                '$userdata.team', ''
-                            ]
-                        },
-                        'image': {
-                            '$ifNull': [
-                                '$image', 'https://admin.mygames11.com/user.png'
-                            ]
-                        },
-                        'teamnumber': {
-                            '$ifNull': [
-                                '$jointeamdata.teamnumber', 0
-                            ]
-                        },
-                        'usernumber': 1
-                    }
-                }
-            ]);
-            const joinedleaugeB = await JoinLeaugeModel.aggregate([
-                {
-                    '$match': {
-                        'matchkey': mongoose.Types.ObjectId(matchkey),
-                        'challengeid': mongoose.Types.ObjectId(matchchallengeid)
-                    }
-                }, {
-                    '$lookup': {
-                        'from': 'users',
-                        'localField': 'userid',
-                        'foreignField': '_id',
-                        'as': 'userdata'
-                    }
-                }, {
-                    '$lookup': {
-                        'from': 'jointeams',
-                        'localField': 'teamid',
-                        'foreignField': '_id',
-                        'as': 'jointeamdata'
-                    }
-                }, {
-                    '$unwind': {
-                        'path': '$userdata'
-                    }
-                }, {
-                    '$unwind': {
-                        'path': '$jointeamdata',
-                        'preserveNullAndEmptyArrays': true
-                    }
-                }, {
-                    '$addFields': {
-                        'usernumber': {
-                            '$cond': {
-                                'if': {
-                                    '$eq': [
-                                        '$userid', mongoose.Types.ObjectId(req.user._id)
-                                    ]
-                                },
-                                'then': 1,
-                                'else': 0
-                            }
-                        },
-                        'image': {
-                            '$cond': {
-                                'if': {
-                                    '$and': [
-                                        {
-                                            '$ne': [
-                                                '$userdata.image', null
-                                            ]
-                                        }, {
-                                            '$ne': [
-                                                '$userdata.image', ''
-                                            ]
-                                        }
-                                    ]
-                                },
-                                'then': '$userdata.image',
-                                'else': 'https://admin.mygames11.com/default_profile.png'
-                            }
-                        }
-                    }
-                }, {
-                    '$match': {
-                        'userid': {
-                            '$ne': mongoose.Types.ObjectId(req.user._id)
-                        }
-                    }
-                }, {
-                    '$sort': {
-                        'usernumber': -1,
-                        'userid': -1,
-                        'jointeamdata.teamnumber': 1
-                    }
-                }, {
-                    '$project': {
-                        'joinleaugeid': '$_id',
-                        '_id': 0,
-                        'joinTeamNumber': {
-                            '$ifNull': [
-                                '$teamnumber', 0
-                            ]
-                        },
-                        'jointeamid': {
-                            '$ifNull': [
-                                '$teamid', ''
-                            ]
-                        },
-                        'userid': {
-                            '$ifNull': [
-                                '$userid', ''
-                            ]
-                        },
-                        'team': {
-                            '$ifNull': [
-                                '$userdata.team', ''
-                            ]
-                        },
-                        'image': {
-                            '$ifNull': [
-                                '$image', 'https://admin.mygames11.com/user.png'
-                            ]
-                        },
-                        'teamnumber': {
-                            '$ifNull': [
-                                '$jointeamdata.teamnumber', 0
-                            ]
-                        },
-                        'usernumber': 1
-                    }
-                }, {
-                    '$limit': 200
-                }
-            ]);
->>>>>>> dd486b9613ef931270cc4b85753211964408af1c
             const joinedleauge = joinedleaugeA.concat(joinedleaugeB);
             if (joinedleauge.length > 0) {
                 let teamNum = [];
@@ -1504,20 +1197,14 @@ class overfantasyServices {
                 for (let joinUser of joinedleauge) {
                     if (joinUser.teamnumber == 0) {
                         joinUser.teamnumber = joinUser.joinTeamNumber;
-<<<<<<< HEAD
                      
-=======
->>>>>>> dd486b9613ef931270cc4b85753211964408af1c
                     }
                 }
             } else {
                 return { message: 'Contest LeaderBard Not Found', status: false, data: [] };
             }
             if (joinedleauge.length == 0) return { message: 'Contest LeaderBard Not Found', status: false, data: [] };
-<<<<<<< HEAD
            
-=======
->>>>>>> dd486b9613ef931270cc4b85753211964408af1c
             return {
                 message: "Contest LeaderBard",
                 status: true,
@@ -1527,12 +1214,190 @@ class overfantasyServices {
         } catch (error) {
             throw error;
         }
-    };
-<<<<<<< HEAD
+    }
 
-    
+    async getStockMyTeams(req) {
+      try {
+          let { teamId } = req.query
+          let userId = req.user._id
+          let pipeline = []
+          pipeline.push({
+              '$match': {
+                  '_id': mongoose.Types.ObjectId(teamId),
+                  'userId':mongoose.Types.ObjectId(userId)
+              }
+            }, {
+              '$addFields': {
+                'stockId': {
+                  '$map': {
+                    'input': '$stock', 
+                    'as': 'item', 
+                    'in': {
+                      '$toObjectId': '$$item.stockId'
+                    }
+                  }
+                }
+              }
+            }, {
+              '$lookup': {
+                'from': 'stocks', 
+                'let': {
+                  'id': '$stockId'
+                }, 
+                'pipeline': [
+                  {
+                    '$match': {
+                      '$expr': {
+                        '$in': [
+                          '$_id', '$$id'
+                        ]
+                      }
+                    }
+                  }
+                ], 
+                'as': 'stocks'
+              }
+            }, {
+              '$unwind': {
+                'path': '$stocks'
+              }
+            }, {
+              '$replaceRoot': {
+                'newRoot': '$stocks'
+              }
+          })
+          let stocks = await joinStockTeamModel.aggregate(pipeline)
+          if (stocks.length == 0) {
+              return {
+                  message: 'Teams Not Available',
+                  status: false,
+                  data: [],
+              }
+          }
+          return {
+              message: 'Teams Data',
+              status: true,
+              data: stocks
+           }
+      } catch (error) {
+          throw error;
+      }
+  }
 
-=======
->>>>>>> dd486b9613ef931270cc4b85753211964408af1c
+  async updateResultStocks(req) {
+    try {
+        const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
+
+        const listContest = await stockContestModel.find({
+            fantasy_type: "Stocks",
+            start_date: { $gte: currentDate },
+            launch_status: 'launched',
+            final_status: { $nin: ['winnerdeclared','IsCanceled'] },
+            status: { $ne: 'completed' }
+        });
+
+        if (listContest.length > 0) {
+            for (let index of listContest) {
+                let matchTimings = index.start_date;
+                let contestId = index._id;
+                let investment = index?.investment;
+                const currentDate1 = moment().format('YYYY-MM-DD HH:mm:ss');
+                if (currentDate1 >= matchTimings) {
+                    this.getSockScoresUpdates(contestId, investment);
+                }
+            }
+
+        }
+        return listContest;
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+async getSockScoresUpdates(contestId, investment) {
+    try {
+        const constedleaugeData = await joinStockLeagueModel.aggregate([
+            {
+              '$match': {
+                'contestId': new mongoose.Types.ObjectId(contestId)
+              }
+            }, {
+              '$lookup': {
+                'from': 'stock_contests', 
+                'localField': 'contestId', 
+                'foreignField': '_id', 
+                'as': 'contestData'
+              }
+            }, {
+              '$unwind': {
+                'path': '$contestData'
+              }
+            }, {
+              '$lookup': {
+                'from': 'joinstockteams', 
+                'localField': 'teamid', 
+                'foreignField': '_id', 
+                'as': 'teamData'
+              }
+            }, {
+              '$addFields': {
+                'teamData': {
+                  '$map': {
+                    'input': '$teamData', 
+                    'as': 'item', 
+                    'in': {
+                      'stock': '$$item.stock'
+                    }
+                  }
+                }
+              }
+            }, {
+              '$addFields': {
+                'teamData': {
+                  '$arrayElemAt': [
+                    '$teamData', 0
+                  ]
+                }
+              }
+            }, {
+              '$unwind': {
+                'path': '$teamData.stock'
+              }
+            }, {
+              '$addFields': {
+                'stockid': '$teamData.stock.stockId'
+              }
+            }, {
+              '$lookup': {
+                'from': 'stocks', 
+                'let': {
+                  'id': '$stockid'
+                }, 
+                'pipeline': [
+                  {
+                    '$match': {
+                      '$expr': {
+                        '$eq': [
+                          '$_id', '$$id'
+                        ]
+                      }
+                    }
+                  }
+                ], 
+                'as': 'stocks'
+              }
+            }
+          ]);
+          console.log(constedleaugeData,'+++++++++++++++++++++');
+
+          
+
+    } catch (error) {
+        console.log("error"+error);
+        throw error;
+    }
+}
 }
 module.exports = new overfantasyServices();
