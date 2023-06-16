@@ -449,21 +449,7 @@ class matchServices {
     }
 
 
-    async launch(req) {
-
-        let quizMatch = await listMatchModel.findOne({ _id: req.params.id, isQuiz: 1 })
-        if (quizMatch) {
-            await listMatchModel.updateOne({
-                _id: req.params.id
-            }, {
-                $set: {
-                    launch_status: "launched"
-                }
-            });
-            return {
-                status:true
-            }
-        } else {
+        async launch(req) {
             const data = await this.findMatchDetails(req.params.id);
             if (data.length > 0) {
                 let team1 = data[0].team1Id;
@@ -604,7 +590,7 @@ class matchServices {
 
                 return true;
             }
-        }
+        
     }
     async launchMatchChangeTeamLogo(req) {
         try {

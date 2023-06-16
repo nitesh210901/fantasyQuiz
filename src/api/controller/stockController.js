@@ -23,6 +23,8 @@ class matchController {
             viewStockTeam: this.viewStockTeam.bind(this),
             completeContest: this.completeContest.bind(this),
             myContestleaderboard: this.myContestleaderboard.bind(this),
+            getStockMyTeams: this.getStockMyTeams.bind(this),
+            myStockLeaderboard: this.myStockLeaderboard.bind(this),
         }
     }
 
@@ -158,10 +160,9 @@ class matchController {
             next(error);
         }
     }
-
-    async getMyStockTeam(req, res, next) {
+    async getStockMyTeams(req, res, next) {
         try {
-            const data = await stockContestService.getMyStockTeam(req);
+            const data = await stockContestService.getStockMyTeams(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
