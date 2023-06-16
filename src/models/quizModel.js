@@ -42,11 +42,11 @@ let quizSchema = new Schema({
         type: Number,
         default: 0
     },
-    user: [mongoose.Types.ObjectId],
-    user_image: {
-        type: String,
-        default:""
-    }
+    // user: [mongoose.Types.ObjectId],
+    // user_image: {
+    //     type: String,
+    //     default:""
+    // }
 }, {
     timestamps: true,
     versionKey: false
