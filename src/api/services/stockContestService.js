@@ -42,7 +42,7 @@ class overfantasyServices {
             });
             matchpipe.push({
                 $match: {
-                    $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: true }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+                    $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
                     final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
                 }
             });
@@ -204,7 +204,7 @@ class overfantasyServices {
             totalseries = 0,
             joinedMatch = 0;
             
-            const chkContest = await stockContestModel.findOne({_id:stockContestId, isCancelled:false, isEnable:true, launch_status:true, final_status: 'pending' });
+            const chkContest = await stockContestModel.findOne({_id:stockContestId, isCancelled:false, isEnable:true, launch_status:'launched', final_status: 'pending' });
             console.log(chkContest)
             if(!chkContest){
                 return {
@@ -1214,6 +1214,8 @@ class overfantasyServices {
             throw error;
         }
     };
+
+    
 
 }
 module.exports = new overfantasyServices();
