@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 let stockContestModel = new Schema({
     fantasy_type: {
         type: String,
-        default: 'Cricket'
+        default: 'Stocks'
     },
     mega_status: {
         type: Number,
@@ -104,11 +104,15 @@ let stockContestModel = new Schema({
         default:''
     },
     status:{
-        type: String
+        type: String,
+        default:'notstarted'
     },
     launch_status:{
-        type: Boolean,
-        default: false
+        type: String,
+        default: 'notstarted'
+    },
+    investment:{
+        type: String,
     },
     image:{
         type: String,

@@ -123,11 +123,14 @@ class challengersService {
                         data.team_limit = req.body.team_limit;
                 }
                     data.contest_type = req.body.contest_type;
+                    data.fantasy_type = req.body.stock_contest_cat;
                     data.pricecard_type = req.body.pricecard_type;
                     data.contest_cat = req.body.contest_cat;
                     data.contest_name = req.body.contest_name;
                     data.entryfee = req.body.entryfee;
-                    data.fantasy_type = 'Stock';
+                    data.fantasy_type = req.body.stock_contest_cat;
+                    data.staus = 'notstarted';
+                    data.investment = req.body.investment;
                     data.win_amount = req.body.win_amount;
                     data.amount_type = req.body.amount_type;
                     data.select_team = req.body.select_team;
@@ -871,8 +874,8 @@ class challengersService {
         try {
             let {id} = req.params;
             const chkLaunchData = await stockContestModel.findOne({_id:id});
-            if(chkLaunchData.launch_status === false){
-                chkLaunchData.launch_status = true
+            if(chkLaunchData.launch_status === 'notstarted'){
+                chkLaunchData.launch_status = 'launched'
                 chkLaunchData.save();
                 return chkLaunchData;
             }
