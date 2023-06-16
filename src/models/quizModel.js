@@ -22,15 +22,28 @@ let quizSchema = new Schema({
         type: Number,
         default: 0
     },
+    is_bonus: {
+        type: Number,
+        default: 0
+    },
     bonus_percentage: {
         type: Number,
         default: 0
     },
+    image: {
+        type: String,
+        default:""
+    },
     status: {
         type: String,
-        default:"opened"
+        default: 0
     },
-    image: {
+    joinedusers: {
+        type: Number,
+        default: 0
+    },
+    user: [mongoose.Types.ObjectId],
+    user_image: {
         type: String,
         default:""
     }

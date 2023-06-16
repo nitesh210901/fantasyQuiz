@@ -30,7 +30,8 @@ class quizController {
       importGlobalQuestionPage: this.importGlobalQuestionPage.bind(this),
       importQuestionData:this.importQuestionData.bind(this),
       importGlobalContestPage:this.importGlobalContestPage.bind(this),
-      quizimportchallengersData:this.quizimportchallengersData.bind(this)
+      quizimportchallengersData:this.quizimportchallengersData.bind(this),
+      quizRefundAmount:this.quizRefundAmount.bind(this)
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -593,6 +594,14 @@ class quizController {
         //  next(error);
         req.flash('error','Something went wrong please try again');
         res.redirect("/view_quiz");
+    }
+  }
+  async quizRefundAmount(req, res) {
+    try {
+      const getResult = await quizServices.quizRefundAmount(req);
+      res.send({status:true});
+    } catch (error) {
+      console.log('error',error);
     }
   }
 }

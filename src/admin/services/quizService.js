@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const moment = require("moment");
 
 const quizModel = require('../../models/quizModel');
+const listMatchesModel = require('../../models/listMatchesModel');
 const matchchallengersModel = require("../../models/matchChallengersModel")
 const challengersModel = require("../../models/challengersModel")
 const priceCardModel = require("../../models/priceCardModel")
@@ -37,6 +38,9 @@ class quizServices {
             importQuestionData: this.importQuestionData.bind(this),
             quizcreateCustomContest: this.quizcreateCustomContest.bind(this),
             quizimportchallengersData: this.quizimportchallengersData.bind(this),
+            quizRefundAmount: this.quizRefundAmount.bind(this),
+            quizrefundprocess: this.quizrefundprocess.bind(this)
+
         }
     }
 
@@ -55,7 +59,6 @@ class quizServices {
 
             }
             let { matchkey, question, options, answer, entryfee, multiply, bonus_percentage } = req.body
-            
             let option = []
             let opt = {}
             if (options.length > 0) {
@@ -76,7 +79,7 @@ class quizServices {
                 entryfee: entryfee,
                 multiply: multiply*entryfee,
                 bonus_percentage: bonus_percentage,
-                image:image
+                image: image,
             });
 
             let savequiz = await addquiz.save();
@@ -1259,6 +1262,229 @@ class quizServices {
                 status:true,
                 message:'quiz answer update successfully'
             }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async quizrefundprocess(quizId, entryfee, matchkey, reason) {
+        console.log("-------------------------------------refundprocess-----------------------------")
+        let joinLeagues = await QuizJoinLeaugeModel.find({
+            matchkey: mongoose.Types.ObjectId(matchkey),
+            quizId: mongoose.Types.ObjectId(quizId),
+        });
+        if (joinLeagues.length > 0) {
+            for (let league of joinLeagues) {
+                let leaugestransaction = league.leaugestransaction;
+                let refund_data = await refundModel.findOne({ joinid: mongoose.Types.ObjectId(league._id) });
+                if (!refund_data) {
+                    const user = await userModel.findOne({ _id: leaugestransaction.user_id }, { userbalance: 1 });
+                    if (user) {
+                        const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+                        const balance = parseFloat(user.userbalance.balance.toFixed(2));
+                        const winning = parseFloat(user.userbalance.winning.toFixed(2));
+                        const totalBalance = bonus + balance + winning;
+                        const userObj = {
+                            'userbalance.balance': balance + leaugestransaction.balance,
+                            'userbalance.bonus': bonus + leaugestransaction.bonus,
+                            'userbalance.winning': winning + leaugestransaction.winning,
+                        };
+                        let randomStr = randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization: 'uppercase'
+                        });
+                        console.log("------randomStr-------2", randomStr)
+                        let transaction_id = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+                        let refundData = {
+                            userid: leaugestransaction.user_id,
+                            amount: entryfee,
+                            joinid: league._id,
+                            quizId: league.quizId,
+                            matchkey: matchkey,
+                            reason: reason,
+                            transaction_id: transaction_id
+                        };
+                        const transactiondata = {
+                            type: 'Refund',
+                            amount: entryfee,
+                            total_available_amt: totalBalance + entryfee,
+                            transaction_by: constant.APP_SHORT_NAME,
+                            quizId: quizId,
+                            userid: leaugestransaction.user_id,
+                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                            bal_bonus_amt: bonus + leaugestransaction.bonus,
+                            bal_win_amt: winning + leaugestransaction.winning,
+                            bal_fund_amt: balance + leaugestransaction.balance,
+                            bonus_amt: leaugestransaction.bonus,
+                            win_amt: leaugestransaction.winning,
+                            addfund_amt: leaugestransaction.balance,
+                            transaction_id: transaction_id
+                        };
+                        await Promise.all([
+                            userModel.findOneAndUpdate({ _id: leaugestransaction.user_id }, userObj, { new: true }),
+                            refundModel.create(refundData),
+                            TransactionModel.create(transactiondata)
+                        ]);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    async quizRefundAmount(req) {
+        try {
+        console.log("-------------------------------------quizrefundAmount-------------------------")
+        const currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
+        let match_time = moment().add(10, 'm').format('YYYY-MM-DD HH:mm:ss');
+      
+        let pipeline = [];
+        pipeline.push({
+            $match: {
+                // _id:mongoose.Types.ObjectId('63fd749179494aff832d5325'),
+                // fantasy_type: "Cricket",
+                // start_date: { $lte: match_time },
+                launch_status: 'launched',
+                final_status: { $nin: ["winnerdeclared", "IsCanceled"] }
+            }
+        });
+        // --------------
+        let today= new Date();
+        today.setHours(today.getHours() + 5);
+        today.setMinutes(today.getMinutes() + 30);
+        // let lastDate = today.setMinutes(today.getMinutes() + 10);
+        // console.log("--today-+10---",today)
+        pipeline.push({
+            $addFields: {
+                date: {
+                    $dateFromString: {
+                        dateString: '$start_date',
+                        timezone: "-00:00"
+                    }
+                },
+                curDate: today
+            }
+        });
+        pipeline.push({
+            $match:{
+                $expr: {
+                    $and: [{
+                        $lte: ['$date','$curDate'],
+                        },
+                    ],
+                },
+            }
+        });
+        // --------------
+        pipeline.push({
+            $lookup: {
+                from: 'matchchallenges',
+                let: { matckey: "$_id" },
+                pipeline: [{
+                    $match: {
+                        status: { $ne: "canceled" },
+                        $expr: {
+                            $and: [
+                                { $eq: ["$matchkey", "$$matckey"] },
+                            ],
+                        },
+                    },
+                },],
+                as: 'matchChallengesData'
+            }
+        })
+            pipeline.push({
+                $lookup: {
+                from: 'quizzes',
+                let: { matckey: "$_id" },
+                pipeline: [{
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$matchkey", "$$matckey"] },
+                            ],
+                        },
+                    },
+                },],
+                as: 'quizData'
+            }
+            
+        })
+        let listmatches = await listMatchesModel.aggregate(pipeline);
+        if (listmatches.length > 0) {
+            for (let match of listmatches) {
+                // if (match.matchChallengesData.length > 0) {
+                //     for (let value1 of match.matchChallengesData) {
+                //         let data = {};
+                //         if (value1.maximum_user > value1.joinedusers) {
+                //             if (value1.confirmed_challenge == 0) {
+                //                 let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'challenge cancel');
+                //                 if (getresponse == true) {
+                //                     await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+                //                         $set: {
+                //                             status: 'canceled'
+                //                         }
+                //                     });
+                //                 }
+                //             }
+                //         }
+                //         if (value1.pricecard_type == 'Percentage') {
+                //             let joinedUsers = await JoinLeaugeModel.find({
+                //                 matchkey: mongoose.Types.ObjectId(match.matchkey),
+                //                 challengeid: mongoose.Types.ObjectId(value1._id),
+                //             }).count();
+                //             if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
+                //                 let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
+                //                 if (getresponse == true) {
+                //                     data['status'] = 'canceled';
+                //                     await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+                //                         $set: {
+                //                             status: 'canceled'
+                //                         }
+                //                     });
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+                if (match.quizData.length > 0) {
+                    for (let value1 of match.quizData) {
+                        let data = {};
+                        
+                        let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'quiz cancel');
+                        if (getresponse == true) {
+                            await quizModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+                                $set: {
+                                    status: 'canceled'
+                                }
+                            });
+                        }
+                            
+                        // if (value1.pricecard_type == 'Percentage') {
+                        //     let joinedUsers = await JoinLeaugeModel.find({
+                        //         matchkey: mongoose.Types.ObjectId(match.matchkey),
+                        //         challengeid: mongoose.Types.ObjectId(value1._id),
+                        //     }).count();
+                        //     if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
+                        //         let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
+                        //         if (getresponse == true) {
+                        //             data['status'] = 'canceled';
+                        //             await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+                        //                 $set: {
+                        //                     status: 'canceled'
+                        //                 }
+                        //             });
+                        //         }
+                        //     }
+                        // }
+                    }
+                }
+            }
+         }
+         return {
+            message: 'Refund amount successfully ',
+            success: true,
+        }
         } catch (error) {
             throw error;
         }

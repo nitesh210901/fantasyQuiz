@@ -65,8 +65,7 @@ class quizfantasyServices {
             quizfindJoinLeaugeExist: this.quizfindJoinLeaugeExist.bind(this),
             quizfindUsableBonusMoney: this.quizfindUsableBonusMoney.bind(this),
             quizfindUsableBalanceMoney: this.quizfindUsableBalanceMoney.bind(this),
-            quizfindUsableWinningMoney: this.quizfindUsableWinningMoney.bind(this),
-            quizRefundAmount: this.quizRefundAmount.bind(this),
+            quizfindUsableWinningMoney: this.quizfindUsableWinningMoney.bind(this)
         }
     }
 
@@ -92,7 +91,6 @@ class quizfantasyServices {
     async getQuiz(req) {
         try {
             let { matchkey } = req.query;
-            
             let data = await quizModel.find({matchkey:matchkey}, { answer: 0 ,bonus_percentage:0})
             if (data.length === 0) {
                 return {
@@ -1973,165 +1971,6 @@ class quizfantasyServices {
     //     }
     // }
 
-    async quizRefundAmount(req) {
-        try {
-        console.log("-------------------------------------quizrefundAmount-------------------------")
-        const currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
-        let match_time = moment().add(10, 'm').format('YYYY-MM-DD HH:mm:ss');
-      
-        let pipeline = [];
-        pipeline.push({
-            $match: {
-                // _id:mongoose.Types.ObjectId('63fd749179494aff832d5325'),
-                // fantasy_type: "Cricket",
-                // start_date: { $lte: match_time },
-                launch_status: 'launched',
-                final_status: { $nin: ["winnerdeclared", "IsCanceled"] }
-            }
-        });
-        // --------------
-        let today= new Date();
-        today.setHours(today.getHours() + 5);
-        today.setMinutes(today.getMinutes() + 30);
-        // let lastDate = today.setMinutes(today.getMinutes() + 10);
-        // console.log("--today-+10---",today)
-        pipeline.push({
-            $addFields: {
-                date: {
-                    $dateFromString: {
-                        dateString: '$start_date',
-                        timezone: "-00:00"
-                    }
-                },
-                curDate: today
-            }
-        });
-        pipeline.push({
-            $match:{
-                $expr: {
-                    $and: [{
-                        $lte: ['$date','$curDate'],
-                        },
-                    ],
-                },
-            }
-        });
-        // --------------
-        pipeline.push({
-            $lookup: {
-                from: 'matchchallenges',
-                let: { matckey: "$_id" },
-                pipeline: [{
-                    $match: {
-                        status: { $ne: "canceled" },
-                        $expr: {
-                            $and: [
-                                { $eq: ["$matchkey", "$$matckey"] },
-                            ],
-                        },
-                    },
-                },],
-                as: 'matchChallengesData'
-            }
-        })
-            pipeline.push({
-                $lookup: {
-                from: 'quizzes',
-                let: { matckey: "$_id" },
-                pipeline: [{
-                    $match: {
-                        $expr: {
-                            $and: [
-                                { $eq: ["$matchkey", "$$matckey"] },
-                            ],
-                        },
-                    },
-                },],
-                as: 'quizData'
-            }
-            
-        })
-        let listmatches = await listMatchesModel.aggregate(pipeline);
-        if (listmatches.length > 0) {
-            for (let match of listmatches) {
-                // if (match.matchChallengesData.length > 0) {
-                //     for (let value1 of match.matchChallengesData) {
-                //         let data = {};
-                //         if (value1.maximum_user > value1.joinedusers) {
-                //             if (value1.confirmed_challenge == 0) {
-                //                 let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'challenge cancel');
-                //                 if (getresponse == true) {
-                //                     await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-                //                         $set: {
-                //                             status: 'canceled'
-                //                         }
-                //                     });
-                //                 }
-                //             }
-                //         }
-                //         if (value1.pricecard_type == 'Percentage') {
-                //             let joinedUsers = await JoinLeaugeModel.find({
-                //                 matchkey: mongoose.Types.ObjectId(match.matchkey),
-                //                 challengeid: mongoose.Types.ObjectId(value1._id),
-                //             }).count();
-                //             if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
-                //                 let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
-                //                 if (getresponse == true) {
-                //                     data['status'] = 'canceled';
-                //                     await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-                //                         $set: {
-                //                             status: 'canceled'
-                //                         }
-                //                     });
-                //                 }
-                //             }
-                //         }
-                //     }
-                // }
-                if (match.quizData.length > 0) {
-                    for (let value1 of match.quizData) {
-                        let data = {};
-                        
-                        let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'quiz cancel');
-                        if (getresponse == true) {
-                            await quizModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-                                $set: {
-                                    status: 'canceled'
-                                }
-                            });
-                        }
-                            
-                        // if (value1.pricecard_type == 'Percentage') {
-                        //     let joinedUsers = await JoinLeaugeModel.find({
-                        //         matchkey: mongoose.Types.ObjectId(match.matchkey),
-                        //         challengeid: mongoose.Types.ObjectId(value1._id),
-                        //     }).count();
-                        //     if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
-                        //         let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
-                        //         if (getresponse == true) {
-                        //             data['status'] = 'canceled';
-                        //             await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-                        //                 $set: {
-                        //                     status: 'canceled'
-                        //                 }
-                        //             });
-                        //         }
-                        //     }
-                        // }
-                    }
-                }
-            }
-         }
-         return {
-            message: 'Refund amount successfully ',
-            success: true,
-        }
-        } catch (error) {
-            throw error;
-        }
-    }
-
-
     async findJoinLeaugeExist(matchkey, userId, teamId, challengeDetails) {
         if (!challengeDetails || challengeDetails == null || challengeDetails == undefined) return 4;
 
@@ -2158,7 +1997,7 @@ class quizfantasyServices {
         }
     }
 
-    async quizfindJoinLeaugeExist(matchkey, userId, quizanswerId, quiz) {
+    async quizfindJoinLeaugeExist(matchkey, userId, quizAnswer, quiz) {
         if (!quiz || quiz == null || quiz == undefined) return 4;
 
         const quizjoinedLeauges = await QuizJoinLeaugeModel.find({
@@ -2167,6 +2006,14 @@ class quizfantasyServices {
             userid: userId,
         });
         if (quizjoinedLeauges.length == 0) return 1;
+        if (quizjoinedLeauges.length > 0) { 
+         return { message: 'Contest Already joined', status: false, data: {} };
+        // const joinedLeaugesCount = joinedLeauges.filter(item => {
+        //     return item.teamid.toString() === teamId;
+        // });
+        // if (joinedLeaugesCount.length) return { message: 'Team already joined', status: false, data: {} };
+        // else return 2;
+        }
         // if (quizjoinedLeauges.length > 0) {
         //     if (challengeDetails.multi_entry == 0) {
         //         return { message: 'Contest Already joined', status: false, data: {} };
@@ -2213,11 +2060,10 @@ class quizfantasyServices {
     }
 
     async quizfindUsableBonusMoney(quiz, bonus, winning, balance) {
-        // if (challengeDetails.is_private == 1 && challengeDetails.is_bonus != 1)
-        //     return { bonus: bonus, cons_bonus: 0, reminingfee: challengeDetails.entryfee };
+        if (quiz.is_bonus != 1)
+            return { bonus: bonus, cons_bonus: 0, reminingfee: quiz.entryfee };
         let totalQuizBonus = 0;
         totalQuizBonus = (quiz.bonus_percentage / 100) * quiz.entryfee;
-
         const finduserbonus = bonus;
         let findUsableBalance = winning + balance;
         let bonusUseAmount = 0;
@@ -3366,11 +3212,11 @@ for await (const rankData of rankArray) {
 
     async quizgetUsableBalance(req) {
         try {
-            const { matchchallengeid } = req.query;
-            const matchchallengesData = await matchchallengesModel.findOne({ _id: mongoose.Types.ObjectId(matchchallengeid) });
-            req.query.matchkey = matchchallengesData.matchkey;
+            const { quizId } = req.query;
+            const quizData = await quizModel.findOne({ _id: mongoose.Types.ObjectId(quizId) });
+            req.query.matchkey = quizData.matchkey;
             await this.updateJoinedusers(req);
-            if (!matchchallengesData) {
+            if (!quizData) {
                 return {
                     message: 'Invalid details',
                     status: false,
@@ -3385,7 +3231,7 @@ for await (const rankData of rankArray) {
             const findUsableBalance = balance + winning;
             let findBonusAmount = 0,
                 usedBonus = 0;
-            if (matchchallengesData.is_bonus == 1 && matchchallengesData.bonus_percentage) findBonusAmount = (matchchallengesData.bonus_percentage / 100) * matchchallengesData.entryfee;
+            if (quizData.is_bonus == 1 && quizData.bonus_percentage) findBonusAmount = (quizData.bonus_percentage / 100) * quizData.entryfee;
             if (bonus >= findBonusAmount) usedBonus = findBonusAmount;
             else usedBonus = bonus;
             return {
@@ -3394,7 +3240,7 @@ for await (const rankData of rankArray) {
                 data: {
                     usablebalance: findUsableBalance.toFixed(2).toString(),
                     usertotalbalance: totalBalance.toFixed(2).toString(),
-                    entryfee: matchchallengesData.entryfee.toFixed(2).toString(),
+                    entryfee: quizData.entryfee.toFixed(2).toString(),
                     bonus: usedBonus.toFixed(2).toString(),
                 }
             }
@@ -3405,8 +3251,7 @@ for await (const rankData of rankArray) {
 
     async joinQuiz(req) {
         try {
-            
-            let { quizId, quizAnswerId } = req.body
+            let { quizId, quizAnswer } = req.body
             let totalchallenges = 0,
                 totalmatches = 0,
                 totalseries = 0,
@@ -3446,10 +3291,10 @@ for await (const rankData of rankArray) {
                 }
             }
 
-            const quizanswers = quizAnswerId.split(',');
+            // const quizanswers = quizAnswerId.split(',');
 
-            const quizAnswerCount = await quizUserAnswer.find({ _id: { $in: quizanswers } }).countDocuments();
-            if (quizanswers.length != quizAnswerCount) return { message: 'Invalid Quiz', status: false, data: {} }
+            // const quizAnswerCount = await quizUserAnswer.find({ _id: { $in: quizanswers } }).countDocuments();
+            // if (quizanswers.length != quizAnswerCount) return { message: 'Invalid Quiz', status: false, data: {} }
 
             const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
             if (!user || !user.userbalance) return { message: 'Insufficient balance', status: false, data: {} };
@@ -3458,20 +3303,18 @@ for await (const rankData of rankArray) {
             const balance = parseFloat(user.userbalance.balance.toFixed(2));
             const winning = parseFloat(user.userbalance.winning.toFixed(2));
             const totalBalance = bonus + balance + winning;
-                 let i = 0,
+                let i = 0,
                 count = 0,
                 mainbal = 0,
                 mainbonus = 0,
                 mainwin = 0,
                 tranid = '';
-            for (const quizanswerId of quizanswers) {
-                const quizAnswerData = await quizUserAnswer.findOne({ _id: quizanswerId })
-                // console.log(`-------------IN ${i} LOOP--------------------`);
-                i++;
-                const result = await this.quizfindJoinLeaugeExist(listmatchId, req.user._id, quizanswerId, quiz);
-                console.log(result,"ooo++++++++++++++++++++++++++++++++++++")
-                if (result != 1 && result != 2 && i > 1) {
-
+            // for (const quizanswerId of quizanswers) {
+                // const quizAnswerData = await quizUserAnswer.findOne({ _id: quizanswerId })
+               
+                // i++;
+                const result = await this.quizfindJoinLeaugeExist(listmatchId, req.user._id, quizAnswer, quiz);
+                if (result != 1 && result != 2) {
                     const userObj = {
                         'userbalance.balance': balance - mainbal,
                         'userbalance.bonus': bonus - mainbonus,
@@ -3505,7 +3348,6 @@ for await (const rankData of rankArray) {
                         cons_win: mainwin,
                         transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
                     };
-
                     await Promise.all([
                         userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
                         TransactionModel.create(transactiondata)
@@ -3523,8 +3365,7 @@ for await (const rankData of rankArray) {
                 );
                 
                 if (resultForBonus == false) {
-
-                    if (i > 1) {
+                    // if (i > 1) {
                         const userObj = {
                             'userbalance.balance': balance - mainbal,
                             'userbalance.bonus': bonus - mainbonus,
@@ -3541,7 +3382,7 @@ for await (const rankData of rankArray) {
                             capitalization: 'uppercase'
                         });
                         const transactiondata = {
-                            type: 'Contest Joining Fee',
+                            type: 'Quiz Contest Joining Fee',
                             contestdetail: `${quiz.entryfee}-${count}`,
                             amount: quiz.entryfee * count,
                             total_available_amt: totalBalance - quiz.entryfee * count,
@@ -3561,8 +3402,8 @@ for await (const rankData of rankArray) {
                             userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
                             TransactionModel.create(transactiondata)
                         ]);
-                    }
-                    return { message: 'Insufficient balance', status: false, data: {} };
+                    // }
+                    // return { message: 'Insufficient balance', status: false, data: {} };
                 }
                 
                 const resultForBalance = await this.quizfindUsableBalanceMoney(resultForBonus, balance - mainbal);
@@ -3570,7 +3411,7 @@ for await (const rankData of rankArray) {
                 // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
                 if (resultForWinning.reminingfee > 0) {
                     // console.log(`---------------------3RD IF--------${resultForWinning}---------`);
-                    if (i > 1) {
+                    // if (i > 1) {
                         const userObj = {
                             'userbalance.balance': balance - mainbal,
                             'userbalance.bonus': bonus - mainbonus,
@@ -3588,7 +3429,7 @@ for await (const rankData of rankArray) {
                         });
 
                         const transactiondata = {
-                            type: 'Contest Joining Fee',
+                            type: 'Quiz Contest Joining Fee',
                             contestdetail: `${quiz.entryfee}-${count}`,
                             amount: quiz.entryfee * count,
                             total_available_amt: totalBalance - quiz.entryfee * count,
@@ -3608,8 +3449,8 @@ for await (const rankData of rankArray) {
                             userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
                             TransactionModel.create(transactiondata)
                         ]);
-                    }
-                    return { message: 'Insufficient balance', status: false, data: {} };
+                    // }
+                    // return { message: 'Insufficient balance', status: false, data: {} };
                 }
                 let randomStr = randomstring.generate({
                     length: 4,
@@ -3673,7 +3514,7 @@ for await (const rankData of rankArray) {
                 const quizjoinLeaugeResult = await QuizJoinLeaugeModel.create({
                     userid: req.user._id,
                     quizId: quizDataId,
-                    // teamid: jointeamId,
+                    answer:quizAnswer,
                     matchkey: listmatchId,
                     seriesid: seriesId,
                     transaction_id: tranid,
@@ -3685,16 +3526,9 @@ for await (const rankData of rankArray) {
                         winning: resultForWinning.cons_win,
                     },
                 });
-                await leaderBoardModel.create({
-                    userId: req.user._id,
-                    quizId: quizDataId,
-                    // teamId: jointeamId,
-                    matchkey: listmatchId,
-                    user_team: user.team,
-                    // teamnumber: jointeamsData.teamnumber,
-                    joinId: quizjoinLeaugeResult._id
-                });
-                const joinedLeaugesCount = await QuizJoinLeaugeModel.find({ quizId: quizDataId }).count();
+                const joinedLeaugesCount = await QuizJoinLeaugeModel.find({ quizId: quizDataId ,matchkey:listmatchId}).count();
+                let usercount = []
+                usercount.push(req.user._id)
                 if (result == 1) {
                     totalchallenges = 1;
                     if (joinedMatch == 0) {
@@ -3717,11 +3551,11 @@ for await (const rankData of rankArray) {
                     //         joinedusers: joinedLeaugesCount,
                     //     }, { new: true });
                     // } else {
-                    //     // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
-                    //     const gg = await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
-                    //         status: 'opened',
-                    //         joinedusers: joinedLeaugesCount,
-                    //     }, { new: true });
+                        // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
+                        const gg = await quizModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(quizId) }, {
+                            status: 'opened',
+                            user: usercount,
+                        }, { new: true });
                     // }
                 }
                 // else
@@ -3729,7 +3563,7 @@ for await (const rankData of rankArray) {
                 //         status: 'opened',
                 //         joinedusers: joinedLeaugesCount,
                 //     }, { new: true });
-                if (i == quizanswers.length) {
+                // if (i == quizanswers.length) {
                     // console.log(`---------------------9TH IF--------${i}---------`);
                     const userObj = {
                         'userbalance.balance': balance - mainbal,
@@ -3741,7 +3575,7 @@ for await (const rankData of rankArray) {
                             totalseries: totalseries,
                         },
                     };
-                    let randomStr = randomstring.generate({
+                    let randomStrr = randomstring.generate({
                         length: 4,
                         charset: 'alphabetic',
                         capitalization: 'uppercase'
@@ -3761,7 +3595,7 @@ for await (const rankData of rankArray) {
                         cons_amount: mainbal,
                         cons_bonus: mainbonus,
                         cons_win: mainwin,
-                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStrr}`,
                     };
                     Promise.all([
                         userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
@@ -3777,9 +3611,9 @@ for await (const rankData of rankArray) {
                             referCode: referCode
                         }
                     };
-                }
+                // }
 
-            }
+            // }
             // const { matchchallengeid, jointeamid } = req.body;
             // let totalchallenges = 0,
             //     totalmatches = 0,
