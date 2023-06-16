@@ -42,10 +42,6 @@ let challengersSchema = new Schema({
         type: String,
         default: ''
     },
-    type_contest: {
-        type: String,
-        default: 'Cricket'
-    },
     contest_name:{
         type:String,
         default:''
@@ -94,8 +90,6 @@ let challengersSchema = new Schema({
         type: Number,
         default: 0
     },
-
-
 }, {
     timestamps: true,
     versionKey: false

@@ -18,6 +18,7 @@ class quizServices {
     constructor() {
         return {
             AddQuiz: this.AddQuiz.bind(this),
+            QuizGIveAnswer: this.QuizGIveAnswer.bind(this),
             seriesDataTable: this.seriesDataTable.bind(this),
             updateStatusforSeries: this.updateStatusforSeries.bind(this),
             edit_Series: this.edit_Series.bind(this),
@@ -46,15 +47,36 @@ class quizServices {
 
     async AddQuiz(req) {
         try {
+            if(req.fileValidationError){
+                return{
+                    status:false,
+                    message:req.fileValidationError
+                }
+
+            }
+            let { matchkey, question, options, answer, entryfee, multiply, bonus_percentage } = req.body
+            
+            let option = []
+            let opt = {}
+            if (options.length > 0) {
+                for (let i = 0; i < options.length; i++) {
+                    opt[`option_${i+1}`] = options[i]
+                }
+            }
+            option.push(opt)
+            let image;
+            if (req.file) {
+                image = `/${req.body.typename}/${req.file.filename}`;
+            }
             let addquiz = new quizModel({
-                question: req.body.question,
-                option_A: req.body.option_A,
-                option_B: req.body.option_B,
-                option_C: req.body.option_C,
-                option_D: req.body.option_D,
-                answer: req.body.answer,
-                matchkey_id: req.body.matchkey_id,
-                point:req.body.point
+                matchkey: matchkey,
+                question: question,
+                options: option,
+                answer: answer,
+                entryfee: entryfee,
+                multiply: multiply*entryfee,
+                bonus_percentage: bonus_percentage,
+                image:image
             });
 
             let savequiz = await addquiz.save();
@@ -264,17 +286,55 @@ class quizServices {
         let whereObj ={
             _id:req.params.id
         }
-        let doc=req.body;
-        delete doc.typename;
-        const data=await quizModel.updateOne(whereObj,{$set:doc});
-        if(data.modifiedCount == 1){
+        if(req.fileValidationError){
+            return{
+                status:false,
+                message:req.fileValidationError
+            }
+
+        }
+        let image = `/${req.body.typename}/${req.file?.filename}` || "";
+        let { matchkey, question, options, answer, entryfee, multiply ,bonus_percentage} = req.body
+            let option = []
+            let opt = {}
+            if (options.length > 0) {
+                for (let i = 0; i < options.length; i++) {
+                    opt[`option_${i+1}`] = options[i]
+                }
+             }
+        option.push(opt)
+           let doc
+            if (req.file) {
+                 doc = {
+                    matchkey: matchkey,
+                    question: question,
+                    options: option,
+                    answer: answer,
+                    entryfee: entryfee,
+                    multiply: multiply * entryfee,
+                    bonus_percentage: bonus_percentage,
+                    image: image
+                }
+            } else {
+                 doc = {
+                    matchkey: matchkey,
+                    question: question,
+                    options: option,
+                    answer: answer,
+                    entryfee: entryfee,
+                    multiply: multiply * entryfee,
+                    bonus_percentage: bonus_percentage
+                }
+            }
+            delete doc.typename;
+            const data=await quizModel.updateOne(whereObj,{$set:doc});
+            if(data.modifiedCount == 1){
             return {
                 status:true,
                 message:"Quiz Update successfully"
             } 
       }
     }
-
     async deletequiz(req){
         try {
             const deletequiz = await quizModel.deleteOne({ _id: req.query.quizId });
@@ -1178,6 +1238,26 @@ class quizServices {
             return {
                 status: false,
                 message: 'Challenge not imported ..error..'
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async QuizGIveAnswer(req) {
+        try {
+            let { answer } = req.body
+            let _id = req.params.id;
+            let data = await quizModel.findOneAndUpdate({ _id },{answer:answer},{new:true});
+            if (!data) {
+                return {
+                    status:false,
+                    message:'quiz not found'
+                } 
+            }
+            return {
+                status:true,
+                message:'quiz answer update successfully'
             }
         } catch (error) {
             throw error;

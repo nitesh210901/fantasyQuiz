@@ -79,10 +79,6 @@ let matchchallengesSchema = new Schema({
         type: String,
         default: 'cricket'
     },
-    type_contest: {
-        type: String,
-        default: 'cricket'
-    },
     entryfee: {
         type: Number,
         default: ''

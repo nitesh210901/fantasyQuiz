@@ -2360,7 +2360,6 @@ for await (const rankData of rankArray) {
      */
     async getUsableBalance(req) {
         try {
-
             const { matchchallengeid } = req.query;
             const matchchallengesData = await matchchallengesModel.findOne({ _id: mongoose.Types.ObjectId(matchchallengeid) });
             req.query.matchkey = matchchallengesData.matchkey;

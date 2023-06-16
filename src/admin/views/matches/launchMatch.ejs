@@ -41,15 +41,6 @@
                                             data-toggle="tooltip" title="Import Match From API"><i
                                                 class="fad fa-rocket"></i>&nbsp; Unlaunch Match</a>
                                     <% }%>
-                                    <%
-                                        if(launcMatchData[0].fantasy_type=="Cricket"&&launcMatchData[0].isQuiz!=1)
-                                        {%>
-                                        
-                                        <a href="/quiz/<%= data.findMatchDetails._id %>"
-                                            class="btn text-uppercase font-weight-bold btn-sm btn-success"
-                                            data-toggle="tooltip" title="Quiz"><i
-                                            class="fad fa-rocket"></i>&nbsp;Quiz</a>
-                                        <%}%>
                                 </div>
                             </div>
                         </div>

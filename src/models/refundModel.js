@@ -23,6 +23,12 @@ let refundSchema = new Schema({
         ref: 'matchchallenge',
         index:true
     },
+
+    quizId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'quiz',
+        index:true
+    },
     
     reason: {
         type: String

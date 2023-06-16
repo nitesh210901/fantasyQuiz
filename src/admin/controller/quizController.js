@@ -5,6 +5,7 @@ const quizServices = require('../services/quizService');
 const resultServices = require('../services/resultServices');
 const listMatchModel = require("../../models/listMatchesModel");
 const globalQuizModel = require("../../models/globalQuizModel");
+const { default: mongoose } = require("mongoose");
 class quizController {
   constructor() {
     return {
@@ -12,6 +13,7 @@ class quizController {
       AddQuiz: this.AddQuiz.bind(this),
       ViewQuiz: this.ViewQuiz.bind(this),
       QuizDataTable: this.QuizDataTable.bind(this),
+      QuizGIveAnswer: this.QuizGIveAnswer.bind(this),
       editQuiz: this.editQuiz.bind(this),
       editQuizData: this.editQuizData.bind(this),
       deletequiz: this.deletequiz.bind(this),
@@ -65,6 +67,7 @@ class quizController {
                 res.redirect("/add_quiz");
             }
         } catch (error) {
+          console.log(error);
             req.flash('error','something is wrong please try again later');
             res.redirect('/add_quiz');
         }
@@ -94,23 +97,92 @@ class quizController {
             quizModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').exec((err, rows1) => {
                 // console.log('--------rows1-------------', rows1);
                 if (err) console.log(err);
-                rows1.forEach((index) => {
+              rows1.forEach(async(index) => {
+                let pipeline = []
+                pipeline.push({
+                  '$match': {
+                    '_id': mongoose.Types.ObjectId(index._id)
+                  }
+                }, {
+                  '$lookup': {
+                    'from': 'listmatches', 
+                    'localField': 'matchkey', 
+                    'foreignField': '_id', 
+                    'as': 'match'
+                  }
+                }, {
+                  '$addFields': {
+                    'match_name': {
+                      '$arrayElemAt': [
+                        '$match', 0
+                      ]
+                    }
+                  }
+                }, {
+                  '$addFields': {
+                    'match_name': '$match_name.name'
+                  }
+                }, {
+                  '$project': {
+                    '_id': 0, 
+                    'match_name': 1
+                  }
+                })
+                let matchName = await quizModel.aggregate(pipeline)
+                console.log(matchName,"oooo")
+                let option = '<ol>'
+                let answer = ''
+                let showopt = ''
+                let k=1
+                for (let item in index.options[0]) {
+                  showopt += `<option value="${item}">Option ${k}</option>`;
+                  if (item === index.answer) {
+                    answer += index.options[0][`${item}`]
+                  }
+                  option += `<li>${index.options[0][`${item}`]}</li>`
+                  k++
+                }
+                option += "</ol>"
                     data.push({
-                        "count": count,
+                      "count": count,
+                      "Match Name":matchName[0].match_name,
                         "question": index.question,
-                        "options": `<ol>
-                        <li>${index.option_A}</li>
-                        <li>${index.option_B}</li>
-                        <li>${index.option_C}</li>
-                        <li>${index.option_D}</li>
-                        </ol>`,
-                        "answer": index.answer,
+                        "options": `${option}`,
+                      "answer": `${answer}` || `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key304"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${index.answer}</span></a>
+                      <div class="modal fade" id="key304" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal-dialog col-6">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel">Answer</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">×</span>
+                          </button>
+                          </div>
+                          <div class="modal-body">
+                              <form action="/quiz_give_answer/${index._id}" method="post">
+                                  <div class="col-md-12 col-sm-12 form-group">
+                                      <label>Give Your Answer</label>
+                                      <select class="form-control" style="text-align:center;" name="answer">
+                                      ${showopt}
+                                      </select>
+                                  </div>
+                                  <div class="col-md-12 col-sm-12 form-group">
+                                      <input type="submit" class="btn btn-info btn-sm text-uppercase" value="Submit">
+                                  </div>
+                                  </form>
+                          </div>
+                          <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary btn-sm text-uppercase" data-dismiss="modal">Close</button>
+                          </div>
+                      </div>
+                      </div>
+                </div>`,
                         "Action": `<a href="/edit-quiz/${index._id}" class="btn btn-sm btn-orange w-35px h-35px text-uppercase text-nowrap" data-toggle="tooltip" title="Edit"><i class="fad fa-pencil"></i></a>
                         <a  onclick="delete_sweet_alert('/deletequiz?quizId=${index._id}', 'Are you sure you want to delete this data?')" class="btn btn-sm btn-danger w-35px h-35px text-uppercase"><i class='fas fa-trash-alt'></i></a>`
                     });
                     count++;
                     if (count > rows1.length) {
-                        // console.log(`data------SERVICES---------`, data);
+
                         let json_data = JSON.stringify({
                             "recordsTotal": rows,
                             "recordsFiltered": totalFiltered,
@@ -504,6 +576,24 @@ class quizController {
         req.flash('error','Something went wrong please try again');
         res.redirect("/Import-global-contest");
     }
-}
+  }
+  
+  async QuizGIveAnswer(req,res,next){
+    try{
+        res.locals.message = req.flash();
+        const data=await quizServices.QuizGIveAnswer(req);
+        if(data.status == true){
+            req.flash('success',data.message)
+            res.redirect(`/view_quiz`);
+        }else{
+            req.flash('error',data.message)
+            res.redirect(`/view_quiz`);
+        }
+    }catch(error){
+        //  next(error);
+        req.flash('error','Something went wrong please try again');
+        res.redirect("/view_quiz");
+    }
+  }
 }
 module.exports = new quizController();

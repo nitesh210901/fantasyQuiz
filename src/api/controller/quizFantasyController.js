@@ -7,28 +7,55 @@ class matchController {
     constructor() {
         return {
             
-            // quiz_getmatchlist: this.quiz_getmatchlist.bind(this),
-            // quiz_Newjoinedmatches: this.quiz_Newjoinedmatches.bind(this),
-            // quizAllCompletedMatches: this.quizAllCompletedMatches.bind(this),
             quizCreateTeam: this.quizCreateTeam.bind(this),
-            // quizGetMyTeams: this.quizGetMyTeams.bind(this),
-            // quizInformations: this.quizInformations.bind(this),
-            // quizViewTeam: this.quizViewTeam.bind(this),
-            // quizLivematches:this.quizLivematches.bind(this),
-            getQuestionList:this.getQuestionList.bind(this),
+            getQuiz:this.getQuiz.bind(this),
+            getSingleQuiz:this.getSingleQuiz.bind(this),
+            quizGiveAnswer:this.quizGiveAnswer.bind(this),
+            quizgetUsableBalance:this.quizgetUsableBalance.bind(this),
+            joinQuiz:this.joinQuiz.bind(this),
             getAllNewContests: this.getAllNewContests.bind(this),
             quizGetMyTeams: this.quizGetMyTeams.bind(this),
-            quizPointCalculator: this.quizPointCalculator.bind(this),
-            quiz_refund_amount: this.quiz_refund_amount.bind(this),
+            quizAnswerMatch: this.quizAnswerMatch.bind(this),
+            // quiz_refund_amount: this.quiz_refund_amount.bind(this),
+            quizRefundAmount: this.quizRefundAmount.bind(this),
             joinQuizContest: this.joinQuizContest.bind(this),
             getMyQuizJoinedContest: this.getMyQuizJoinedContest.bind(this),
         }
     }
 
-    async getQuestionList(req, res, next) {
+    async getQuiz(req, res, next) {
         try {
-            const data = await quizfantasyServices.getQuestionList(req);
-            return res.status(200).json(Object.assign({ success: data.status }, data));
+            const data = await quizfantasyServices.getQuiz(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getSingleQuiz(req, res, next) {
+        try {
+            const data = await quizfantasyServices.getSingleQuiz(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+    async quizGiveAnswer(req, res, next) {
+        try {
+            const data = await quizfantasyServices.quizGiveAnswer(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
         } catch (error) {
             next(error);
         }
@@ -136,39 +163,50 @@ class matchController {
             next(error);
         }
     }
-    async quizPointCalculator(req, res, next) {
+    async quizAnswerMatch(req, res, next) {
         try {
             const currentDate = moment().format('YYYY-MM-DD 00:00:00');
-            console.log(currentDate)
             const listmatches = await listMatchesModel.find({
                 fantasy_type: "Cricket",
                 start_date: { $gte: currentDate },
                 launch_status: 'launched',
                 final_status: { $nin: ['winnerdeclared','IsCanceled'] },
                 status: { $ne: 'completed' },
-                isQuiz:1
             })
             let data;
             if (listmatches.length > 0) {
                 for (let index of listmatches) {
                     let matchkey = index._id
                     // let userId = req.user._id
-                     data = await quizfantasyServices.quizPointCalculator(matchkey);
+                     data = await quizfantasyServices.quizAnswerMatch(matchkey);
                 }
             }
-            console.log(data,"=============>")
-            if (data.status === false) {
-                return res.status(200).json(Object.assign({ success: true }, data));
-            } else {
-                return res.status(200).json(Object.assign({ success: data.status }, data));
+            if (data) {
+                if (data.status === false) {
+                    return res.status(200).json(Object.assign({ success: true }, data));
+                } else {
+                    return res.status(200).json(Object.assign({ success: data.status }, data));
+                }
             }
         } catch (error) {
             console.log(error);
         }
     }
-    async quiz_refund_amount(req, res, next) {
+    // async quiz_refund_amount(req, res, next) {
+    //     try {
+            // const data = await quizfantasyServices.quiz_refund_amount(req);
+    //         if (data.status === false) {
+    //             return res.status(200).json(Object.assign({ success: true }, data));
+    //         } else {
+    //             return res.status(200).json(Object.assign({ success: data.status }, data));
+    //         }
+    //       } catch (error) {
+    //         console.log('error',error);
+    //      }
+    // }
+    async quizRefundAmount(req, res, next) {
         try {
-            const data = await quizfantasyServices.quiz_refund_amount(req);
+            const data = await quizfantasyServices.quizRefundAmount(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
@@ -202,6 +240,28 @@ class matchController {
         } catch (error) {
             next(error);
         }
-    }    
+    }
+    async quizgetUsableBalance(req, res, next) {
+        try {
+            const data = await quizfantasyServices.quizgetUsableBalance(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
+            next(error);
+        }
+    }
+    async joinQuiz(req, res, next) {
+        try {
+            const data = await quizfantasyServices.joinQuiz(req);
+            console.log(data,"=-=-=-")
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
+        } catch (error) {
+            console.log(error);
+            next(error);
+        }
+    }
 }
 module.exports = new matchController();

@@ -327,14 +327,21 @@ router.get("/matchplayerimport/:matchkey",cricketcontrollerfun.fetchPlayerByMatc
 
 
 // Quiz  
-router.get('/quiz-question-list', auth, quizFantasyController.getQuestionList);
+router.get('/getQuiz', auth, quizFantasyController.getQuiz);
+router.get('/getSingleQuiz', auth, quizFantasyController.getSingleQuiz);
+router.post('/quiz_give_answer', auth, quizFantasyController.quizGiveAnswer);
+router.get('/quizGetUsableBalance', auth, quizFantasyController.quizgetUsableBalance);
+router.post('/joinQuiz', auth, quizFantasyController.joinQuiz);
+// router.get('/quizRefundAmount',auth,quizFantasyController.quiz_refund_amount)
+router.get('/quizRefundAmount',auth,quizFantasyController.quizRefundAmount)
+router.get('/quizAnswerMatch', auth, quizFantasyController.quizAnswerMatch);
+
+
 router.post('/quiz-create-team', auth, quizFantasyController.quizCreateTeam);
 router.get('/getAllContestQuiz', auth, quizFantasyController.getAllNewContests);
 router.get('/getQuizTeam', auth, quizFantasyController.quizGetMyTeams);
 router.post('/joinQuizContest', auth, quizFantasyController.joinQuizContest);
 router.get('/my-joined-quiz-contest', auth, quizFantasyController.getMyQuizJoinedContest)
-router.get('/quizPointCalculator', auth, quizFantasyController.quizPointCalculator);
-router.get('/quizRefundAmount',auth,quizFantasyController.quiz_refund_amount)
 
 //stockManager
 router.get('/get-stock-contest',  stockController.listStockContest);
@@ -346,4 +353,6 @@ router.get("/saveStocks", auth, stockController.saveStocks);
 router.get("/get-stock-category", auth, stockController.getStockCategory);
 router.get("/getallstockaccordingcategory", auth, stockController.getStockAccordingCategory);
 router.get('/myjoinedstockcontests', auth, stockController.myJoinedStockContests);
+router.get('/getStockMyTeams', auth, stockController.getStockMyTeams);
+router.get('/myStockLeaderboard', auth, stockController.myStockLeaderboard);
 module.exports = router;

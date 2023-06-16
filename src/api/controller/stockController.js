@@ -17,7 +17,9 @@ class matchController {
             getAllNewStock: this.getAllNewStock.bind(this),
             getStockCategory: this.getStockCategory.bind(this),
             getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
-            myJoinedStockContests: this.myJoinedStockContests.bind(this)
+            myJoinedStockContests: this.myJoinedStockContests.bind(this),
+            getStockMyTeams: this.getStockMyTeams.bind(this),
+            myStockLeaderboard: this.myStockLeaderboard.bind(this),
         }
     }
 
@@ -148,6 +150,26 @@ class matchController {
             } else {
                 return res.status(200).json(Object.assign({ success: true }, data));
             }
+        } catch (error) {
+            next(error);
+        }
+    }
+    async getStockMyTeams(req, res, next) {
+        try {
+            const data = await stockContestService.getStockMyTeams(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+    async myStockLeaderboard(req, res, next) {
+        try {
+            const data = await stockContestService.myStockLeaderboard(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);
         }
