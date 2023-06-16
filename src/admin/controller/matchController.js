@@ -154,6 +154,7 @@ class matchController {
                     // console.log('--------rows1-------------', rows1);
                     if (err) console.log(err);
                     for (const index of rows1) {
+                        let view_quiz = `<a href="/view_quiz?matchkey=${index._id}" title="View Quiz"> View Quiz</a>`
                         console.log(index.fantasy_type==req.query.val)
                         if(index.fantasy_type==req.query.val)
                         {
@@ -213,6 +214,7 @@ class matchController {
                             "start_date": start_date,
                             "match_order": index.match_order,
                             "squadstatus": index.squadstatus ? `<div class="text-center"><i class="fad fa-users text-success"></i> <span class="text-success">${index.squadstatus}</span></div>` : '<div class="text-center"><i class="fad fa-users text-danger"></i> <span class="text-danger">NO</span></div>',
+                            "View Quiz":view_quiz,
                             "Actions": action,
                         });
                         count++;

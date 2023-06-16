@@ -32,7 +32,8 @@
 
                         <div class="card">
                             <div class="card-header">Create Quiz</div>
-                            <form method="post" action="/add_quiz" accept-charset="UTF-8" id="j-forms" class="card-body">
+                            <form method="post" action="/add_quiz" accept-charset="UTF-8" id="j-forms" class="card-body" enctype="multipart/form-data">
+                                <input type="hidden" name="typename" value="quiz">
                                 <% if(msg){%>
                                     <span style="color: red;">**<%=msg %>**</span>
                                     <%}%>
@@ -44,8 +45,9 @@
                                                             <!-- over fantasy start -->
                                                             <label for="Fantasy Type*" style="color:black;">Match*</label>
                                                             
-                                                            <% if(typeof listmatch !=="undefined" && listmatch){%>
-                                                                    <select class="form-control form-control-solid " title="Fantasy Type" id="matchkey_id" data-container="body" name="matchkey_id">
+                                                                <% if(typeof listmatch !=="undefined" && listmatch){%>
+                                                                    <select class="form-control form-control-solid " title="Fantasy Type" id="matchkey_id" data-container="body" name="matchkey">
+                                                                        <option value="" selected disabled>Select Match</option>
                                                                         <% for(let match of listmatch){%>
                                                                         <option value="<%= match._id %>"><%= match.name%></option>
                                                                         <%}%>
@@ -58,7 +60,7 @@
                                                     <div class="col-12">
                                                         <div class="form-group my-3">
                                                             <label for="job-title">Question*</label>
-                                                            <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Question" name="question">
+                                                            <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Question" name="question" required>
                                                         </div>
                                                     </div>
                         
@@ -72,32 +74,14 @@
                                                     <div class="col-12">
                                                         <div class="form-group my-3">
                                                             <label for="example-datetime-local-input">Options 2</label>
-                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="" name="options[]">
-                                                            <button type="button" id="add">Add</button>
+                                                            <div style="display: flex;">
+                                                                <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="" name="options[]">
+                                                                <button class="btn btn-sm btn-success text-uppercase"  style="border-radius: 0px;" type="button" id="add">Add</button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="col-12" id="items">
                                                     </div>
-
-
-                                                    <!-- <div class="col-md-6 col-12">
-                                                        <div class="form-group my-3">
-                                                            <label for="example-datetime-local-input2">Option B*</label>
-                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option B" value="" name="option_B" autocomplete="off" required>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6 col-12">
-                                                        <div class="form-group my-3">
-                                                            <label for="example-datetime-local-input">Option C*</label>
-                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option C"  autocomplete="off" value="" name="option_C" required>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6 col-12">
-                                                        <div class="form-group my-3">
-                                                            <label for="example-datetime-local-input2">Option D*</label>
-                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option D" value="" name="option_D" autocomplete="off" required>
-                                                        </div>
-                                                    </div> -->
 
                                                     <div class="col-md">
                                                         <div class="form-group my-3">
@@ -113,14 +97,51 @@
                                                     <div class="col-12">
                                                         <div class="form-group my-3">
                                                             <label for="job-title">Entry Fee*</label>
-                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" name="entryfee">
+                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" name="entryfee" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 mt-3">
+                                                       <div class="form-group" id="bonuspercentage">
+                                                         <label class="label-control text-bold">Bonus Percentage (No need to enter % here. Just enter
+                                                           number here)*</label>
+                                                         <input id="ch2" type="text" min="0" max="100" class="form-control form-control-solid" name="bonus_percentage" value="" placeholder="Enter Bonus Percentage">
+                                                       </div>
+                                                     </div>
+                                                    
+                                                    <div class="col-6">
+                                                        <div class="form-group my-2">
+                                                            <label class="control-label text-bold">Multiply*</label>
+                                                            <div style="display: flex;">
+                                                            <input required="" class="form-control form-control-solid" name="multiply" type="number">
+                                                            <label class="control-label col-3 text-bold" >*Entry Fee</label></div>
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-3">
-                                                        <div class="form-group my-2">
-                                                            <label class="control-label text-bold">Multiply*</label>
-                                                           <input required=""  class="form-control form-control-solid" name="multiply" type="number">*Entry Fee
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <div class="row justify-content-center py-0">
+                                                                <h1 class="fs-14 font-weight-bold text-center mt-3 col-12">
+                                                                    Image</h1>
+                                                                <div class="avatar-upload col-auto position-relative">
+                                                                    <div
+                                                                        class="avatar-edit position-absolute right-0px z-index-1 top-2px">
+                                                                        <input type='file' name="image" id="image"
+                                                                            accept=".png" class="imageUpload d-none" required=""/>
+                                                                        <label
+                                                                            class="d-grid w-40px h-40px mb-0 rounded-pill bg-white text-success fs-20 shadow pointer font-weight-normal align-items-center justify-content-center"
+                                                                            for="image"><i
+                                                                                class="fad fa-pencil"></i></label>
+                                                                    </div>
+                                                                    <div
+                                                                        class="avatar-preview w-100px h-100px position-relative rounded-pill shadow">
+    
+                                                                        <div class="w-100 h-100 rounded-pill"
+                                                                            id="image-imagePreview"
+                                                                            style="background-image: url(/uploadImage/defaultImage.jpg);">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -137,25 +158,21 @@
                 <%- include("../../partials/alertMsg") %>
                 <%- include("../../partials/footer") %>
                 <script>
-                    // let template = `<div class="form-group my-3">
-                    //                     <label for="example-datetime-local-input">Options</label>
-                    //                     <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="" name="options[]">
-                    //                     <button class="remove">X</button>
-                    //                 </div>`
                      i = 2 
                     $("#add").on("click", ()=>{
                         ++i
                         $("#items").append(`<div class="form-group my-3">
                                         <label for="example-datetime-local-input">Options ${i}</label>
+                                         <div style="display: flex;">
                                         <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="" name="options[]">
-                                        <button class="remove">X</button>
+                                        <button class="remove btn btn-sm btn-red text-uppercase"  style="border-radius: 0px;">X</button></div>
                                     </div>`);
                         $("#answerId").append(`<option value="option_${i}">Option ${i}</option>`)
                     })
                     $("body").on("click", ".remove", (e)=>{
                         $(`#answerId option[value="option_${i}"]`).remove();
                         --i
-                        $(e.target).parent("div").remove();
+                        $(e.target).parent("div").parent("div").remove();
                     })
                     
                 </script>

@@ -8,22 +8,26 @@ require('../../models/challengersModel');
 require('../../models/playerModel');
 require('../../models/teamModel');
 const matchchallengesModel = require('../../models/matchChallengersModel');
+const QuizJoinLeaugeModel = require('../../models/QuizJoinLeaugeModel');
 const contestCategory = require('../../models/contestcategoryModel');
 const TransactionModel = require('../../models/transactionModel');
 const leaderBoardModel = require(`../../models/leaderboardModel`)
 const refundModel = require('../../models/refundModel');
 const overMatchModel = require('../../models/quizmatches');
 const quizModel = require('../../models/quizModel');
+const quizUserAnswer = require('../../models/quizUserAnswer');
 const overpointsModel = require('../../models/quizpoints');
 const listMatchesModel = require('../../models/listMatchesModel');
 const matchPlayersModel = require('../../models/matchPlayersModel');
 const JoinLeaugeModel = require('../../models/JoinLeaugeModel');
 const playerModel = require("../../models/playerModel");
 const JoinQuizTeamModel = require('../../models/JoinQuizTeamModel');
+const JoinTeamModel = require('../../models/JoinTeamModel');
 const userModel = require("../../models/userModel");
 const constant = require('../../config/const_credential');
 const Redis = require('../../utils/redis');
-const matchServices = require("./matchServices")
+const matchServices = require("./matchServices");
+const { quiz } = require('../../admin/services/matchServices');
 // ------over fantasy---
 //const JoinQuizTeamModel = require("../../models/overJoinedTeam");
 
@@ -41,10 +45,14 @@ class quizfantasyServices {
             updateIsViewedForBoatTeam: this.updateIsViewedForBoatTeam.bind(this),
             quizLivematches: this.quizLivematches.bind(this),
             pointcount: this.pointcount.bind(this),
-            getQuestionList: this.getQuestionList.bind(this),
+            getQuiz: this.getQuiz.bind(this),
+            getSingleQuiz: this.getSingleQuiz.bind(this),
+            quizGiveAnswer: this.quizGiveAnswer.bind(this),
+            quizgetUsableBalance: this.quizgetUsableBalance.bind(this),
+            joinQuiz: this.joinQuiz.bind(this),
             findArrayIntersection:this.findArrayIntersection.bind(this),
-            quizPointCalculator: this.quizPointCalculator.bind(this),
-            quiz_refund_amount: this.quiz_refund_amount.bind(this),
+            quizAnswerMatch: this.quizAnswerMatch.bind(this),
+            // quiz_refund_amount: this.quiz_refund_amount.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
             joinQuizContest: this.joinQuizContest.bind(this),
             findUsableBonusMoney: this.findUsableBonusMoney.bind(this),
@@ -54,7 +62,11 @@ class quizfantasyServices {
             getAllNewContests: this.getAllNewContests.bind(this),
             getMyQuizJoinedContest: this.getMyQuizJoinedContest.bind(this),
             getUserRank: this.getUserRank.bind(this),
-            
+            quizfindJoinLeaugeExist: this.quizfindJoinLeaugeExist.bind(this),
+            quizfindUsableBonusMoney: this.quizfindUsableBonusMoney.bind(this),
+            quizfindUsableBalanceMoney: this.quizfindUsableBalanceMoney.bind(this),
+            quizfindUsableWinningMoney: this.quizfindUsableWinningMoney.bind(this),
+            quizRefundAmount: this.quizRefundAmount.bind(this),
         }
     }
 
@@ -77,33 +89,89 @@ class quizfantasyServices {
         return total_joinedcontestData[0]?.total_count;
     }
 
-    async getQuestionList(req) {
+    async getQuiz(req) {
         try {
-        const matchkey_id = req.query.matchkey_id
-        if(matchkey_id){
-          let data = await quizModel.find({matchkey_id})
-           if(data.length>0){
-             return {
+            let { matchkey } = req.query;
+            
+            let data = await quizModel.find({matchkey:matchkey}, { answer: 0 ,bonus_percentage:0})
+            if (data.length === 0) {
+                return {
+                        status :false,
+                        message: "Match  not Found",
+                        data:{}
+                    }
+            }
+            return {
                 status :true,
-                message: "Quiz Question fatch Successfully",
+                message: "Quiz fatch Successfully",
                 data:data
-             }
-           }else{
-            return {
-                status :false,
-                message:"Quiz Question not Found"
             }
-           }
-        }else{
-            return {
-                status:false,
-                message:"Match not defind"
-            }
-        }
         } catch (error) {
             console.log('error', error);
+            throw error;
         }
     }
+
+    async getSingleQuiz(req) {
+        try {
+            let { quizId ,matchkey} = req.query
+            let data = await quizModel.findOne({_id: quizId,matchkey},{answer:0})
+            if (!data) {
+                return {
+                        status :false,
+                        message: "Match Not Found",
+                        data:{}
+                    }
+            }
+            return {
+                status :true,
+                message: "Single Quiz Fatch Successfully",
+                data:data
+            }
+        } catch (error) {
+            console.log('error', error);
+            throw error;
+        }
+    }
+  
+    async quizGiveAnswer(req) {
+        try {
+            let { matchkey, quizId ,answer} = req.body
+            let userId = req.user._id
+
+            let quizData = await quizModel.findOne({ _id: quizId })
+            if (!quizData) {
+                return {
+                    status: false,
+                    message: "Quiz not found",
+                    data:{}
+                }
+            }
+            if (quizData.matchkey.toString() === matchkey) {
+                let obj = {}
+                obj.matchkey = matchkey
+                obj.quizId = quizId
+                obj.userId = userId
+                obj.answer = answer
+                let data = await quizUserAnswer.findOneAndUpdate({ quizId: quizId }, { $set: obj }, { upsert: true })
+                return {
+                    status: true,
+                    message: "Answer Successfully Added"
+                }
+
+            } else {
+                return {
+                    status: false,
+                    message: "Quiz not found",
+                    data:{}
+                }
+            }
+        } catch (error) {
+            console.log('error', error);
+            throw error;
+        }
+    }
+
 
     async quizCreateTeam(req) {
         try {
@@ -1622,13 +1690,14 @@ class quizfantasyServices {
     }
 
 
-    async quizPointCalculator(matchkey) {
+    async quizAnswerMatch(matchkey) {
         try {
-            let joinData = await JoinQuizTeamModel.find({ matchkey: matchkey })
-            let quizData = await quizModel.find({ matchkey_id: matchkey })
+            let joinData = await quizUserAnswer.find({ matchkey })
+            let quizData = await quizModel.find({ matchkey: matchkey })
+            console.log(joinData,quizData)
             if (joinData.length == 0) {
                 return {
-                    message: "Team does not exist",
+                    message: "Quiz Answer Not Found",
                     status: false,
                     data:{}
                 }
@@ -1641,32 +1710,34 @@ class quizfantasyServices {
                 }
             }
             let data;
-            for (let join_data of joinData) {
-                for (let join_quiz_data of join_data.quiz) {
+            if (joinData.length > 0 && quizData.length > 0) {
+                for (let join_data of joinData) {
                     for (let quiz_data of quizData) {
-                        if (quiz_data._id.toString() === join_quiz_data.questionId.toString()) {
-                            if (quiz_data.answer === join_quiz_data.answer) {
-                             data = await JoinQuizTeamModel.findOneAndUpdate({ matchkey: join_data.matchkey, "quiz.questionId": quiz_data._id}, { "quiz.$.point": quiz_data.point },{new:true})
+                        if (quiz_data._id.toString() === join_data.quizId.toString()) {
+                            for (let item in quiz_data.options) {
+                                if (join_data.answer === quiz_data.options[`${item}`]) {
+                                    data = await quizUserAnswer.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId }, { amount: quiz_data.multiply }, { new: true })
+                                }
+                            }
                         }
                     }
+                    return {
+                        message: "Quiz Amount added successfully",
+                        status: true,
+                        data: joinData
+                    }
                 }
-            }
-            return {
-                message: "Quiz Point added successfully",
-                status: true,
-                data: joinData
-            }
             }
         } catch (error) {
             throw error;
         }
     }
 
-    async quizrefundprocess(challengeid, entryfee, matchkey, reason) {
+    async quizrefundprocess(quizId, entryfee, matchkey, reason) {
         console.log("-------------------------------------refundprocess-----------------------------")
-        let joinLeagues = await JoinLeaugeModel.find({
+        let joinLeagues = await QuizJoinLeaugeModel.find({
             matchkey: mongoose.Types.ObjectId(matchkey),
-            challengeid: mongoose.Types.ObjectId(challengeid),
+            quizId: mongoose.Types.ObjectId(quizId),
         });
         if (joinLeagues.length > 0) {
             for (let league of joinLeagues) {
@@ -1695,7 +1766,7 @@ class quizfantasyServices {
                             userid: leaugestransaction.user_id,
                             amount: entryfee,
                             joinid: league._id,
-                            challengeid: league.challengeid,
+                            quizId: league.quizId,
                             matchkey: matchkey,
                             reason: reason,
                             transaction_id: transaction_id
@@ -1705,7 +1776,7 @@ class quizfantasyServices {
                             amount: entryfee,
                             total_available_amt: totalBalance + entryfee,
                             transaction_by: constant.APP_SHORT_NAME,
-                            challengeid: challengeid,
+                            quizId: quizId,
                             userid: leaugestransaction.user_id,
                             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                             bal_bonus_amt: bonus + leaugestransaction.bonus,
@@ -1727,8 +1798,182 @@ class quizfantasyServices {
         }
         return true;
     }
+    // async quizrefundprocess(challengeid, entryfee, matchkey, reason) {
+    //     console.log("-------------------------------------refundprocess-----------------------------")
+    //     let joinLeagues = await JoinLeaugeModel.find({
+    //         matchkey: mongoose.Types.ObjectId(matchkey),
+    //         challengeid: mongoose.Types.ObjectId(challengeid),
+    //     });
+    //     if (joinLeagues.length > 0) {
+    //         for (let league of joinLeagues) {
+    //             let leaugestransaction = league.leaugestransaction;
+    //             let refund_data = await refundModel.findOne({ joinid: mongoose.Types.ObjectId(league._id) });
+    //             if (!refund_data) {
+    //                 const user = await userModel.findOne({ _id: leaugestransaction.user_id }, { userbalance: 1 });
+    //                 if (user) {
+    //                     const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+    //                     const balance = parseFloat(user.userbalance.balance.toFixed(2));
+    //                     const winning = parseFloat(user.userbalance.winning.toFixed(2));
+    //                     const totalBalance = bonus + balance + winning;
+    //                     const userObj = {
+    //                         'userbalance.balance': balance + leaugestransaction.balance,
+    //                         'userbalance.bonus': bonus + leaugestransaction.bonus,
+    //                         'userbalance.winning': winning + leaugestransaction.winning,
+    //                     };
+    //                     let randomStr = randomstring.generate({
+    //                         length: 4,
+    //                         charset: 'alphabetic',
+    //                         capitalization: 'uppercase'
+    //                     });
+    //                     console.log("------randomStr-------2", randomStr)
+    //                     let transaction_id = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+    //                     let refundData = {
+    //                         userid: leaugestransaction.user_id,
+    //                         amount: entryfee,
+    //                         joinid: league._id,
+    //                         challengeid: league.challengeid,
+    //                         matchkey: matchkey,
+    //                         reason: reason,
+    //                         transaction_id: transaction_id
+    //                     };
+    //                     const transactiondata = {
+    //                         type: 'Refund',
+    //                         amount: entryfee,
+    //                         total_available_amt: totalBalance + entryfee,
+    //                         transaction_by: constant.APP_SHORT_NAME,
+    //                         challengeid: challengeid,
+    //                         userid: leaugestransaction.user_id,
+    //                         paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+    //                         bal_bonus_amt: bonus + leaugestransaction.bonus,
+    //                         bal_win_amt: winning + leaugestransaction.winning,
+    //                         bal_fund_amt: balance + leaugestransaction.balance,
+    //                         bonus_amt: leaugestransaction.bonus,
+    //                         win_amt: leaugestransaction.winning,
+    //                         addfund_amt: leaugestransaction.balance,
+    //                         transaction_id: transaction_id
+    //                     };
+    //                     await Promise.all([
+    //                         userModel.findOneAndUpdate({ _id: leaugestransaction.user_id }, userObj, { new: true }),
+    //                         refundModel.create(refundData),
+    //                         TransactionModel.create(transactiondata)
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return true;
+    // }
 
-    async quiz_refund_amount(req) {
+    // async quiz_refund_amount(req) {
+    //     try {
+    //     console.log("-------------------------------------quizrefundAmount-------------------------")
+    //     const currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
+    //     let match_time = moment().add(10, 'm').format('YYYY-MM-DD HH:mm:ss');
+      
+    //     let pipeline = [];
+    //     pipeline.push({
+    //         $match: {
+    //             // _id:mongoose.Types.ObjectId('63fd749179494aff832d5325'),
+    //             // fantasy_type: "Cricket",
+    //             // start_date: { $lte: match_time },
+    //             launch_status: 'launched',
+    //             final_status: { $nin: ["winnerdeclared", "IsCanceled"] }
+    //         }
+    //     });
+    //     // --------------
+    //     let today= new Date();
+    //     today.setHours(today.getHours() + 5);
+    //     today.setMinutes(today.getMinutes() + 30);
+    //     // let lastDate = today.setMinutes(today.getMinutes() + 10);
+    //     // console.log("--today-+10---",today)
+    //     pipeline.push({
+    //         $addFields: {
+    //             date: {
+    //                 $dateFromString: {
+    //                     dateString: '$start_date',
+    //                     timezone: "-00:00"
+    //                 }
+    //             },
+    //             curDate: today
+    //         }
+    //     });
+    //     pipeline.push({
+    //         $match:{
+    //             $expr: {
+    //                 $and: [{
+    //                     $lte: ['$date','$curDate'],
+    //                     },
+    //                 ],
+    //             },
+    //         }
+    //     });
+    //     // --------------
+    //     pipeline.push({
+    //         $lookup: {
+    //             from: 'matchchallenges',
+    //             let: { matckey: "$_id" },
+    //             pipeline: [{
+    //                 $match: {
+    //                     status: { $ne: "canceled" },
+    //                     $expr: {
+    //                         $and: [
+    //                             { $eq: ["$matchkey", "$$matckey"] },
+    //                         ],
+    //                     },
+    //                 },
+    //             },],
+    //             as: 'matchChallengesData'
+    //         }
+    //     })
+    //     let listmatches = await listMatchesModel.aggregate(pipeline);
+    //     if (listmatches.length > 0) {
+    //         for (let match of listmatches) {
+    //             if (match.matchChallengesData.length > 0) {
+    //                 for (let value1 of match.matchChallengesData) {
+    //                     let data = {};
+    //                     if (value1.maximum_user > value1.joinedusers) {
+    //                         if (value1.confirmed_challenge == 0) {
+    //                             let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'challenge cancel');
+    //                             if (getresponse == true) {
+    //                                 await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+    //                                     $set: {
+    //                                         status: 'canceled'
+    //                                     }
+    //                                 });
+    //                             }
+    //                         }
+    //                     }
+    //                     if (value1.pricecard_type == 'Percentage') {
+    //                         let joinedUsers = await JoinLeaugeModel.find({
+    //                             matchkey: mongoose.Types.ObjectId(match.matchkey),
+    //                             challengeid: mongoose.Types.ObjectId(value1._id),
+    //                         }).count();
+    //                         if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
+    //                             let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
+    //                             if (getresponse == true) {
+    //                                 data['status'] = 'canceled';
+    //                                 await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+    //                                     $set: {
+    //                                         status: 'canceled'
+    //                                     }
+    //                                 });
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //      }
+    //      return {
+    //         message: 'Refund amount successfully ',
+    //         success: true,
+    //     }
+    //     } catch (error) {
+    //         throw error;
+    //     }
+    // }
+
+    async quizRefundAmount(req) {
         try {
         console.log("-------------------------------------quizrefundAmount-------------------------")
         const currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -1748,7 +1993,6 @@ class quizfantasyServices {
         let today= new Date();
         today.setHours(today.getHours() + 5);
         today.setMinutes(today.getMinutes() + 30);
-        console.log("--today----",today)
         // let lastDate = today.setMinutes(today.getMinutes() + 10);
         // console.log("--today-+10---",today)
         pipeline.push({
@@ -1768,9 +2012,6 @@ class quizfantasyServices {
                     $and: [{
                         $lte: ['$date','$curDate'],
                         },
-                        // {
-                        //     $lte: ['$date',lastDate ],
-                        // },
                     ],
                 },
             }
@@ -1793,41 +2034,90 @@ class quizfantasyServices {
                 as: 'matchChallengesData'
             }
         })
+            pipeline.push({
+                $lookup: {
+                from: 'quizzes',
+                let: { matckey: "$_id" },
+                pipeline: [{
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $eq: ["$matchkey", "$$matckey"] },
+                            ],
+                        },
+                    },
+                },],
+                as: 'quizData'
+            }
+            
+        })
         let listmatches = await listMatchesModel.aggregate(pipeline);
         if (listmatches.length > 0) {
             for (let match of listmatches) {
-                if (match.matchChallengesData.length > 0) {
-                    for (let value1 of match.matchChallengesData) {
+                // if (match.matchChallengesData.length > 0) {
+                //     for (let value1 of match.matchChallengesData) {
+                //         let data = {};
+                //         if (value1.maximum_user > value1.joinedusers) {
+                //             if (value1.confirmed_challenge == 0) {
+                //                 let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'challenge cancel');
+                //                 if (getresponse == true) {
+                //                     await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+                //                         $set: {
+                //                             status: 'canceled'
+                //                         }
+                //                     });
+                //                 }
+                //             }
+                //         }
+                //         if (value1.pricecard_type == 'Percentage') {
+                //             let joinedUsers = await JoinLeaugeModel.find({
+                //                 matchkey: mongoose.Types.ObjectId(match.matchkey),
+                //                 challengeid: mongoose.Types.ObjectId(value1._id),
+                //             }).count();
+                //             if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
+                //                 let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
+                //                 if (getresponse == true) {
+                //                     data['status'] = 'canceled';
+                //                     await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+                //                         $set: {
+                //                             status: 'canceled'
+                //                         }
+                //                     });
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+                if (match.quizData.length > 0) {
+                    for (let value1 of match.quizData) {
                         let data = {};
-                        if (value1.maximum_user > value1.joinedusers) {
-                            if (value1.confirmed_challenge == 0) {
-                                let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'challenge cancel');
-                                if (getresponse == true) {
-                                    await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-                                        $set: {
-                                            status: 'canceled'
-                                        }
-                                    });
+                        
+                        let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'quiz cancel');
+                        if (getresponse == true) {
+                            await quizModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+                                $set: {
+                                    status: 'canceled'
                                 }
-                            }
+                            });
                         }
-                        if (value1.pricecard_type == 'Percentage') {
-                            let joinedUsers = await JoinLeaugeModel.find({
-                                matchkey: mongoose.Types.ObjectId(match.matchkey),
-                                challengeid: mongoose.Types.ObjectId(value1._id),
-                            }).count();
-                            if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
-                                let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
-                                if (getresponse == true) {
-                                    data['status'] = 'canceled';
-                                    await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-                                        $set: {
-                                            status: 'canceled'
-                                        }
-                                    });
-                                }
-                            }
-                        }
+                            
+                        // if (value1.pricecard_type == 'Percentage') {
+                        //     let joinedUsers = await JoinLeaugeModel.find({
+                        //         matchkey: mongoose.Types.ObjectId(match.matchkey),
+                        //         challengeid: mongoose.Types.ObjectId(value1._id),
+                        //     }).count();
+                        //     if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
+                        //         let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
+                        //         if (getresponse == true) {
+                        //             data['status'] = 'canceled';
+                        //             await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
+                        //                 $set: {
+                        //                     status: 'canceled'
+                        //                 }
+                        //             });
+                        //         }
+                        //     }
+                        // }
                     }
                 }
             }
@@ -1850,7 +2140,6 @@ class quizfantasyServices {
             challengeid: challengeDetails._id,
             userid: userId,
         });
-        console.log(joinedLeauges)
         if (joinedLeauges.length == 0) return 1;
         if (joinedLeauges.length > 0) {
             if (challengeDetails.multi_entry == 0) {
@@ -1867,6 +2156,32 @@ class quizfantasyServices {
                 }
             }
         }
+    }
+
+    async quizfindJoinLeaugeExist(matchkey, userId, quizanswerId, quiz) {
+        if (!quiz || quiz == null || quiz == undefined) return 4;
+
+        const quizjoinedLeauges = await QuizJoinLeaugeModel.find({
+            matchkey: matchkey,
+            quizId: quiz._id,
+            userid: userId,
+        });
+        if (quizjoinedLeauges.length == 0) return 1;
+        // if (quizjoinedLeauges.length > 0) {
+        //     if (challengeDetails.multi_entry == 0) {
+        //         return { message: 'Contest Already joined', status: false, data: {} };
+        //     } else {
+        //         if (joinedLeauges.length >= challengeDetails.team_limit) {
+        //             return { message: 'You cannot join with more teams now.', status: false, data: {} };
+        //         } else {
+        //             const joinedLeaugesCount = joinedLeauges.filter(item => {
+        //                 return item.teamid.toString() === teamId;
+        //             });
+        //             if (joinedLeaugesCount.length) return { message: 'Team already joined', status: false, data: {} };
+        //             else return 2;
+        //         }
+        //     }
+        // }
     }
 
     async findUsableBonusMoney(challengeDetails, bonus, winning, balance) {
@@ -1897,7 +2212,45 @@ class quizfantasyServices {
         }
     }
 
+    async quizfindUsableBonusMoney(quiz, bonus, winning, balance) {
+        // if (challengeDetails.is_private == 1 && challengeDetails.is_bonus != 1)
+        //     return { bonus: bonus, cons_bonus: 0, reminingfee: challengeDetails.entryfee };
+        let totalQuizBonus = 0;
+        totalQuizBonus = (quiz.bonus_percentage / 100) * quiz.entryfee;
+
+        const finduserbonus = bonus;
+        let findUsableBalance = winning + balance;
+        let bonusUseAmount = 0;
+        if (finduserbonus >= totalQuizBonus)
+            (findUsableBalance += totalQuizBonus), (bonusUseAmount = totalQuizBonus);
+        else findUsableBalance += bonusUseAmount = finduserbonus;
+        if (findUsableBalance < quiz.entryfee) return false;
+        if (bonusUseAmount >= quiz.entryfee) {
+            return {
+                bonus: finduserbonus - quiz.entryfee,
+                cons_bonus: quiz.entryfee || 0,
+                reminingfee: 0,
+            };
+        } else {
+            return {
+                bonus: finduserbonus - bonusUseAmount,
+                cons_bonus: bonusUseAmount,
+                reminingfee: quiz.entryfee - bonusUseAmount,
+            };
+        }
+    }
+
     async findUsableBalanceMoney(resultForBonus, balance) {
+        if (balance >= resultForBonus.reminingfee)
+            return {
+                balance: balance - resultForBonus.reminingfee,
+                cons_amount: resultForBonus.reminingfee,
+                reminingfee: 0,
+            };
+        else
+            return { balance: 0, cons_amount: balance, reminingfee: resultForBonus.reminingfee - balance };
+    }
+    async quizfindUsableBalanceMoney(resultForBonus, balance) {
         if (balance >= resultForBonus.reminingfee)
             return {
                 balance: balance - resultForBonus.reminingfee,
@@ -1909,6 +2262,15 @@ class quizfantasyServices {
     }
 
     async findUsableWinningMoney(resultForBalance, winning) {
+        if (winning >= resultForBalance.reminingfee) {
+            return {
+                winning: winning - resultForBalance.reminingfee,
+                cons_win: resultForBalance.reminingfee,
+                reminingfee: 0,
+            };
+        } else { return { winning: 0, cons_win: winning, reminingfee: resultForBalance.reminingfee - winning }; }
+    }
+    async quizfindUsableWinningMoney(resultForBalance, winning) {
         if (winning >= resultForBalance.reminingfee) {
             return {
                 winning: winning - resultForBalance.reminingfee,
@@ -2998,6 +3360,799 @@ for await (const rankData of rankArray) {
                 };
             }
         } catch (error) {
+            throw error;
+        }
+    }
+
+    async quizgetUsableBalance(req) {
+        try {
+            const { matchchallengeid } = req.query;
+            const matchchallengesData = await matchchallengesModel.findOne({ _id: mongoose.Types.ObjectId(matchchallengeid) });
+            req.query.matchkey = matchchallengesData.matchkey;
+            await this.updateJoinedusers(req);
+            if (!matchchallengesData) {
+                return {
+                    message: 'Invalid details',
+                    status: false,
+                    data: {}
+                }
+            }
+            const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
+            const bonus = parseFloat(user.userbalance.bonus.toFixed(2)) || 0;
+            const balance = parseFloat(user.userbalance.balance.toFixed(2)) || 0;
+            const winning = parseFloat(user.userbalance.winning.toFixed(2)) || 0;
+            const totalBalance = bonus + balance + winning;
+            const findUsableBalance = balance + winning;
+            let findBonusAmount = 0,
+                usedBonus = 0;
+            if (matchchallengesData.is_bonus == 1 && matchchallengesData.bonus_percentage) findBonusAmount = (matchchallengesData.bonus_percentage / 100) * matchchallengesData.entryfee;
+            if (bonus >= findBonusAmount) usedBonus = findBonusAmount;
+            else usedBonus = bonus;
+            return {
+                message: 'Get amount to be used',
+                status: true,
+                data: {
+                    usablebalance: findUsableBalance.toFixed(2).toString(),
+                    usertotalbalance: totalBalance.toFixed(2).toString(),
+                    entryfee: matchchallengesData.entryfee.toFixed(2).toString(),
+                    bonus: usedBonus.toFixed(2).toString(),
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async joinQuiz(req) {
+        try {
+            
+            let { quizId, quizAnswerId } = req.body
+            let totalchallenges = 0,
+                totalmatches = 0,
+                totalseries = 0,
+                joinedMatch = 0,
+                joinedSeries = 0,
+                aggpipe = [];
+
+            aggpipe.push({
+                $match: { _id: mongoose.Types.ObjectId(quizId) }
+            });
+
+            aggpipe.push({
+                $lookup: {
+                    from: 'listmatches',
+                    localField: 'matchkey',
+                    foreignField: '_id',
+                    as: 'listmatch'
+                }
+            });
+            
+            const quizData = await quizModel.aggregate(aggpipe);
+            if (quizData.length == 0) {
+                return { message: 'Match Not Found', success: false, data: {} };
+            }
+            let listmatchId = quizData[0].listmatch[0]._id;
+            let quizDataId = quizData[0]._id;
+            let quiz = quizData[0];
+            let seriesId = quizData[0].listmatch[0].series;
+            let matchStartDate = quizData[0].listmatch[0].start_date;
+
+            const matchTime = await matchServices.getMatchTime(matchStartDate);
+            if (matchTime === false) {
+                return {
+                    message: 'Match has been closed, You cannot join leauge now.', 
+                    status: false,
+                    data: {}
+                }
+            }
+
+            const quizanswers = quizAnswerId.split(',');
+
+            const quizAnswerCount = await quizUserAnswer.find({ _id: { $in: quizanswers } }).countDocuments();
+            if (quizanswers.length != quizAnswerCount) return { message: 'Invalid Quiz', status: false, data: {} }
+
+            const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
+            if (!user || !user.userbalance) return { message: 'Insufficient balance', status: false, data: {} };
+
+            const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+            const balance = parseFloat(user.userbalance.balance.toFixed(2));
+            const winning = parseFloat(user.userbalance.winning.toFixed(2));
+            const totalBalance = bonus + balance + winning;
+                 let i = 0,
+                count = 0,
+                mainbal = 0,
+                mainbonus = 0,
+                mainwin = 0,
+                tranid = '';
+            for (const quizanswerId of quizanswers) {
+                const quizAnswerData = await quizUserAnswer.findOne({ _id: quizanswerId })
+                // console.log(`-------------IN ${i} LOOP--------------------`);
+                i++;
+                const result = await this.quizfindJoinLeaugeExist(listmatchId, req.user._id, quizanswerId, quiz);
+                console.log(result,"ooo++++++++++++++++++++++++++++++++++++")
+                if (result != 1 && result != 2 && i > 1) {
+
+                    const userObj = {
+                        'userbalance.balance': balance - mainbal,
+                        'userbalance.bonus': bonus - mainbonus,
+                        'userbalance.winning': winning - mainwin,
+                        $inc: {
+                            totalchallenges: totalchallenges,
+                            totalmatches: totalmatches,
+                            totalseries: totalseries,
+                        },
+                    };
+                    let randomStr = randomstring.generate({
+                        length: 4,
+                        charset: 'alphabetic',
+                        capitalization: 'uppercase'
+                    });
+
+                    const transactiondata = {
+                        type: 'Contest Joining Fee',
+                        contestdetail: `${quiz.entryfee}-${count}`,
+                        amount: quiz.entryfee * count,
+                        total_available_amt: totalBalance - quiz.entryfee * count,
+                        transaction_by: constant.TRANSACTION_BY.WALLET,
+                        quizId: quizId,
+                        userid: req.user._id,
+                        paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                        bal_bonus_amt: bonus - mainbonus,
+                        bal_win_amt: winning - mainwin,
+                        bal_fund_amt: balance - mainbal,
+                        cons_amount: mainbal,
+                        cons_bonus: mainbonus,
+                        cons_win: mainwin,
+                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                    };
+
+                    await Promise.all([
+                        userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                        TransactionModel.create(transactiondata)
+                    ]);
+                    return result;
+                } else if (result != 1 && result != 2) {
+                    
+                    return result;
+                }
+                const resultForBonus = await this.quizfindUsableBonusMoney(
+                    quiz,
+                    bonus - mainbonus,
+                    winning - mainwin,
+                    balance - mainbal
+                );
+                
+                if (resultForBonus == false) {
+
+                    if (i > 1) {
+                        const userObj = {
+                            'userbalance.balance': balance - mainbal,
+                            'userbalance.bonus': bonus - mainbonus,
+                            'userbalance.winning': winning - mainwin,
+                            $inc: {
+                                totalchallenges: totalchallenges,
+                                totalmatches: totalmatches,
+                                totalseries: totalseries,
+                            },
+                        };
+                        let randomStr = randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization: 'uppercase'
+                        });
+                        const transactiondata = {
+                            type: 'Contest Joining Fee',
+                            contestdetail: `${quiz.entryfee}-${count}`,
+                            amount: quiz.entryfee * count,
+                            total_available_amt: totalBalance - quiz.entryfee * count,
+                            transaction_by: constant.TRANSACTION_BY.WALLET,
+                            quizId: quizId,
+                            userid: req.user._id,
+                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                            bal_bonus_amt: bonus - mainbonus,
+                            bal_win_amt: winning - mainwin,
+                            bal_fund_amt: balance - mainbal,
+                            cons_amount: mainbal,
+                            cons_bonus: mainbonus,
+                            cons_win: mainwin,
+                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                        };
+                        await Promise.all([
+                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                            TransactionModel.create(transactiondata)
+                        ]);
+                    }
+                    return { message: 'Insufficient balance', status: false, data: {} };
+                }
+                
+                const resultForBalance = await this.quizfindUsableBalanceMoney(resultForBonus, balance - mainbal);
+                const resultForWinning = await this.quizfindUsableWinningMoney(resultForBalance, winning - mainwin);
+                // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
+                if (resultForWinning.reminingfee > 0) {
+                    // console.log(`---------------------3RD IF--------${resultForWinning}---------`);
+                    if (i > 1) {
+                        const userObj = {
+                            'userbalance.balance': balance - mainbal,
+                            'userbalance.bonus': bonus - mainbonus,
+                            'userbalance.winning': winning - mainwin,
+                            $inc: {
+                                totalchallenges: totalchallenges,
+                                totalmatches: totalmatches,
+                                totalseries: totalseries,
+                            },
+                        };
+                        let randomStr = randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization: 'uppercase'
+                        });
+
+                        const transactiondata = {
+                            type: 'Contest Joining Fee',
+                            contestdetail: `${quiz.entryfee}-${count}`,
+                            amount: quiz.entryfee * count,
+                            total_available_amt: totalBalance - quiz.entryfee * count,
+                            transaction_by: constant.TRANSACTION_BY.WALLET,
+                            quizId: quizId,
+                            userid: req.user._id,
+                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                            bal_bonus_amt: bonus - mainbonus,
+                            bal_win_amt: winning - mainwin,
+                            bal_fund_amt: balance - mainbal,
+                            cons_amount: mainbal,
+                            cons_bonus: mainbonus,
+                            cons_win: mainwin,
+                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                        };
+                        await Promise.all([
+                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                            TransactionModel.create(transactiondata)
+                        ]);
+                    }
+                    return { message: 'Insufficient balance', status: false, data: {} };
+                }
+                let randomStr = randomstring.generate({
+                    length: 4,
+                    charset: 'alphabetic',
+                    capitalization: 'uppercase'
+                });
+
+                const coupon = randomstring.generate({ charset: 'alphanumeric', length: 4, });
+                tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+                let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
+                if (result == 1) {
+
+                    let joinedQuiz = await QuizJoinLeaugeModel.find({ matchkey: listmatchId, userid: req.user._id }).limit(1).count();
+                    if (joinedQuiz == 0) {
+                        joinedSeries = await QuizJoinLeaugeModel.find({ seriesid: seriesId, userid: req.user._id }).limit(1).count();
+                    }
+                }
+                const quizjoinedLeauges = await QuizJoinLeaugeModel.find({ quizId: quizDataId }).count();
+                const joinUserCount = quizjoinedLeauges + 1;
+                // if (matchchallenge.contest_type == 'Amount' && joinUserCount > matchchallenge.maximum_user) {
+                //     if (i > 1) {
+                //         const userObj = {
+                //             'userbalance.balance': balance - mainbal,
+                //             'userbalance.bonus': bonus - mainbonus,
+                //             'userbalance.winning': winning - mainwin,
+                //             $inc: {
+                //                 totalchallenges: totalchallenges,
+                //                 totalmatches: totalmatches,
+                //                 totalseries: totalseries,
+                //             },
+                //         };
+                //         let randomStr = randomstring.generate({
+                //             length: 4,
+                //             charset: 'alphabetic',
+                //             capitalization: 'uppercase'
+                //         });
+                //         const transactiondata = {
+                //             type: 'Contest Joining Fee',
+                //             contestdetail: `${matchchallenge.entryfee}-${count}`,
+                //             amount: matchchallenge.entryfee * count,
+                //             total_available_amt: totalBalance - matchchallenge.entryfee * count,
+                //             transaction_by: constant.TRANSACTION_BY.WALLET,
+                //             challengeid: matchchallengeid,
+                //             userid: req.user._id,
+                //             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                //             bal_bonus_amt: bonus - mainbonus,
+                //             bal_win_amt: winning - mainwin,
+                //             bal_fund_amt: balance - mainbal,
+                //             cons_amount: mainbal,
+                //             cons_bonus: mainbonus,
+                //             cons_win: mainwin,
+                //             transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                //         };
+                //         await Promise.all([
+                //             userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                //             TransactionModel.create(transactiondata)
+                //         ]);
+                //     }
+                //     return { message: 'League is Closed', status: false, data: {} };
+                // }
+                const quizjoinLeaugeResult = await QuizJoinLeaugeModel.create({
+                    userid: req.user._id,
+                    quizId: quizDataId,
+                    // teamid: jointeamId,
+                    matchkey: listmatchId,
+                    seriesid: seriesId,
+                    transaction_id: tranid,
+                    refercode: referCode,
+                    leaugestransaction: {
+                        user_id: req.user._id,
+                        bonus: resultForBonus.cons_bonus,
+                        balance: resultForBalance.cons_amount,
+                        winning: resultForWinning.cons_win,
+                    },
+                });
+                await leaderBoardModel.create({
+                    userId: req.user._id,
+                    quizId: quizDataId,
+                    // teamId: jointeamId,
+                    matchkey: listmatchId,
+                    user_team: user.team,
+                    // teamnumber: jointeamsData.teamnumber,
+                    joinId: quizjoinLeaugeResult._id
+                });
+                const joinedLeaugesCount = await QuizJoinLeaugeModel.find({ quizId: quizDataId }).count();
+                if (result == 1) {
+                    totalchallenges = 1;
+                    if (joinedMatch == 0) {
+                        totalmatches = 1;
+                        if (joinedMatch == 0 && joinedSeries == 0) {
+                            totalseries = 1;
+                        }
+                    }
+                }
+                count++;
+               
+                if (quizjoinLeaugeResult._id) {
+                    mainbal = mainbal + resultForBalance.cons_amount;
+                    mainbonus = mainbonus + resultForBonus.cons_bonus;
+                    mainwin = mainwin + resultForWinning.cons_win;
+                    // if (matchchallenge.contest_type == 'Amount' && joinedLeaugesCount == matchchallenge.maximum_user && matchchallenge.is_running != 1) {
+                    //     // console.log(`---------------------8TH IF--------${matchchallenge.is_running}---------`);
+                    //     await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+                    //         status: 'closed',
+                    //         joinedusers: joinedLeaugesCount,
+                    //     }, { new: true });
+                    // } else {
+                    //     // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
+                    //     const gg = await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+                    //         status: 'opened',
+                    //         joinedusers: joinedLeaugesCount,
+                    //     }, { new: true });
+                    // }
+                }
+                // else
+                //     await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+                //         status: 'opened',
+                //         joinedusers: joinedLeaugesCount,
+                //     }, { new: true });
+                if (i == quizanswers.length) {
+                    // console.log(`---------------------9TH IF--------${i}---------`);
+                    const userObj = {
+                        'userbalance.balance': balance - mainbal,
+                        'userbalance.bonus': bonus - mainbonus,
+                        'userbalance.winning': winning - mainwin,
+                        $inc: {
+                            totalchallenges: totalchallenges,
+                            totalmatches: totalmatches,
+                            totalseries: totalseries,
+                        },
+                    };
+                    let randomStr = randomstring.generate({
+                        length: 4,
+                        charset: 'alphabetic',
+                        capitalization: 'uppercase'
+                    });
+                    const transactiondata = {
+                        type: 'Contest Joining Fee',
+                        contestdetail: `${quiz.entryfee}-${count}`,
+                        amount: quiz.entryfee * count,
+                        total_available_amt: totalBalance - quiz.entryfee * count,
+                        transaction_by: constant.TRANSACTION_BY.WALLET,
+                        quizId: quizId,
+                        userid: req.user._id,
+                        paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                        bal_bonus_amt: bonus - mainbonus,
+                        bal_win_amt: winning - mainwin,
+                        bal_fund_amt: balance - mainbal,
+                        cons_amount: mainbal,
+                        cons_bonus: mainbonus,
+                        cons_win: mainwin,
+                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                    };
+                    Promise.all([
+                        userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                        TransactionModel.create(transactiondata)
+                    ]);
+                    // ----------------------------------------------------------------------------------------------------------------------
+
+                    return {
+                        message: 'Contest Joined',
+                        status: true,
+                        data: {
+                            joinedusers: joinedLeaugesCount,
+                            referCode: referCode
+                        }
+                    };
+                }
+
+            }
+            // const { matchchallengeid, jointeamid } = req.body;
+            // let totalchallenges = 0,
+            //     totalmatches = 0,
+            //     totalseries = 0,
+            //     joinedMatch = 0,
+            //     joinedSeries = 0,
+            //     aggpipe = [];
+
+            // aggpipe.push({
+            //     $match: { _id: mongoose.Types.ObjectId(matchchallengeid) }
+            // });
+
+            // aggpipe.push({
+            //     $lookup: {
+            //         from: 'listmatches',
+            //         localField: 'matchkey',
+            //         foreignField: '_id',
+            //         as: 'listmatch'
+            //     }
+            // });
+            
+            // const matchchallengesData = await matchchallengesModel.aggregate(aggpipe);
+            // let listmatchId = matchchallengesData[0].listmatch[0]._id;
+            // let matchchallengesDataId = matchchallengesData[0]._id;
+            // let matchchallenge = matchchallengesData[0];
+            // let seriesId = matchchallengesData[0].listmatch[0].series;
+            // let matchStartDate = matchchallengesData[0].listmatch[0].start_date;
+
+            // if (matchchallengesData.length == 0) {
+            //     return { message: 'Match Not Found', success: false, data: {} };
+            // }
+            // const matchTime = await matchServices.getMatchTime(matchStartDate);
+            // if (matchTime === false) {
+            //     return {
+            //         message: 'Match has been closed, You cannot join leauge now.', 
+            //         status: false,
+            //         data: {}
+            //     }
+            // }
+            // const jointeamids = jointeamid.split(',');
+
+            // const jointeamsCount = await JoinTeamModel.find({ _id: { $in: jointeamids } }).countDocuments();
+            // if (jointeamids.length != jointeamsCount) return { message: 'Invalid Team', status: false, data: {} }
+
+            // const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
+            // if (!user || !user.userbalance) return { message: 'Insufficient balance', status: false, data: {} };
+
+            // const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+            // const balance = parseFloat(user.userbalance.balance.toFixed(2));
+            // const winning = parseFloat(user.userbalance.winning.toFixed(2));
+            // const totalBalance = bonus + balance + winning;
+            // let i = 0,
+            //     count = 0,
+            //     mainbal = 0,
+            //     mainbonus = 0,
+            //     mainwin = 0,
+            //     tranid = '';
+            //   for (const jointeamId of jointeamids) {
+            //     const jointeamsData = await JoinTeamModel.findOne({ _id: jointeamId })
+            //     // console.log(`-------------IN ${i} LOOP--------------------`);
+            //     i++;
+            //     const result = await this.findJoinLeaugeExist(listmatchId, req.user._id, jointeamId, matchchallenge);
+
+            //     if (result != 1 && result != 2 && i > 1) {
+
+            //         const userObj = {
+            //             'userbalance.balance': balance - mainbal,
+            //             'userbalance.bonus': bonus - mainbonus,
+            //             'userbalance.winning': winning - mainwin,
+            //             $inc: {
+            //                 totalchallenges: totalchallenges,
+            //                 totalmatches: totalmatches,
+            //                 totalseries: totalseries,
+            //             },
+            //         };
+            //         let randomStr = randomstring.generate({
+            //             length: 4,
+            //             charset: 'alphabetic',
+            //             capitalization: 'uppercase'
+            //         });
+
+            //         const transactiondata = {
+            //             type: 'Contest Joining Fee',
+            //             contestdetail: `${matchchallenge.entryfee}-${count}`,
+            //             amount: matchchallenge.entryfee * count,
+            //             total_available_amt: totalBalance - matchchallenge.entryfee * count,
+            //             transaction_by: constant.TRANSACTION_BY.WALLET,
+            //             challengeid: matchchallengeid,
+            //             userid: req.user._id,
+            //             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+            //             bal_bonus_amt: bonus - mainbonus,
+            //             bal_win_amt: winning - mainwin,
+            //             bal_fund_amt: balance - mainbal,
+            //             cons_amount: mainbal,
+            //             cons_bonus: mainbonus,
+            //             cons_win: mainwin,
+            //             transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+            //         };
+
+            //         await Promise.all([
+            //             userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+            //             TransactionModel.create(transactiondata)
+            //         ]);
+            //         return result;
+            //     } else if (result != 1 && result != 2) {
+
+            //         return result;
+            //     }
+            //     const resultForBonus = await this.findUsableBonusMoney(
+            //         matchchallenge,
+            //         bonus - mainbonus,
+            //         winning - mainwin,
+            //         balance - mainbal
+            //     );
+            //     if (resultForBonus == false) {
+
+            //         if (i > 1) {
+            //             const userObj = {
+            //                 'userbalance.balance': balance - mainbal,
+            //                 'userbalance.bonus': bonus - mainbonus,
+            //                 'userbalance.winning': winning - mainwin,
+            //                 $inc: {
+            //                     totalchallenges: totalchallenges,
+            //                     totalmatches: totalmatches,
+            //                     totalseries: totalseries,
+            //                 },
+            //             };
+            //             let randomStr = randomstring.generate({
+            //                 length: 4,
+            //                 charset: 'alphabetic',
+            //                 capitalization: 'uppercase'
+            //             });
+            //             const transactiondata = {
+            //                 type: 'Contest Joining Fee',
+            //                 contestdetail: `${matchchallenge.entryfee}-${count}`,
+            //                 amount: matchchallenge.entryfee * count,
+            //                 total_available_amt: totalBalance - matchchallenge.entryfee * count,
+            //                 transaction_by: constant.TRANSACTION_BY.WALLET,
+            //                 challengeid: matchchallengeid,
+            //                 userid: req.user._id,
+            //                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+            //                 bal_bonus_amt: bonus - mainbonus,
+            //                 bal_win_amt: winning - mainwin,
+            //                 bal_fund_amt: balance - mainbal,
+            //                 cons_amount: mainbal,
+            //                 cons_bonus: mainbonus,
+            //                 cons_win: mainwin,
+            //                 transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+            //             };
+            //             await Promise.all([
+            //                 userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+            //                 TransactionModel.create(transactiondata)
+            //             ]);
+            //         }
+            //         return { message: 'Insufficient balance', status: false, data: {} };
+            //     }
+            //     const resultForBalance = await this.findUsableBalanceMoney(resultForBonus, balance - mainbal);
+            //     const resultForWinning = await this.findUsableWinningMoney(resultForBalance, winning - mainwin);
+            //     // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
+            //     if (resultForWinning.reminingfee > 0) {
+            //         // console.log(`---------------------3RD IF--------${resultForWinning}---------`);
+            //         if (i > 1) {
+            //             const userObj = {
+            //                 'userbalance.balance': balance - mainbal,
+            //                 'userbalance.bonus': bonus - mainbonus,
+            //                 'userbalance.winning': winning - mainwin,
+            //                 $inc: {
+            //                     totalchallenges: totalchallenges,
+            //                     totalmatches: totalmatches,
+            //                     totalseries: totalseries,
+            //                 },
+            //             };
+            //             let randomStr = randomstring.generate({
+            //                 length: 4,
+            //                 charset: 'alphabetic',
+            //                 capitalization: 'uppercase'
+            //             });
+
+            //             const transactiondata = {
+            //                 type: 'Contest Joining Fee',
+            //                 contestdetail: `${matchchallenge.entryfee}-${count}`,
+            //                 amount: matchchallenge.entryfee * count,
+            //                 total_available_amt: totalBalance - matchchallenge.entryfee * count,
+            //                 transaction_by: constant.TRANSACTION_BY.WALLET,
+            //                 challengeid: matchchallengeid,
+            //                 userid: req.user._id,
+            //                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+            //                 bal_bonus_amt: bonus - mainbonus,
+            //                 bal_win_amt: winning - mainwin,
+            //                 bal_fund_amt: balance - mainbal,
+            //                 cons_amount: mainbal,
+            //                 cons_bonus: mainbonus,
+            //                 cons_win: mainwin,
+            //                 transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+            //             };
+            //             await Promise.all([
+            //                 userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+            //                 TransactionModel.create(transactiondata)
+            //             ]);
+            //         }
+            //         return { message: 'Insufficient balance', status: false, data: {} };
+            //     }
+            //     let randomStr = randomstring.generate({
+            //         length: 4,
+            //         charset: 'alphabetic',
+            //         capitalization: 'uppercase'
+            //     });
+
+            //     const coupon = randomstring.generate({ charset: 'alphanumeric', length: 4, });
+            //     tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+            //     let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
+            //     if (result == 1) {
+
+            //         joinedMatch = await JoinLeaugeModel.find({ matchkey: listmatchId, userid: req.user._id }).limit(1).count();
+            //         if (joinedMatch == 0) {
+            //             joinedSeries = await JoinLeaugeModel.find({ seriesid: seriesId, userid: req.user._id }).limit(1).count();
+            //         }
+            //     }
+            //     const joinedLeauges = await JoinLeaugeModel.find({ challengeid: matchchallengesDataId }).count();
+            //     const joinUserCount = joinedLeauges + 1;
+            //     if (matchchallenge.contest_type == 'Amount' && joinUserCount > matchchallenge.maximum_user) {
+            //         if (i > 1) {
+            //             const userObj = {
+            //                 'userbalance.balance': balance - mainbal,
+            //                 'userbalance.bonus': bonus - mainbonus,
+            //                 'userbalance.winning': winning - mainwin,
+            //                 $inc: {
+            //                     totalchallenges: totalchallenges,
+            //                     totalmatches: totalmatches,
+            //                     totalseries: totalseries,
+            //                 },
+            //             };
+            //             let randomStr = randomstring.generate({
+            //                 length: 4,
+            //                 charset: 'alphabetic',
+            //                 capitalization: 'uppercase'
+            //             });
+            //             const transactiondata = {
+            //                 type: 'Contest Joining Fee',
+            //                 contestdetail: `${matchchallenge.entryfee}-${count}`,
+            //                 amount: matchchallenge.entryfee * count,
+            //                 total_available_amt: totalBalance - matchchallenge.entryfee * count,
+            //                 transaction_by: constant.TRANSACTION_BY.WALLET,
+            //                 challengeid: matchchallengeid,
+            //                 userid: req.user._id,
+            //                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+            //                 bal_bonus_amt: bonus - mainbonus,
+            //                 bal_win_amt: winning - mainwin,
+            //                 bal_fund_amt: balance - mainbal,
+            //                 cons_amount: mainbal,
+            //                 cons_bonus: mainbonus,
+            //                 cons_win: mainwin,
+            //                 transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+            //             };
+            //             await Promise.all([
+            //                 userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+            //                 TransactionModel.create(transactiondata)
+            //             ]);
+            //         }
+            //         return { message: 'League is Closed', status: false, data: {} };
+            //     }
+            //     const joinLeaugeResult = await JoinLeaugeModel.create({
+            //         userid: req.user._id,
+            //         challengeid: matchchallengesDataId,
+            //         teamid: jointeamId,
+            //         matchkey: listmatchId,
+            //         seriesid: seriesId,
+            //         transaction_id: tranid,
+            //         refercode: referCode,
+            //         leaugestransaction: {
+            //             user_id: req.user._id,
+            //             bonus: resultForBonus.cons_bonus,
+            //             balance: resultForBalance.cons_amount,
+            //             winning: resultForWinning.cons_win,
+            //         },
+            //     });
+            //     await leaderBoardModel.create({
+            //         userId: req.user._id,
+            //         challengeid: matchchallengesDataId,
+            //         teamId: jointeamId,
+            //         matchkey: listmatchId,
+            //         user_team: user.team,
+            //         teamnumber: jointeamsData.teamnumber,
+            //         joinId: joinLeaugeResult._id
+            //     });
+            //     const joinedLeaugesCount = await JoinLeaugeModel.find({ challengeid: matchchallengesDataId }).count();
+            //     if (result == 1) {
+            //         totalchallenges = 1;
+            //         if (joinedMatch == 0) {
+            //             totalmatches = 1;
+            //             if (joinedMatch == 0 && joinedSeries == 0) {
+            //                 totalseries = 1;
+            //             }
+            //         }
+            //     }
+            //     count++;
+
+            //     if (joinLeaugeResult._id) {
+            //         mainbal = mainbal + resultForBalance.cons_amount;
+            //         mainbonus = mainbonus + resultForBonus.cons_bonus;
+            //         mainwin = mainwin + resultForWinning.cons_win;
+            //         if (matchchallenge.contest_type == 'Amount' && joinedLeaugesCount == matchchallenge.maximum_user && matchchallenge.is_running != 1) {
+            //             // console.log(`---------------------8TH IF--------${matchchallenge.is_running}---------`);
+            //             await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+            //                 status: 'closed',
+            //                 joinedusers: joinedLeaugesCount,
+            //             }, { new: true });
+            //         } else {
+            //             // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
+            //             const gg = await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+            //                 status: 'opened',
+            //                 joinedusers: joinedLeaugesCount,
+            //             }, { new: true });
+            //         }
+            //     } else
+            //         await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+            //             status: 'opened',
+            //             joinedusers: joinedLeaugesCount,
+            //         }, { new: true });
+            //     if (i == jointeamids.length) {
+            //         // console.log(`---------------------9TH IF--------${i}---------`);
+            //         const userObj = {
+            //             'userbalance.balance': balance - mainbal,
+            //             'userbalance.bonus': bonus - mainbonus,
+            //             'userbalance.winning': winning - mainwin,
+            //             $inc: {
+            //                 totalchallenges: totalchallenges,
+            //                 totalmatches: totalmatches,
+            //                 totalseries: totalseries,
+            //             },
+            //         };
+            //         let randomStr = randomstring.generate({
+            //             length: 4,
+            //             charset: 'alphabetic',
+            //             capitalization: 'uppercase'
+            //         });
+            //         const transactiondata = {
+            //             type: 'Contest Joining Fee',
+            //             contestdetail: `${matchchallenge.entryfee}-${count}`,
+            //             amount: matchchallenge.entryfee * count,
+            //             total_available_amt: totalBalance - matchchallenge.entryfee * count,
+            //             transaction_by: constant.TRANSACTION_BY.WALLET,
+            //             challengeid: matchchallengeid,
+            //             userid: req.user._id,
+            //             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+            //             bal_bonus_amt: bonus - mainbonus,
+            //             bal_win_amt: winning - mainwin,
+            //             bal_fund_amt: balance - mainbal,
+            //             cons_amount: mainbal,
+            //             cons_bonus: mainbonus,
+            //             cons_win: mainwin,
+            //             transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+            //         };
+            //         Promise.all([
+            //             userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+            //             TransactionModel.create(transactiondata)
+            //         ]);
+            //         // ----------------------------------------------------------------------------------------------------------------------
+
+            //         return {
+            //             message: 'Contest Joined',
+            //             status: true,
+            //             data: {
+            //                 joinedusers: joinedLeaugesCount,
+            //                 referCode: referCode
+            //             }
+            //         };
+            //     }
+
+            // }
+
+        } catch (error) {
+            console.log(error)
             throw error;
         }
     }

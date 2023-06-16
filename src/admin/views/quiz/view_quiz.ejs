@@ -69,6 +69,7 @@
     <tr>
 
       <th class="myclass">Sno.</th>
+      <th class="myclass5">Match Name</th>
       <th class="myclass1">Question</th>
       <th class="myclass3">Options</th>
       <th class="myclass2">Answer</th>
@@ -80,6 +81,7 @@
   <tfoot>
       <tr>
           <th>Sno.</th>
+          <th>Match Name</th>
           <th>Question</th>
           <th>Options</th>
           <th>Answer</th>
@@ -115,6 +117,9 @@ $(document).ready(function() {
         ],
         columns: [{
             data: "count"
+        },
+        {
+            data: "Match Name"
         }, {
             data: "question"
         },{

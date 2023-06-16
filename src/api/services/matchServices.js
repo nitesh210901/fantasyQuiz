@@ -2421,7 +2421,6 @@ let sk=0;
             //     select: 'short_name'
             // });
             
-            
             const { team1Id, team2Id } = await listMatchesModel.findOne({ _id: req.query.matchkey })
             .populate([
                 { path: 'team1Id', select: 'short_name', options: { lean: true } },
@@ -2655,7 +2654,7 @@ let sk=0;
         } catch (error) {
             throw error;
         }
-    }
+     }
     async getJoinleague(userId,matchkey){
         const total_joinedcontestData = await JoinLeaugeModel.aggregate([
             {

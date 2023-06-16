@@ -12,7 +12,7 @@ let quizSchema = new Schema({
     options: [],
     answer: {
         type: String,
-        default:""
+        default:"Please Give Answer"
     },
     entryfee: {
         type: Number,
@@ -22,6 +22,18 @@ let quizSchema = new Schema({
         type: Number,
         default: 0
     },
+    bonus_percentage: {
+        type: Number,
+        default: 0
+    },
+    status: {
+        type: String,
+        default:"opened"
+    },
+    image: {
+        type: String,
+        default:""
+    }
 }, {
     timestamps: true,
     versionKey: false

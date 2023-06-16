@@ -480,11 +480,14 @@ router.get("/delete_FAQ_Question/:id", auth, getUrl, FAQQuestionController.delet
 // ---------------------------------Quiz manager----------------
 
 router.get("/add_quiz", auth, getUrl,QuizController.AddQuizPage);
-router.post("/add_quiz", auth, getUrl,QuizController.AddQuiz);
+router.post("/add_quiz", auth,upload.single("image"), getUrl,QuizController.AddQuiz);
 router.get("/view_quiz", auth, getUrl, QuizController.ViewQuiz);
+// router.post("/quiz-Data-Table", auth, QuizController.QuizDataTable);
 router.post("/quiz-Data-Table", auth, QuizController.QuizDataTable);
+router.post("/quiz_give_answer/:id", auth, QuizController.QuizGIveAnswer);
+
 router.get("/edit-quiz/:id", auth, getUrl, QuizController.editQuiz);
-router.post("/edit-quiz-data/:id", auth, QuizController.editQuizData);
+router.post("/edit-quiz-data/:id", auth, upload.single("image"),QuizController.editQuizData);
 router.get("/deletequiz", auth, QuizController.deletequiz);
 router.get("/view-all-global-questions", auth, QuizController.ViewallGlobalQuestions_page);
 router.post("/global-questions-datatable", auth, QuizController.globalQuestionsDatatable);
