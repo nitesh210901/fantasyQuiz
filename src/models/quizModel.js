@@ -18,7 +18,7 @@ let quizSchema = new Schema({
         type: Number,
         default: 0
     },
-    multiply : {
+    winning_amount : {
         type: Number,
         default: 0
     },

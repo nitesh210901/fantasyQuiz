@@ -125,13 +125,13 @@
                                                             <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" value="<%=data.entryfee %>" name="entryfee">
                                                         </div>
                                                     </div>
-                                                    <% let entryfee = data.multiply/data.entryfee %>
+                                                    <% let entryfee = data.winning_amount/data.entryfee %>
                                 
                                                     <div class="col-6">
                                                         <div class="form-group my-2">
                                                             <label class="control-label text-bold">Multiply*</label>
                                                             <div style="display: flex;">
-                                                            <input required="" class="form-control form-control-solid" name="multiply" value="<%= entryfee%>" type="number">
+                                                            <input required="" class="form-control form-control-solid" name="winning_amount" value="<%= entryfee%>" type="number">
                                                             <label class="control-label col-3 text-bold" >*Entry Fee</label></div>
                                                         </div>
                                                     </div>

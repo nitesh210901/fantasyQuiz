@@ -386,10 +386,12 @@ router.post("/team-points-table/:id", auth, resultController.teamPointsData);
 router.get('/contest-user-details/:matchkey', auth, getUrl, resultController.contestUserDetails);
 router.post('/contest-user-details-table/:matchkey', auth, resultController.contestUserDetailsData);
 router.post("/updateMatchFinalStatus/:id/:status", auth, resultController.updateMatchFinalStatus);
+router.post("/updateMatchQuizStatus/:id/:status", auth, QuizController.updateMatchQuizStatus);
 router.get("/autoupdateMatchFinalStatus", resultController.autoUpdateMatchFinalStatus);
 router.get("/user-teams", auth, getUrl, resultController.viewTeams);
 router.post("/user-teams-tabled", resultController.viewTeamsData);
 router.get("/cancelMatch/:id",auth,resultController.cancelMatch);
+router.get("/cancelQuiz/:id",auth,QuizController.cancelQuiz);
 
 
 // -----------------------edit user teams by admin  ----------------------

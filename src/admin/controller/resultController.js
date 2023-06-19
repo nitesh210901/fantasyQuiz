@@ -404,7 +404,8 @@ class resultController {
               } else {
                 matchStatus = ``;
               }
-            } else {matchStatus="";
+            } else {
+              matchStatus = "";
               matchStatus = `<div class="row">
                                 <div class="col-12 my-1">
                                     <span class="text-danger text-decoration-none font-weight-600">
@@ -480,7 +481,7 @@ class resultController {
                                         </div>
                                     </div>
                                     
-                                <div id="keys${count}" class="modal fade" role="dialog" >
+                                <div id="keys${count}" class="modal fade" role="dialog">
                                 <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable  w-100 h-100">
                                     <div class="modal-content">
                                     <div class="modal-header">
@@ -488,7 +489,7 @@ class resultController {
                                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                                     </div>
                                     <div class="modal-body abcd">
-                                        <form action="/updateMatchFinalStatus/${doc._id}/winnerdeclared" method="post">
+                                        <form action="/updateMatchQuizStatus/${doc._id}/winnerdeclared" method="post">
                                         <div class="col-md-12 col-sm-12 form-group">
                                         <label> Enter Your Master Password </label>
                                         
@@ -518,7 +519,8 @@ class resultController {
               } else {
                 quizStatus = ``;
               }
-            } else {quizStatus="";
+            } else {
+            quizStatus = "";
             quizStatus = `<div class="row">
                                 <div class="col-12 my-1">
                                     <span class="text-danger text-decoration-none font-weight-600">
@@ -1769,7 +1771,6 @@ class resultController {
    */
   async updateMatchFinalStatus(req, res, next) {
     try {
-
       res.locals.message = req.flash();
       if (req.params.status == "winnerdeclared") {
         if (
@@ -2180,21 +2181,7 @@ async userTeamModified(req, res) {
     }
   }
 
-  async cancelQuiz(req, res, next) {
-    try {
-      let dataResponse = await quizServices.cancelQuiz(req);
-      if (dataResponse.status == true) {
-        req.flash("success", dataResponse.message);
-        res.redirect(`/match-details/${req.params.id}`);
-      } else if (dataResponse.status == false) {
-        req.flash("error", dataResponse.message);
-        res.redirect(`/match-details/${req.params.id}`);
-      }
-    } catch (error) {
-      req.flash('error', 'something is wrong please try again letter');
-      res.redirect('/');
-    }
-  }
+  
 }
 
 module.exports = new resultController();
