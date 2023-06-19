@@ -1292,7 +1292,7 @@ class overfantasyServices {
             final_status: { $nin: ['winnerdeclared','IsCanceled'] },
             status: { $ne: 'completed' }
         });
-
+      let result;
         if (listContest.length > 0) {
             for (let index of listContest) {
                 let matchTimings = index.start_date;
@@ -1300,12 +1300,12 @@ class overfantasyServices {
                 let investment = index?.investment;
                 const currentDate1 = moment().format('YYYY-MM-DD HH:mm:ss');
                 if (currentDate1 >= matchTimings) {
-                    this.getSockScoresUpdates(contestId, investment);
+                    result = this.getSockScoresUpdates(contestId, investment);
                 }
             }
 
         }
-        return listContest;
+        return result;
 
     } catch (error) {
         console.log(error);
@@ -1314,8 +1314,7 @@ class overfantasyServices {
 }
 
 async getSockScoresUpdates(contestId, investment) {
-    try {
-
+  try {
         const constedleaugeData = await joinStockLeagueModel.aggregate([
           {
             '$match': {
