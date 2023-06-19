@@ -24,9 +24,8 @@ class overfantasyServices {
             stockJoinContest: this.stockJoinContest.bind(this),
             findUsableBonusMoney: this.findUsableBonusMoney.bind(this),
             getStockContestCategory: this.getStockContestCategory.bind(this),
-            getSockScoresUpdates: this.getSockScoresUpdates.bind(this),
-            // getSingleContestDetails: this.getSingleContestDetails.bind(this),
-            // viewStockTeam: this.viewStockTeam.bind(this),
+            getSingleContestDetails: this.getSingleContestDetails.bind(this),
+            viewStockTeam: this.viewStockTeam.bind(this),
             completeContest: this.completeContest.bind(this),
             myContestleaderboard: this.myContestleaderboard.bind(this),
             getStockMyTeams: this.getStockMyTeams.bind(this),
@@ -259,11 +258,6 @@ class overfantasyServices {
                             'userbalance.balance': balance - mainbal,
                             'userbalance.bonus': bonus - mainbonus,
                             'userbalance.winning': winning - mainwin,
-                            $inc: {
-                                totalchallenges: totalchallenges,
-                                totalmatches: totalmatches,
-                                totalseries: totalseries,
-                            },
                         };
                         let randomStr = randomstring.generate({
                             length: 4,
@@ -312,11 +306,7 @@ class overfantasyServices {
                                 'userbalance.balance': balance - mainbal,
                                 'userbalance.bonus': bonus - mainbonus,
                                 'userbalance.winning': winning - mainwin,
-                                $inc: {
-                                    totalchallenges: totalchallenges,
-                                    totalmatches: totalmatches,
-                                    totalseries: totalseries,
-                                },
+                               
                             };
                             let randomStr = randomstring.generate({
                                 length: 4,

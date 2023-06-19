@@ -13,7 +13,7 @@ function onTicks(ticks) {
   console.log("Ticks", ticks);
 }
 
-function subscribe() {
+exports.subscribe = async (req) => {
   var items = [738561];
   ticker.subscribe(items);
   ticker.setMode(ticker.modeFull, items);
