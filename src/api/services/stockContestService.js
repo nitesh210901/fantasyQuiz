@@ -662,6 +662,8 @@ class overfantasyServices {
     
     async getSingleContestDetails(req) {
         try {
+
+          
             const result = await stockContestModel.aggregate([
                 {
                   '$match': {
