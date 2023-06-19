@@ -115,7 +115,7 @@ class challengersController {
                             cancelstock = `<a href="/cancel-stock-contest/${index._id}" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank">Cancel Stock</a>`
                             }
                         let launch_contest;
-                        if (index.launch_status === "launched") {
+                        if (index.launch_status ==="launched") {
                             launch_contest = `<a href="" class="btn-sm btn my-1 btn-primary w-35px h-35px" data-toggle="tooltip" title="Alreday Launch Contest" style="pointer-events: none"><i class="fas fa-rocket"></i></a>`
                         } else {
                             launch_contest = `<a href="/launch-contest/${index._id}" class="btn-sm btn my-1 btn-primary w-35px h-35px" data-toggle="tooltip" title="Launch Contest"><i class="fas fa-rocket"></i></a>`
