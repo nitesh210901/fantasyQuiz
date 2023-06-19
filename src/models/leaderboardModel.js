@@ -10,9 +10,6 @@ let leaderboardSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         
     },
-    quizId: {
-        type: mongoose.Schema.Types.ObjectId,
-    },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         

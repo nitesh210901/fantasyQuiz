@@ -332,8 +332,6 @@ router.get('/getSingleQuiz', auth, quizFantasyController.getSingleQuiz);
 router.post('/quiz_give_answer', auth, quizFantasyController.quizGiveAnswer);
 router.get('/quizGetUsableBalance', auth, quizFantasyController.quizgetUsableBalance);
 router.post('/joinQuiz', auth, quizFantasyController.joinQuiz);
-// router.get('/quizRefundAmount',auth,quizFantasyController.quiz_refund_amount)
-router.get('/quizRefundAmount',auth,quizFantasyController.quizRefundAmount)
 router.get('/quizAnswerMatch', auth, quizFantasyController.quizAnswerMatch);
 
 

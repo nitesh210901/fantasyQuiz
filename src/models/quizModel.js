@@ -22,18 +22,22 @@ let quizSchema = new Schema({
         type: Number,
         default: 0
     },
+    is_bonus: {
+        type: Number,
+        default: 0
+    },
     bonus_percentage: {
         type: Number,
         default: 0
     },
-    status: {
-        type: String,
-        default:"opened"
-    },
     image: {
         type: String,
         default:""
-    }
+    },
+    status: {
+        type: String,
+        default: 0
+    },
 }, {
     timestamps: true,
     versionKey: false

@@ -6,6 +6,7 @@ const resultServices = require('../services/resultServices');
 const listMatchModel = require("../../models/listMatchesModel");
 const globalQuizModel = require("../../models/globalQuizModel");
 const { default: mongoose } = require("mongoose");
+const { pipeline } = require("form-data");
 class quizController {
   constructor() {
     return {
@@ -30,7 +31,8 @@ class quizController {
       importGlobalQuestionPage: this.importGlobalQuestionPage.bind(this),
       importQuestionData:this.importQuestionData.bind(this),
       importGlobalContestPage:this.importGlobalContestPage.bind(this),
-      quizimportchallengersData:this.quizimportchallengersData.bind(this)
+      quizimportchallengersData:this.quizimportchallengersData.bind(this),
+      quizRefundAmount:this.quizRefundAmount.bind(this)
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -75,9 +77,62 @@ class quizController {
     
   async ViewQuiz(req, res, next) {
     try {
-        res.locals.message = req.flash();
-        res.render("quiz/view_quiz", { sessiondata: req.session.data });
+      let pipeline = [];
+
+      pipeline.push({
+        $group: {
+          _id: "$matchkey",
+        },
+      })
+      pipeline.push({
+        $lookup: {
+          from: "listmatches",
+          let: {
+            id: "$_id",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$_id", "$$id"],
+                },
+              },
+            },
+            {
+              $project: {
+                name: 1,
+              },
+            },
+          ],
+          as: "listmatch",
+        },
+      })
+
+      pipeline.push({
+        $addFields: {
+          matchname: {
+            $getField: {
+              field: "name",
+              input: {
+                $arrayElemAt: ["$listmatch", 0],
+              },
+            },
+          },
+        },
+      })
+
+      pipeline.push({
+        $project: {
+          _id: 1,
+          matchname: 1,
+        },
+      })
+      let listmatch = await quizModel.aggregate(pipeline)
+      res.locals.message = req.flash();
+      const { match_name,question } = req.query;
+        res.render("quiz/view_quiz", { sessiondata: req.session.data,question:question, listmatch,Question:req.query.question,matchkey:req.query.matchkey});
     } catch (error) {
+      console.log(error)
         req.flash('error','something is wrong please try again later');
         res.redirect("/");
     }
@@ -88,7 +143,15 @@ class quizController {
         let start = req.query.start;
         let sortObject = {},
             dir, join
-        let conditions = {}; 
+      let conditions = {}; 
+      if (req.query.Question) {
+        conditions.question = { $regex: req.query.Question };
+      }
+      let matchkey = req.query.matchkey
+      
+      if (matchkey !== "undefined") {
+        conditions.matchkey =  matchkey;
+      }
         quizModel.countDocuments(conditions).exec((err, rows) => {
             // console.log("rows....................",rows)
             let totalFiltered = rows;
@@ -129,7 +192,6 @@ class quizController {
                   }
                 })
                 let matchName = await quizModel.aggregate(pipeline)
-                console.log(matchName,"oooo")
                 let option = '<ol>'
                 let answer = ''
                 let showopt = ''
@@ -593,6 +655,14 @@ class quizController {
         //  next(error);
         req.flash('error','Something went wrong please try again');
         res.redirect("/view_quiz");
+    }
+  }
+  async quizRefundAmount(req, res) {
+    try {
+      const getResult = await quizServices.quizRefundAmount(req);
+      res.send({status:true});
+    } catch (error) {
+      console.log('error',error);
     }
   }
 }
