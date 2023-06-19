@@ -42,7 +42,8 @@ class quizServices {
             quizimportchallengersData: this.quizimportchallengersData.bind(this),
             quizRefundAmount: this.quizRefundAmount.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
-            cancelQuiz: this.cancelQuiz.bind(this)
+            cancelQuiz: this.cancelQuiz.bind(this),
+            quizdistributeWinningAmountWithAnswerMatch: this.quizdistributeWinningAmountWithAnswerMatch.bind(this)
 
         }
     }
@@ -359,6 +360,88 @@ class quizServices {
                 }
             }
 
+        }catch(error){
+            throw error;
+        }
+    }
+
+    async quizdistributeWinningAmountWithAnswerMatch(req) {
+        try {
+            let { id, status } = req.params;
+            let joinData = await QuizJoinLeaugeModel.find({ matchkey:id })
+            let quizData = await quizModel.find({ matchkey: id })
+            if (joinData.length == 0) {
+                return {
+                    message: "Quiz Answer Not Found",
+                    status: false,
+                    data:{}
+                }
+            }
+            if (quizData.length == 0) {
+                return {
+                    message: " Quiz not found",
+                    status: false,
+                    data:{}
+                }
+            }
+            let data;
+            if (joinData.length > 0 && quizData.length > 0) {
+                for (let join_data of joinData) {
+                    for (let quiz_data of quizData) {
+                        if (quiz_data._id.toString() === join_data.quizId.toString() && quiz_data.matchkey.toString() === join_data.matchkey.toString()) {
+                                if (join_data.answer === quiz_data.answer) {
+                                    data = await QuizJoinLeaugeModel.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId }, { winamount: quiz_data.winning_amount }, { new: true })
+                                    // const user = await userModel.findOne({ _id:join_data.userid  }, { userbalance: 1, totalwinning: 1 });
+                                    // const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+                                    // const balance = parseFloat(user.userbalance.balance.toFixed(2));
+                                    // const winning = parseFloat(user.userbalance.winning.toFixed(2));
+                                    // const totalwinning = parseFloat(user.totalwinning.toFixed(2));
+                                    // const totalBalance = bonus + balance + winning;
+
+                                    // let tds_amount = (31.2 / 100) * fpusv['amount'];
+                                    // let amount = fpusv['amount'] - tds_amount;
+                                    // let tdsData = {
+                                    //     userid: fpusk,
+                                    //     amount: fpusv['amount'],
+                                    //     tds_amount: tds_amount,
+                                    //     challengeid: challenge._id,
+                                    //     seriesid: listmatches[0].series
+                                    // };
+                                    // const userObj = {
+                                    //     'userbalance.balance': balance,
+                                    //     'userbalance.bonus': bonus,
+                                    //     'userbalance.winning': winning + amount,
+                                    //     'totalwinning': totalwinning + amount
+                                    // };
+                                    // const transactiondata = {
+                                    //     type: 'Quiz Winning Amount',
+                                    //     amount: amount,
+                                    //     total_available_amt: totalBalance + amount,
+                                    //     transaction_by: constant.APP_SHORT_NAME,
+                                    //     challengeid: challenge._id,
+                                    //     userid: join_data.userid,
+                                    //     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                                    //     bal_bonus_amt: bonus,
+                                    //     bal_win_amt: winning + amount,
+                                    //     bal_fund_amt: balance,
+                                    //     win_amt: amount,
+                                    //     transaction_id: transactionidsave
+                                    // };
+                                    // await Promise.all([
+                                    //     userModel.findOneAndUpdate({ _id: fpusk }, userObj, { new: true }),
+                                    //     // tdsDetailModel.create(tdsData),
+                                    //     TransactionModel.create(transactiondata),
+                                    // ])
+                                }
+                        }
+                    }
+                    return {
+                        message: "Quiz Amount added successfully",
+                        status: true,
+                        data: joinData
+                    }
+                }
+            }
         }catch(error){
             throw error;
         }
