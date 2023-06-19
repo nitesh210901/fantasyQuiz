@@ -11,6 +11,7 @@ const webController=require("../controller/webController");
 const CronJob = require('../services/cronJobServices');
 const quizFantasyController=require("../controller/quizFantasyController")
 const stockController=require("../controller/stockController")
+const mcxController=require("../controller/mcxController")
 
 const auth = require('../../middlewares/apiauth');
 
@@ -358,4 +359,10 @@ router.get('/my-contest-leaderboard', auth, stockController.myContestleaderboard
 
 router.get('/getStockMyTeams', auth, stockController.getStockMyTeams);
 router.get('/point-calculation-stock', auth, stockController.updateResultStocks);
+
+
+
+
+// -------------------------MCX Manager-------------------------
+router.get('/get-mcx-contest',  mcxController.listMCXContest);
 module.exports = router;

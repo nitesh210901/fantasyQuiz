@@ -187,6 +187,22 @@
                     })
                     
                 </script>
+                <script>
+                    function readURL(input) {
+                            if (input.files && input.files[0]) {
+                                var reader = new FileReader();
+                                reader.onload = function (e) {
+                                    $('#' + input.id + '-imagePreview').css('background-image', 'url(' + e.target.result + ')');
+                                    $('#' + input.id + '-imagePreview').hide();
+                                    $('#' + input.id + '-imagePreview').fadeIn(650);
+                                }
+                                reader.readAsDataURL(input.files[0]);
+                            }
+                        }
+                        $(".imageUpload").change(function () {
+                            readURL(this);
+                        });
+                </script>
                     <script>
                         $(window).on('load', function() {
 
