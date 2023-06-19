@@ -485,6 +485,7 @@ router.get("/view_quiz", auth, getUrl, QuizController.ViewQuiz);
 // router.post("/quiz-Data-Table", auth, QuizController.QuizDataTable);
 router.post("/quiz-Data-Table", auth, QuizController.QuizDataTable);
 router.post("/quiz_give_answer/:id", auth, QuizController.QuizGIveAnswer);
+router.get('/quizRefundAmount',auth,QuizController.quizRefundAmount)
 
 router.get("/edit-quiz/:id", auth, getUrl, QuizController.editQuiz);
 router.post("/edit-quiz-data/:id", auth, upload.single("image"),QuizController.editQuizData);

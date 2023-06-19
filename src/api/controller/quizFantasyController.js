@@ -16,8 +16,6 @@ class matchController {
             getAllNewContests: this.getAllNewContests.bind(this),
             quizGetMyTeams: this.quizGetMyTeams.bind(this),
             quizAnswerMatch: this.quizAnswerMatch.bind(this),
-            // quiz_refund_amount: this.quiz_refund_amount.bind(this),
-            quizRefundAmount: this.quizRefundAmount.bind(this),
             joinQuizContest: this.joinQuizContest.bind(this),
             getMyQuizJoinedContest: this.getMyQuizJoinedContest.bind(this),
         }
@@ -204,18 +202,6 @@ class matchController {
     //         console.log('error',error);
     //      }
     // }
-    async quizRefundAmount(req, res, next) {
-        try {
-            const data = await quizfantasyServices.quizRefundAmount(req);
-            if (data.status === false) {
-                return res.status(200).json(Object.assign({ success: true }, data));
-            } else {
-                return res.status(200).json(Object.assign({ success: data.status }, data));
-            }
-          } catch (error) {
-            console.log('error',error);
-         }
-    }
     async joinQuizContest(req, res, next) {
         try {
             const data = await quizfantasyServices.joinQuizContest(req);
@@ -252,7 +238,6 @@ class matchController {
     async joinQuiz(req, res, next) {
         try {
             const data = await quizfantasyServices.joinQuiz(req);
-            console.log(data,"=-=-=-")
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: data.status }, data));
             } else {
