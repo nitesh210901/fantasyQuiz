@@ -2528,7 +2528,7 @@ class resultServices {
                   
                     const getMatchContestData = await matchChallengersModel.findOne({ _id: req.params.MatchChallengerId,matchkey:req.query.matchkey});
            
-            if (getMatchContestData) {
+              if (getMatchContestData) {
                 let joinLeagues = await JoinLeaugeModel.find({ matchkey: getMatchContestData.matchkey, challengeid: getMatchContestData._id });
        
                 if (joinLeagues.length > 0) {

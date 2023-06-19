@@ -98,6 +98,7 @@ include("../../partials/sideNav") %>
                   <th>Sno.</th>
                   <th>Match Name</th>
                   <th>Match Status</th>
+                  <th>Quiz Status</th>
                 </tr>
               </thead>
               <tfoot>
@@ -105,6 +106,7 @@ include("../../partials/sideNav") %>
                   <th>Sno.</th>
                   <th>Match Name</th>
                   <th>Match Status</th>
+                  <th>Quiz Status</th>
                 </tr>
               </tfoot>
             </table>
@@ -139,6 +141,9 @@ include("../../partials/sideNav") %>
               },
               {
                 data: "matchStatus",
+              },
+              {
+                data: "quizStatus",
               },
             ],
           });
