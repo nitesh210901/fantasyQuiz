@@ -6,8 +6,6 @@ const axios = require('axios');
 app.use(cors());
 
 
-  
-
 const { connectDB } = require("./src/db/dbconnection");
 const constant = require('./src/config/const_credential');
 
