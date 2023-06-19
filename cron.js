@@ -28,7 +28,7 @@ updatePlayersCount.start();
 refund_amount.start();
 
 //quiz point calculation
-quizPointCalculator.start();
+// quizPointCalculator.start();
 
 updateResultOfStocks.start();
 

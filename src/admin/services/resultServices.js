@@ -7,6 +7,7 @@ const profitLossModel = require("../../models/profitLoss");
 const constant = require('../../config/const_credential');
 const randomizePlayerSelectionClassic = require("../services/randomizePlayerSelectionClassic");
 const listMatches = require('../../models/listMatchesModel');
+const joinStockLeagueModel = require('../../models/joinStockLeagueModel');
 const stockContestModel = require('../../models/stockContestModel');
 const seriesModel = require("../../models/addSeriesModel");
 const matchPlayers = require('../../models/matchPlayersModel');
@@ -48,6 +49,12 @@ const role = {
     'cap': 'allrounder',
     'squad': 'allrounder',
 }
+
+var ticker = new KiteTicker({
+	api_key: "74f8oggch3zuubyp",
+	access_token: "access_token"
+});
+
 class resultServices {
     constructor() {
         return {
@@ -2651,9 +2658,10 @@ class resultServices {
                 for (let index of listContest) {
                     let matchTimings = index.start_date;
                     let contestId = index._id;
+                    let investment = index?.investment;
                     const currentDate1 = moment().format('YYYY-MM-DD HH:mm:ss');
                     if (currentDate1 >= matchTimings) {
-                        this.getSockScoresUpdates(contestId);
+                        this.getSockScoresUpdates(contestId, investment);
                     }
                 }
 
@@ -2666,9 +2674,85 @@ class resultServices {
         }
     }
 
-    async getScoresUpdates(real_matchkey, matchkey) {
+    async getSockScoresUpdates(contestId, investment) {
         try {
-            
+            console.log('hellloo')
+            const constedleaugeData = await joinStockLeagueModel.aggregate([
+                {
+                  '$match': {
+                    'contestId': new mongoose.Types.ObjectId(contestId)
+                  }
+                }, {
+                  '$lookup': {
+                    'from': 'stock_contests', 
+                    'localField': 'contestId', 
+                    'foreignField': '_id', 
+                    'as': 'contestData'
+                  }
+                }, {
+                  '$unwind': {
+                    'path': '$contestData'
+                  }
+                }, {
+                  '$lookup': {
+                    'from': 'joinstockteams', 
+                    'localField': 'teamid', 
+                    'foreignField': '_id', 
+                    'as': 'teamData'
+                  }
+                }, {
+                  '$addFields': {
+                    'teamData': {
+                      '$map': {
+                        'input': '$teamData', 
+                        'as': 'item', 
+                        'in': {
+                          'stock': '$$item.stock'
+                        }
+                      }
+                    }
+                  }
+                }, {
+                  '$addFields': {
+                    'teamData': {
+                      '$arrayElemAt': [
+                        '$teamData', 0
+                      ]
+                    }
+                  }
+                }, {
+                  '$unwind': {
+                    'path': '$teamData.stock'
+                  }
+                }, {
+                  '$addFields': {
+                    'stockid': '$teamData.stock.stockId'
+                  }
+                }, {
+                  '$lookup': {
+                    'from': 'stocks', 
+                    'let': {
+                      'id': '$stockid'
+                    }, 
+                    'pipeline': [
+                      {
+                        '$match': {
+                          '$expr': {
+                            '$eq': [
+                              '$_id', '$$id'
+                            ]
+                          }
+                        }
+                      }
+                    ], 
+                    'as': 'stocks'
+                  }
+                }
+              ]);
+              console.log(constedleaugeData,'+++++++++++++++++++++');
+
+              
+
         } catch (error) {
             console.log("error"+error);
             throw error;
