@@ -100,22 +100,6 @@
                                                             <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" name="entryfee" required>
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-3 col-md-6 col-12">
-                                                        <div class="form-group my-3">
-                                                          <div class="custom-control custom-checkbox custom-control-inline">
-                                                            <input type="checkbox" class="custom-control-input sel_all" id="select_all3" name="is_bonus" value="1">
-                                                            <label class="custom-control-label fs-15" for="select_all3">Is Bonus Allowed</label>
-                                                          </div>
-                                                        </div>
-                                                      </div>
-                                                      <div class="col-sm-12">
-                                                        <div class="form-group" id="bonuspercentage">
-                                                          <label class="label-control text-bold">Bonus Percentage (No need to enter % here. Just
-                                                            enter number here)*</label>
-                                                          <input id="ch2" min="0" max="100" type="text" class="form-control form-control-solid" name="bonus_percentage" value="" placeholder="Enter Bonus Percentage" required="">
-                                                        </div>
-                                                      </div>
-                                                    
                                                     <div class="col-6">
                                                         <div class="form-group my-2">
                                                             <label class="control-label text-bold">Multiply*</label>
@@ -124,6 +108,7 @@
                                                             <label class="control-label col-3 text-bold" >*Entry Fee</label></div>
                                                         </div>
                                                     </div>
+                                                    
 
                                                     <div class="col-12">
                                                         <div class="form-group">
@@ -152,6 +137,24 @@
                                                             </div>
                                                         </div>
                                                     </div>
+
+                                                    <div class="col-md-3">
+                                                        <div class="form-group my-3">
+                                                          <div class="custom-control custom-checkbox custom-control-inline">
+                                                            <input type="checkbox" class="custom-control-input sel_all" id="select_all3" name="is_bonus"
+                                                              value="1">
+                                                            <label class="custom-control-label" for="select_all3">Is Bonus Allowed</label>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                      <div class="col-12 mt-3">
+                                                        <div class="form-group d-none" id="bonuspercentage">
+                                                          <label class="label-control text-bold">Bonus Percentage (No need to enter % here. Just enter
+                                                            number here)*</label>
+                                                          <input disabled="" id="ch2" type="text" min="0" max="100" class="form-control form-control-solid"
+                                                            name="bonus_percentage" value="" placeholder="Enter Bonus Percentage" required="">
+                                                        </div>
+                                                      </div>
 
                                                     <div class="col-12 text-right mt-4 mb-2">
                                                         <button class="btn btn-sm btn-success text-uppercase"><i class="far fa-check-circle"></i>&nbsp;Submit</button>
@@ -193,6 +196,20 @@
                     </script>
                     
                     <script>
+                         $('input[name=is_bonus]').change(function () {
+                            if ($('input[name=is_bonus]').prop('checked') == true) {
+                            $('input[name=bonus_percentage]').val('');
+                            $("input[name=bonus_percentage]").prop('disabled', false);
+                            $("#bonuspercentage").removeClass('d-none');
+                            $("#multientryteam").show();
+                            }
+                            if ($('input[name=is_bonus]').prop('checked') == false) {
+                            $("input[name=bonus_percentage]").prop('disabled', true);
+                            $("#bonuspercentage").addClass('d-none');
+                            $("#multientryteam").hide();
+                            }
+
+                        });
                         $('#special').on('click', function() {
                             mySelect.find('option:selected').prop('disabled', true);
                             mySelect.selectpicker('refresh');

@@ -38,15 +38,6 @@ let quizSchema = new Schema({
         type: String,
         default: 0
     },
-    joinedusers: {
-        type: Number,
-        default: 0
-    },
-    // user: [mongoose.Types.ObjectId],
-    // user_image: {
-    //     type: String,
-    //     default:""
-    // }
 }, {
     timestamps: true,
     versionKey: false

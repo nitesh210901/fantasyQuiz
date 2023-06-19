@@ -58,7 +58,7 @@ class quizServices {
                 }
 
             }
-            let { matchkey, question, options, answer, entryfee, multiply, bonus_percentage } = req.body
+            let { matchkey, question, options, answer, entryfee, multiply, bonus_percentage ,is_bonus} = req.body
             let option = []
             let opt = {}
             if (options.length > 0) {
@@ -77,7 +77,8 @@ class quizServices {
                 options: option,
                 answer: answer,
                 entryfee: entryfee,
-                multiply: multiply*entryfee,
+                multiply: multiply * entryfee,
+                is_bonus:is_bonus,
                 bonus_percentage: bonus_percentage,
                 image: image,
             });
@@ -297,7 +298,7 @@ class quizServices {
 
         }
         let image = `/${req.body.typename}/${req.file?.filename}` || "";
-        let { matchkey, question, options, answer, entryfee, multiply ,bonus_percentage} = req.body
+        let { matchkey, question, options, answer, entryfee, multiply ,bonus_percentage,is_bonus} = req.body
             let option = []
             let opt = {}
             if (options.length > 0) {
@@ -314,7 +315,8 @@ class quizServices {
                     options: option,
                     answer: answer,
                     entryfee: entryfee,
-                    multiply: multiply * entryfee,
+                     multiply: multiply * entryfee,
+                     is_bonus:is_bonus,
                     bonus_percentage: bonus_percentage,
                     image: image
                 }
@@ -325,7 +327,8 @@ class quizServices {
                     options: option,
                     answer: answer,
                     entryfee: entryfee,
-                    multiply: multiply * entryfee,
+                     multiply: multiply * entryfee,
+                     is_bonus:is_bonus,
                     bonus_percentage: bonus_percentage
                 }
             }

@@ -18,13 +18,13 @@ class matchController {
             getStockCategory: this.getStockCategory.bind(this),
             getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
             myJoinedStockContests: this.myJoinedStockContests.bind(this),
-            getMyStockTeam: this.getMyStockTeam.bind(this),
+            // getMyStockTeam: this.getMyStockTeam.bind(this),
             getSingleContestDetails: this.getSingleContestDetails.bind(this),
             viewStockTeam: this.viewStockTeam.bind(this),
             completeContest: this.completeContest.bind(this),
             myContestleaderboard: this.myContestleaderboard.bind(this),
             getStockMyTeams: this.getStockMyTeams.bind(this),
-            myStockLeaderboard: this.myStockLeaderboard.bind(this),
+            // myStockLeaderboard: this.myStockLeaderboard.bind(this),
         }
     }
 

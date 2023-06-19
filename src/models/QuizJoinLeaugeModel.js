@@ -77,6 +77,10 @@ let quizjoinedleaugeSchema = new Schema({
     answer: {
         type: String,
         default:""
+    },
+    winamount: {
+        type: Number,
+        default:0
     }
 }, {
     timestamps: true,

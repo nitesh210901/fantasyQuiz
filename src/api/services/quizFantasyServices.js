@@ -91,7 +91,77 @@ class quizfantasyServices {
     async getQuiz(req) {
         try {
             let { matchkey } = req.query;
-            let data = await quizModel.find({matchkey:matchkey}, { answer: 0 ,bonus_percentage:0})
+            let pipeline = []
+            pipeline.push({
+                '$match': {
+                  'matchkey': mongoose.Types.ObjectId(matchkey)
+                }
+              }, {
+                '$lookup': {
+                  'from': 'quizjoinedleauges', 
+                  'let': {
+                    'matchkey': '$matchkey', 
+                    'id': '$_id'
+                  }, 
+                  'pipeline': [
+                    {
+                      '$match': {
+                        '$expr': {
+                          '$eq': [
+                            '$matchkey', '$$matchkey'
+                          ], 
+                          '$eq': [
+                            '$quizId', '$$id'
+                          ]
+                        }
+                      }
+                    }
+                  ], 
+                  'as': 'userArray'
+                }
+              }, {
+                '$addFields': {
+                  'userIdArray': {
+                    '$map': {
+                      'input': '$userArray', 
+                      'as': 'item', 
+                      'in': '$$item.userid'
+                    }
+                  }
+                }
+              }, {
+                '$lookup': {
+                  'from': 'users', 
+                  'let': {
+                    'id': '$userIdArray'
+                  }, 
+                  'pipeline': [
+                    {
+                      '$match': {
+                        '$expr': {
+                          '$in': [
+                            '$_id', '$$id'
+                          ]
+                        }
+                      }
+                    }, {
+                      '$project': {
+                        'image': 1
+                      }
+                    }
+                  ], 
+                  'as': 'userAnswer'
+                }
+              }, {
+                '$project': {
+                  'userArray': 0, 
+                  'userIdArray': 0, 
+                  'answer': 0, 
+                  'bonus_percentage': 0, 
+                  'is_bonus': 0
+                }
+              })
+            let data = await quizModel.aggregate(pipeline)
             if (data.length === 0) {
                 return {
                         status :false,
@@ -1690,9 +1760,8 @@ class quizfantasyServices {
 
     async quizAnswerMatch(matchkey) {
         try {
-            let joinData = await quizUserAnswer.find({ matchkey })
+            let joinData = await QuizJoinLeaugeModel.find({ matchkey })
             let quizData = await quizModel.find({ matchkey: matchkey })
-            console.log(joinData,quizData)
             if (joinData.length == 0) {
                 return {
                     message: "Quiz Answer Not Found",
@@ -1711,12 +1780,10 @@ class quizfantasyServices {
             if (joinData.length > 0 && quizData.length > 0) {
                 for (let join_data of joinData) {
                     for (let quiz_data of quizData) {
-                        if (quiz_data._id.toString() === join_data.quizId.toString()) {
-                            for (let item in quiz_data.options) {
-                                if (join_data.answer === quiz_data.options[`${item}`]) {
-                                    data = await quizUserAnswer.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId }, { amount: quiz_data.multiply }, { new: true })
+                        if (quiz_data._id.toString() === join_data.quizId.toString() && quiz_data.matchkey.toString() === join_data.matchkey.toString()) {
+                                if (join_data.answer === quiz_data.answer) {
+                                    data = await QuizJoinLeaugeModel.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId }, { winamount: quiz_data.multiply }, { new: true })
                                 }
-                            }
                         }
                     }
                     return {
@@ -3213,9 +3280,16 @@ for await (const rankData of rankArray) {
     async quizgetUsableBalance(req) {
         try {
             const { quizId } = req.query;
+            if (quizId === undefined) { 
+                return {
+                    message: "Quiz Not Found",
+                    status: false,
+                    data:{}
+                }
+            }
             const quizData = await quizModel.findOne({ _id: mongoose.Types.ObjectId(quizId) });
             req.query.matchkey = quizData.matchkey;
-            await this.updateJoinedusers(req);
+            // await this.updateJoinedusers(req);
             if (!quizData) {
                 return {
                     message: 'Invalid details',
@@ -3314,7 +3388,7 @@ for await (const rankData of rankArray) {
                
                 // i++;
                 const result = await this.quizfindJoinLeaugeExist(listmatchId, req.user._id, quizAnswer, quiz);
-                if (result != 1 && result != 2) {
+                if (result != 1 ) {
                     const userObj = {
                         'userbalance.balance': balance - mainbal,
                         'userbalance.bonus': bonus - mainbonus,
@@ -3353,7 +3427,7 @@ for await (const rankData of rankArray) {
                         TransactionModel.create(transactiondata)
                     ]);
                     return result;
-                } else if (result != 1 && result != 2) {
+                } else if (result != 1) {
                     
                     return result;
                 }

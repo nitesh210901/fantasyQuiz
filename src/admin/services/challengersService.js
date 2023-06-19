@@ -208,7 +208,6 @@ class challengersService {
                     data.fantasy_type = req.body.fantasy_type;
                     data.win_amount = req.body.win_amount;
                     data.amount_type = req.body.amount_type;
-                    data.type_contest = req.body.type_contest;
                     if (req.body.contest_type == 'Amount') {
                         data.winning_percentage = '0';
                     }
@@ -722,7 +721,6 @@ class challengersService {
                     data.win_amount = req.body.win_amount;
                     data.fantasy_type = req.body.fantasy_type;
                     data.amount_type = req.body.amount_type;
-                    data.type_contest = req.body.type_contest;
                     if (req.body.contest_type == 'Amount') {
                         data.winning_percentage = 0;
                     }

@@ -37,22 +37,60 @@
             </div>
         </div>
         <div class="container-fluid mt-n10">
-            <!-- <div class="row">
-<div class="col-md-12">
-<div class="card mb-3">
-<div class="card-heading p-3">
-  <form method="get" action="/view_quiz">
-                          <div class="sbp-preview position-relative">
-            <div class="form-group">
-                <div class="row mx-0 align-items-center">
-                </div>
+          <div class="card mb-3">
+            <div class="card-heading p-3">
+              <form method="get" action="/view_quiz">
+                                      <div class="sbp-preview position-relative">
+                        <div class="form-group">
+                            <div class="row mx-0 align-items-end">
+                              <div class="col-md-6">
+                                <%if(matchkey){%>
+                                <div class="form-group my-3">
+                                    <label for="Match" class="control-label text-bold ">Match</label>
+                                      <select class="form-control form-control-solid input-sm p-1 selectpicker show-tick" data-container="body" data-live-search="true" title="Select Match" data-hide-disabled="true" name="matchkey" id="matchName" tabindex="-98">
+                                        <% if(typeof listmatch !=="undefined" && listmatch) {%>
+                                          <%for(let match of listmatch) {%>
+                                          <option value="<%=match._id%>" <%=match._id==matchkey ? "selected" :"" %>><%= match.matchname%></option>
+                                          <%}%>
+                                          <%}%>
+                                    </select>                       
+                                </div>
+                                <% }else{
+                                  console.log("iiiiii")
+                                  %>
+                                  <div class="form-group my-3">
+                                    <label for="Match" class="control-label text-bold ">Match</label>
+                                      <select class="form-control form-control-solid input-sm p-1 selectpicker show-tick" data-container="body" data-live-search="true" title="Select Match" data-hide-disabled="true" name="matchkey" tabindex="-98">
+                                        <% if(typeof listmatch !=="undefined" && listmatch) {%>
+                                          <%for(let match of listmatch) {%>
+                                          <option value="<%=match._id%>"><%= match.matchname%></option>
+                                          <%}%>
+                                          <%}%>
+                                    </select>                       
+                                </div>
+                                  <%}%>
+                            </div>
+                                <div class="col-md">
+                                    <div class="form-group my-3">
+                                      <label for="Question" class="control-label text-bold">Question</label>
+                                      <%if(Question){%> 
+                                      <input value="<%=Question%>" placeholder="Search By Question" id="Question" class="form-control form-control-solid"  name="question" type="text">
+                                       <%}else{%>   
+                                        <input value="" placeholder="Search By Question" id="Question" class="form-control form-control-solid"  name="question" type="text">
+                                        <%}%>
+                                      </div>
+                                </div>
+                                <div class="col-md-auto text-right mb-md-3">
+            
+                                    <button class="btn btn-sm btn-success text-uppercase"><i class="far fa-check-circle"></i>&nbsp;Submit</button>
+                                    <a href="/view_quiz" class="btn btn-sm btn-warning text-uppercase"><i class="far fa-undo"></i>&nbsp; Reset</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </div>
-    </form>
-</div>
-</div>
-</div>
-</div> -->
+            </div>
 
 <div class="card mb-4">
 <div class="card-header">
@@ -94,8 +132,8 @@
 </div>
 <script type="text/javascript">
 $(document).ready(function() {
-  var teamName = $('#teamName').val();
-    var end_date = $('#end_date').val();
+  var Question = $('#Question').val();
+    var matchkey = $('#matchName').val();
     // var fantasy_type = $('#fantasy_type').val();
     $.fn.dataTable.ext.errMode = 'none';
     $('#view_quiz_datatable').DataTable({
@@ -104,7 +142,7 @@ $(document).ready(function() {
               zeroRecords: "No records to display",
             },
         ajax: {
-            url: `/quiz-Data-Table`,
+            url: `/quiz-Data-Table?Question=${Question}&matchkey=${matchkey}`,
             type: 'post',
             dataSrc: 'data',
             error: function() {
