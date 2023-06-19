@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const moment = require("moment");
 
 const quizModel = require('../../models/quizModel');
+const QuizJoinLeaugeModel = require('../../models/QuizJoinLeaugeModel');
+const refundMatchModel = require('../../models/refundModel');
 const listMatchesModel = require('../../models/listMatchesModel');
 const matchchallengersModel = require("../../models/matchChallengersModel")
 const challengersModel = require("../../models/challengersModel")
@@ -39,7 +41,8 @@ class quizServices {
             quizcreateCustomContest: this.quizcreateCustomContest.bind(this),
             quizimportchallengersData: this.quizimportchallengersData.bind(this),
             quizRefundAmount: this.quizRefundAmount.bind(this),
-            quizrefundprocess: this.quizrefundprocess.bind(this)
+            quizrefundprocess: this.quizrefundprocess.bind(this),
+            cancelQuiz: this.cancelQuiz.bind(this)
 
         }
     }
@@ -1490,6 +1493,105 @@ class quizServices {
         }
         } catch (error) {
             throw error;
+        }
+    }
+
+    async cancelQuiz(req){
+        try{
+            const matchContest= await quizModel.find({matchkey:req.query.matchkey});
+            if(matchContest.length > 0){
+                for await(let key of matchContest){
+                    req.params.quizId=key._id
+                  
+                    const getMatchContestData = await quizModel.findOne({ _id: req.params.quizId,matchkey:req.query.matchkey});
+           
+            if (getMatchContestData) {
+                let joinLeagues = await QuizJoinLeaugeModel.find({ matchkey: getMatchContestData.matchkey, quizId: getMatchContestData._id });
+       
+                if (joinLeagues.length > 0) {
+                    for (let league of joinLeagues) {
+                        let leaugestransaction = league.leaugestransaction;
+                        let randomStr=randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization:'uppercase'
+                          });
+                        let refund_data = await refundMatchModel.findOne({ joinid: mongoose.Types.ObjectId(league._id) });
+                  
+                        if (!refund_data) {
+                            const user = await userModel.findOne({ _id: leaugestransaction.user_id }, { userbalance: 1 });
+                            if (user) {
+                                const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+                                const balance = parseFloat(user.userbalance.balance.toFixed(2));
+                                const winning = parseFloat(user.userbalance.winning.toFixed(2));
+                                const totalBalance = bonus + balance + winning;
+                                const userObj = {
+                                    'userbalance.balance': balance + leaugestransaction.balance,
+                                    'userbalance.bonus': bonus + leaugestransaction.bonus,
+                                    'userbalance.winning': winning + leaugestransaction.winning,
+                                };
+                               
+                                let transaction_id = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+                                let refundData = {
+                                    userid: leaugestransaction.user_id,
+                                    amount: getMatchContestData.entryfee,
+                                    joinid: league._id,
+                                    quizId: league.quizId,
+                                    matchkey: getMatchContestData.matchkey,
+                                    reason: 'cancel quiz',
+                                    transaction_id: transaction_id
+                                };
+                               
+                                const transactiondata = {
+                                    type: 'Refund',
+                                    amount: getMatchContestData.entryfee,
+                                    total_available_amt: totalBalance + getMatchContestData.entryfee,
+                                    transaction_by: constant.APP_SHORT_NAME,
+                                    quizId: getMatchContestData._id,
+                                    userid: leaugestransaction.user_id,
+                                    paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                                    bal_bonus_amt: bonus + leaugestransaction.bonus,
+                                    bal_win_amt: winning + leaugestransaction.winning,
+                                    bal_fund_amt: balance + leaugestransaction.balance,
+                                    bonus_amt: leaugestransaction.bonus,
+                                    win_amt: leaugestransaction.winning,
+                                    addfund_amt: leaugestransaction.balance,
+                                    transaction_id: transaction_id
+                                };
+                               
+                                let profmiss =await Promise.all([
+                                    userModel.findOneAndUpdate({ _id: leaugestransaction.user_id }, userObj, { new: true }),
+                                    refundMatchModel.create(refundData),
+                                    TransactionModel.create(transactiondata)
+                                ]);
+                             
+                            }
+                        }
+                    }
+                }
+                const getMatchContestData1 = await quizModel.updateOne({ _id: req.params.quizId }, {
+                    $set: {
+                        quiz_status: constant.MATCH_CHALLENGE_STATUS.CANCELED
+                    }
+                });
+               
+                
+              } 
+             }
+            }
+            const updateMatchCancel = await listMatchesModel.updateOne({_id:req.query.matchkey},{
+                $set:{
+                    quiz_status:req.query.status
+                }
+            })
+          
+            return{
+                status:true,
+                message:'quiz cancel successfully'
+            }
+
+        }catch(error){
+            console.log(error)
         }
     }
 }

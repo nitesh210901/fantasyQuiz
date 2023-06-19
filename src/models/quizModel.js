@@ -34,9 +34,9 @@ let quizSchema = new Schema({
         type: String,
         default:""
     },
-    status: {
+    quiz_status: {
         type: String,
-        default: 0
+        default:"pending"
     },
 }, {
     timestamps: true,

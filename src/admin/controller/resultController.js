@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const moment = require("moment");
 const resultServices = require("../services/resultServices");
+const quizServices = require("../services/quizService");
 const seriesModel = require("../../models/addSeriesModel");
 const listMatchesModel = require("../../models/listMatchesModel");
 const matchChallengersModel = require("../../models/matchChallengersModel");
@@ -423,6 +424,120 @@ class resultController {
             if(doc.final_status == 'IsCanceled'){
               matchStatus = ``;
             }
+
+
+            // ---------------quiz----------
+
+            let quizStatus = "";
+            // console.log("-------------doc.status -------------------",doc.status ,"-----------doc.name----------",doc.name)
+            if (doc.status != "notstarted") {
+              if (doc.quiz_status == "pending") {
+                quizStatus = `<div class="row">
+                                                <div class="col-12 my-1">
+                                                    <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc.series}?matchkey=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this Quiz?')">
+                                                        Is Abandoned
+                                                        &nbsp;
+                                                        <i class="fad fa-caret-right"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="col-12 my-1">
+                                                    <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc.series}?matchkey=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this Quiz?')">
+                                                        Is Canceled
+                                                        &nbsp;
+                                                        <i class="fad fa-caret-right"></i>
+                                                    </a>
+                                                </div>
+                                            </div>`;
+              } else if (doc.quiz_status == "IsReviewed") {
+                quizStatus = `<div class="row">
+                                        <div class="col-12 my-1">
+                                            <a class="text-warning text-decoration-none font-weight-600" href="">
+                                                Is Reviewed
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-12 my-1">
+                                            <a class="text-success text-decoration-none font-weight-600 pointer" data-toggle="modal" data-target="#keys${count}">
+                                                Is Winner Declared
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-12 my-1">
+                                            <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc.series}?matchkey=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this Quiz?')">
+                                                Is Abandoned
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-12 my-1">
+                                            <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc.series}?matchkey=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this Quiz ?')">
+                                                Is Canceled
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                <div id="keys${count}" class="modal fade" role="dialog" >
+                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable  w-100 h-100">
+                                    <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">IsWinnerDeclared</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    </div>
+                                    <div class="modal-body abcd">
+                                        <form action="/updateMatchFinalStatus/${doc._id}/winnerdeclared" method="post">
+                                        <div class="col-md-12 col-sm-12 form-group">
+                                        <label> Enter Your Master Password </label>
+                                        
+                                        <input type="hidden"  name="series" value="${doc.series}">
+                                        <input type="password"  name="masterpassword" class="form-control form-control-solid" placeholder="Enter password here">
+                                        </div>
+                                        <div class="col-auto text-right ml-auto mt-4 mb-2">
+                                        <button type="submit" class="btn btn-sm btn-success text-uppercase "><i class="far fa-check-circle"></i>&nbsp;Submit</button>
+                                        </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-sm btn-default" data-dismiss="modal" >Close</button>
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>`;
+              } else if (doc.quiz_status == "winnerdeclared") {
+                quizStatus = `<div class="row">
+                                    <div class="col-12 my-1">
+                                        <span class="text-success text-decoration-none font-weight-600 pointer" data-toggle="modal" data-target="#keys4">
+                                            Winner Declared
+                                            &nbsp;
+                                        </span>
+                                    </div>
+                                </div>`;
+              } else {
+                quizStatus = ``;
+              }
+            } else {quizStatus="";
+            quizStatus = `<div class="row">
+                                <div class="col-12 my-1">
+                                    <span class="text-danger text-decoration-none font-weight-600">
+                                        Not Started
+                                        &nbsp;
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-12 my-1">
+                                            <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc.series}?matchkey=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this Quiz?')">
+                                                Is Canceled
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>`
+            }
+            if(doc.quiz_status == 'IsCanceled'){
+              quizStatus = ``;
+            }
             data.push({
               count: count,
               matches: `<div class="row">
@@ -453,6 +568,7 @@ class resultController {
                             </div>`,
 
               matchStatus: matchStatus,
+              quizStatus:quizStatus,
             });
             count++;
             if (count > rows1.length) {
@@ -2051,6 +2167,22 @@ async userTeamModified(req, res) {
     try {
       let dataResponse = await resultServices.cancelMatch(req);
       // res.send(dataResponse)
+      if (dataResponse.status == true) {
+        req.flash("success", dataResponse.message);
+        res.redirect(`/match-details/${req.params.id}`);
+      } else if (dataResponse.status == false) {
+        req.flash("error", dataResponse.message);
+        res.redirect(`/match-details/${req.params.id}`);
+      }
+    } catch (error) {
+      req.flash('error', 'something is wrong please try again letter');
+      res.redirect('/');
+    }
+  }
+
+  async cancelQuiz(req, res, next) {
+    try {
+      let dataResponse = await quizServices.cancelQuiz(req);
       if (dataResponse.status == true) {
         req.flash("success", dataResponse.message);
         res.redirect(`/match-details/${req.params.id}`);

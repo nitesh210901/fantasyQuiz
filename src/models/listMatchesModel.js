@@ -59,6 +59,10 @@ let listmatchSchema = new mongoose.Schema({
     final_status: {
         type: String
     },
+    quiz_status: {
+        type: String,
+        default:"pending"
+    },
     playing11_status: {
         type: Number,
         default: 0

@@ -125,14 +125,6 @@
                                                             <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" value="<%=data.entryfee %>" name="entryfee">
                                                         </div>
                                                     </div>
-                                                    <div class="col-12 mt-3">
-                                                        <div class="form-group" id="bonuspercentage">
-                                                          <label class="label-control text-bold">Bonus Percentage (No need to enter % here. Just enter
-                                                            number here)*</label>
-                                                          <input id="ch2" type="text" min="0" max="100" class="form-control form-control-solid" name="bonus_percentage" value="<%=data.bonus_percentage %>" placeholder="Enter Bonus Percentage" required="">
-                                                        </div>
-                                                    </div>
-                                                    
                                                     <% let entryfee = data.multiply/data.entryfee %>
                                 
                                                     <div class="col-6">
@@ -282,9 +274,6 @@
                             maxOptions: 1
                         });
                     </script>
-
-
-
                     <script>
                         $(document).ready(function() {
 
