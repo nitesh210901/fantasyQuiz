@@ -979,7 +979,6 @@ class challengersService {
                 if(req.query.team_limit && req.query.team_limit != ""){
                 objfind.team_limit= Number(req.query.team_limit)
                 }
-                objfind.type_contest = "Cricket"
                 getlistofMatches = await matchchallengersModel.find(objfind);
                 for await (let keyy of getlistofMatches) {
                     let obj = {};
@@ -1071,11 +1070,11 @@ class challengersService {
             
             let findmatch = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(req.params.matchKey), isQuiz: 0, is_deleted: false });
             if (findmatch) {
-                const findleauges = await challengersModel.find({ fantasy_type: { $regex: new RegExp(findmatch.fantasy_type.toLowerCase(), "i") } ,type_contest:"Cricket"});
+                const findleauges = await challengersModel.find({ fantasy_type: { $regex: new RegExp(findmatch.fantasy_type.toLowerCase(), "i") }});
                 let anArray = [];
                 if (findleauges.length > 0) {
                     for await (let key1 of findleauges) {
-                        const findchallengeexist = await matchchallengersModel.find({ matchkey: mongoose.Types.ObjectId(req.params.matchKey), challenge_id: mongoose.Types.ObjectId(key1._id),type_contest:"Cricket" });
+                        const findchallengeexist = await matchchallengersModel.find({ matchkey: mongoose.Types.ObjectId(req.params.matchKey), challenge_id: mongoose.Types.ObjectId(key1._id) });
                         if (findchallengeexist.length == 0) {
                             let data = {};
                             data['challenge_id'] = mongoose.Types.ObjectId(key1._id);
@@ -1096,7 +1095,6 @@ class challengersService {
                             data['matchkey'] = mongoose.Types.ObjectId(req.params.matchKey);
                             data['contest_name'] = key1.contest_name;
                             data['amount_type'] = key1.amount_type;
-                            data['type_contest'] = key1.type_contest;
                             const insertData = new matchchallengersModel(data);
                             let saveInsert = await insertData.save();
 
@@ -1291,7 +1289,6 @@ class challengersService {
                 obj.status = 'opened';
                 obj.fantasy_type = req.body.fantasy_type;
                 obj.amount_type = req.body.amount_type;
-                obj.type_contest = req.body.type_contest;
 
                 const insertMatch = new matchchallengersModel(obj);
                 let saveMatch = await insertMatch.save();
@@ -1311,9 +1308,6 @@ class challengersService {
                     }
                 }
             }
-
-
-
 
         } catch (error) {
             throw error;
@@ -1497,7 +1491,6 @@ class challengersService {
                     data.win_amount = req.body.win_amount;
                     data.contest_name = req.body.contest_name;
                     data.amount_type = req.body.amount_type;
-                    data.type_contest = req.body.type_contest;
                     let rowCollection = await matchchallengersModel.updateOne({ _id: challengers._id }, {
                         $set: data
                     });
