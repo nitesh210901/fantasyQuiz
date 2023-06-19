@@ -649,7 +649,9 @@ class stockfantasyServices {
     }
 
     async findJoinLeaugeExist(matchkey, userId, teamId, challengeDetails) {
-        if (!challengeDetails || challengeDetails == null || challengeDetails == undefined) return 4;
+        if (!challengeDetails || challengeDetails == null || challengeDetails == undefined) {
+          return 4;
+        }
 
         const joinedLeauges = await joinStockLeagueModel.find({
             contestId: contestId,
