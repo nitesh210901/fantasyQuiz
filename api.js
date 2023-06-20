@@ -16,6 +16,7 @@ const { updatePlayerSelected } = require('./src/config/cronjob');
 updatePlayerSelected.start();
 app.use(express.static(path.join(__dirname, '/public')));
 
+// global.subscribeParams = [];
 const flash = require("connect-flash");
 app.use(flash());
 app.use("/api", require("./src/api/routes/route"));

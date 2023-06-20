@@ -39,9 +39,9 @@
                       <div class="sbp-preview position-relative">
                         <div class="form-group">
                           <div class="row mx-0">
-                            <div class="col-md">
+                            <div class="col-md-6">
                               <div class="form-group">
-                                <select class="form-control mt-2" id="catId"
+                                <select class="form-control mt-4" id="catId"
                                     data-container="body" data-live-search="true"
                                     title="Select Category" data-hide-disabled="true"
                                     name="category" >
@@ -56,17 +56,20 @@
                                             <%}%>
                                         <% }%>
                                 </select>
-
-                                <select class="form-control mt-4" id="stockType"
-                                    data-container="body" data-live-search="true"
-                                    title="Select Stock Type" data-hide-disabled="true"
-                                    name="stocktype" >
-                                    <option disabled selected> Select Stock Type
-                                    </option>
-                                        <option value="NSE" <%= stockType === "NSE"?'selected':"" %>>NSE</option>
-                                        <option value="MCX" <%= stockType === "MCX"?'selected':"" %>>MCX</option>
-                                        <option value="COMMODITIES" <%= stockType === "COMMODITIES"?'selected':"" %>>COMMODITIES</option>
-                                </select>
+                              </div>
+                              </div>
+                              <div class="col-md-6">
+                                <div class="form-group">
+                                  <select class="form-control mt-4" id="stockType"
+                                      data-container="body" data-live-search="true"
+                                      title="Select Stock Type" data-hide-disabled="true"
+                                      name="stocktype" >
+                                      <option disabled selected> Select Stock Type
+                                      </option>
+                                          <option value="NSE" <%= stockType === "NSE"?'selected':"" %>>NSE</option>
+                                          <option value="MCX" <%= stockType === "MCX"?'selected':"" %>>MCX</option>
+                                          <option value="COMMODITIES" <%= stockType === "COMMODITIES"?'selected':"" %>>COMMODITIES</option>
+                                  </select>
                               </div>
                             </div>
 
