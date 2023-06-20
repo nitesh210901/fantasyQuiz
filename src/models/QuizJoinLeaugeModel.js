@@ -35,10 +35,6 @@ let quizjoinedleaugeSchema = new Schema({
         type: Number,
         defalut: 0
     },
-    sta: {
-        type: Number,
-        defalut: 0
-    },
     userid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'
