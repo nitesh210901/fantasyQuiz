@@ -1034,9 +1034,7 @@ class UserServices {
     }
   }
   async userFullDetails(req) {
-
     const userData = await this.findUser({ _id: mongoose.Types.ObjectId(req.user._id) });
-
     let winPip = [];
     winPip.push({
       $match: {
