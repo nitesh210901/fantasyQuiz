@@ -67,7 +67,6 @@ class overfantasyServices {
 
 
             const result = await stockContestModel.aggregate(matchpipe);
-            console.log('niteshhhh', result)
             result.sort(function (a, b) {
                 return b.match_order
             });

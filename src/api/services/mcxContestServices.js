@@ -38,43 +38,42 @@ class mcxfantasyServices {
     
 
     async listMCXContest(req) {
-        try {
-            const { mcx_contest_cat } = req.body;
-            let matchpipe = [];
-            let date = moment().format('YYYY-MM-DD HH:mm:ss');
-            let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
-            matchpipe.push({
-                $match: { fantasy_type: 'stock' }
-            });
-            matchpipe.push({
-                $match: {
-                    $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
-                    final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
-                }
-            });
+      try {
+        const { mcx_contest_cat } = req.query;
+        let matchpipe = [];
+        let date = moment().format('YYYY-MM-DD HH:mm:ss');
+        let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
+        matchpipe.push({
+            $match: { fantasy_type: stock_contest_cat }
+        });
+        matchpipe.push({
+            $match: {
+                $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+                final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+            }
+        });
 
-            matchpipe.push({
-                $sort: {
-                    start_date: 1,
-                },
-            });
-            
-            matchpipe.push({
-                $sort: {
-                    match_order: 1
-                }
-            });
-            const result = await stockContestModel.aggregate(matchpipe);
-            console.log('niteshhhh', result)
-            result.sort(function (a, b) {
-                return b.match_order
-            });
-            if (result.length > 0) return result
+        matchpipe.push({
+            $sort: {
+                start_date: 1,
+            },
+        });
+        
+        matchpipe.push({
+            $sort: {
+                match_order: 1
+            }
+        });
+        const result = await stockContestModel.aggregate(matchpipe);
+        result.sort(function (a, b) {
+            return b.match_order
+        });
+        if (result.length > 0) return result
 
-            else return [];
-        } catch (error) {
-            throw error;
-        }
+        else return [];
+    } catch (error) {
+        throw error;
+    }
     }
     async stockCreateTeam(req) {
         try {

@@ -165,8 +165,8 @@ class quizfantasyServices {
             if (data.length === 0) {
                 return {
                         status :false,
-                        message: "Match  not Found",
-                        data:{}
+                        message: "Quiz  not Found",
+                        data:[]
                     }
             }
             return {
