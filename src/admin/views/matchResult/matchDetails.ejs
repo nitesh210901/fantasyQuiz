@@ -39,8 +39,6 @@ include("../../partials/sideNav") %>
                   <!-- <option disabled selected> Fantasy Type </option> -->
                   <option value="Cricket" <%=fantasy_type=='cricket' ? 'selected' :'' %>
                       >Cricket</option>
-                  <option value="overfantasy" <%=fantasy_type=='overfantasy' ? 'selected'
-                      : '' %>>Overfantasy</option>
               </select>
               <%}else{%>
                   <select class="form-control form-control-solid " title="Fantasy Type"
@@ -48,7 +46,6 @@ include("../../partials/sideNav") %>
                       onchange="this.form.submit()">
                       <!-- <option disabled selected> Fantasy Type </option> -->
                       <option value="Cricket">Cricket</option>
-                      <option value="overfantasy">Overfantasy</option>
                   </select>
                   <%}%>
       </div>

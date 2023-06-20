@@ -160,15 +160,23 @@ class quizfantasyServices {
                   'bonus_percentage': 0, 
                   'is_bonus': 0
                 }
-              })
+            })
             let data = await quizModel.aggregate(pipeline)
             if (data.length === 0) {
                 return {
                         status :false,
-                        message: "Match  not Found",
-                        data:{}
+                        message: "Quiz  not Found",
+                        data:[]
                     }
             }
+            // let obj = {}
+            // for (let quiz of data) {
+            //     let keys = Object.keys(quiz.options[0])
+            //     obj['answer'] = Object.values(quiz.options[0])
+            //     // console.log(keys)
+            //     // let value = Object.values(quiz.options[0])
+            // }
+            // console.log(obj)
             return {
                 status :true,
                 message: "Quiz fatch Successfully",
