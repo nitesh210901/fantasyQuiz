@@ -93,6 +93,28 @@ class quizfantasyServices {
             let { matchkey } = req.query;
             let pipeline = []
             pipeline.push({
+                '$addFields': {
+                  'options': {
+                    '$objectToArray': {
+                      '$arrayElemAt': [
+                        '$options', 0
+                      ]
+                    }
+                  }
+                }
+              }, {
+                '$addFields': {
+                  'options': {
+                    '$map': {
+                      'input': '$options', 
+                      'as': 'option', 
+                      'in': {
+                        'answer': '$$option.v'
+                      }
+                    }
+                  }
+                }
+              }, {
                 '$match': {
                   'matchkey': mongoose.Types.ObjectId(matchkey)
                 }
@@ -158,9 +180,10 @@ class quizfantasyServices {
                   'userIdArray': 0, 
                   'answer': 0, 
                   'bonus_percentage': 0, 
-                  'is_bonus': 0
+                    'is_bonus': 0,
+                    'quiz_status': 0
                 }
-            })
+              })
             let data = await quizModel.aggregate(pipeline)
             if (data.length === 0) {
                 return {
@@ -169,14 +192,6 @@ class quizfantasyServices {
                         data:[]
                     }
             }
-            // let obj = {}
-            // for (let quiz of data) {
-            //     let keys = Object.keys(quiz.options[0])
-            //     obj['answer'] = Object.values(quiz.options[0])
-            //     // console.log(keys)
-            //     // let value = Object.values(quiz.options[0])
-            // }
-            // console.log(obj)
             return {
                 status :true,
                 message: "Quiz fatch Successfully",
