@@ -397,7 +397,6 @@ class quizServices {
                                     const winning = parseFloat(user.userbalance.winning.toFixed(2));
                                     const totalwinning = parseFloat(user.totalwinning.toFixed(2));
                                     const totalBalance = bonus + balance + winning;
-
                                     // let tds_amount = (31.2 / 100) * fpusv['amount'];
                                     // let amount = fpusv['amount'] - tds_amount;
                                     // let tdsData = {
@@ -407,36 +406,37 @@ class quizServices {
                                     //     challengeid: challenge._id,
                                     //     seriesid: listmatches[0].series
                                     // };
-                                    // const userObj = {
-                                    //     'userbalance.balance': balance,
-                                    //     'userbalance.bonus': bonus,
-                                    //     'userbalance.winning': winning + amount,
-                                    //     'totalwinning': totalwinning + amount
-                                    // };
-                                    // const transactiondata = {
-                                    //     type: 'Quiz Winning Amount',
-                                    //     amount: amount,
-                                    //     total_available_amt: totalBalance + amount,
-                                    //     transaction_by: constant.APP_SHORT_NAME,
-                                    //     challengeid: challenge._id,
-                                    //     userid: join_data.userid,
-                                    //     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                                    //     bal_bonus_amt: bonus,
-                                    //     bal_win_amt: winning + amount,
-                                    //     bal_fund_amt: balance,
-                                    //     win_amt: amount,
-                                    //     transaction_id: transactionidsave
-                                    // };
-                                    // await Promise.all([
-                                    //     userModel.findOneAndUpdate({ _id: fpusk }, userObj, { new: true }),
-                                    //     // tdsDetailModel.create(tdsData),
-                                    //     TransactionModel.create(transactiondata),
-                                    // ])
+                                    let transactionidsave = `${constant.APP_SHORT_NAME}-WIN-${Date.now()}-${randomStr}`;
+                                    const userObj = {
+                                        'userbalance.balance': balance,
+                                        'userbalance.bonus': bonus,
+                                        'userbalance.winning': winning + amount,
+                                        'totalwinning': totalwinning + amount
+                                    };
+                                    const transactiondata = {
+                                        type: 'Quiz Winning Amount',
+                                        amount: quiz_data.winning_amount,
+                                        total_available_amt: totalBalance + quiz_data.winning_amount,
+                                        transaction_by: constant.APP_SHORT_NAME,
+                                        quizId: join_data.quizId,
+                                        userid: join_data.userid,
+                                        paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                                        bal_bonus_amt: bonus,
+                                        bal_win_amt: winning + amount,
+                                        bal_fund_amt: balance,
+                                        win_amt: amount,
+                                        transaction_id: transactionidsave
+                                    };
+                                    await Promise.all([
+                                        userModel.findOneAndUpdate({ _id: join_data.userid }, userObj, { new: true }),
+                                        // tdsDetailModel.create(tdsData),
+                                        TransactionModel.create(transactiondata),
+                                    ])
                                 }
                         }
                     }
                     return {
-                        message: "Quiz Amount added successfully",
+                        message: "Quiz Amount distribute successfully",
                         status: true,
                         data: joinData
                     }

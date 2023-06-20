@@ -384,7 +384,7 @@ class resultServices {
         try {
             const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
             const listmatches = await listMatches.find({
-                fantasy_type: "Cricket"||"quiz",
+                fantasy_type: "Cricket",
                 start_date: { $gte: currentDate },
                 launch_status: 'launched',
                 // real_matchkey: "61365",
@@ -623,6 +623,7 @@ class resultServices {
                         matchStatus.status = m_status[mainArrayGet.status];
                         if (matchStatus.status == constant.MATCHES_STATUS.COMPLETED && checkmatch.final_status == constant.MATCH_FINAL_STATUS.PENDING) { console.log("b1 matchStatus")
                             matchStatus.final_status = constant.MATCH_FINAL_STATUS.IS_REVIEWED
+                            matchStatus.quiz_status = constant.MATCH_QUIZ_STATUS.IS_REVIEWED
                         }
                         await listMatches.updateOne({ '_id': mongoose.Types.ObjectId(checkmatch._id) }, {
                             $set: matchStatus

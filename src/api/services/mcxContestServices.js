@@ -64,8 +64,6 @@ class mcxfantasyServices {
                     match_order: 1
                 }
             });
-
-
             const result = await stockContestModel.aggregate(matchpipe);
             console.log('niteshhhh', result)
             result.sort(function (a, b) {
