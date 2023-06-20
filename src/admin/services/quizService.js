@@ -390,13 +390,13 @@ class quizServices {
                     for (let quiz_data of quizData) {
                         if (quiz_data._id.toString() === join_data.quizId.toString() && quiz_data.matchkey.toString() === join_data.matchkey.toString()) {
                                 if (join_data.answer === quiz_data.answer) {
-                                    data = await QuizJoinLeaugeModel.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId }, { winamount: quiz_data.winning_amount }, { new: true })
-                                    // const user = await userModel.findOne({ _id:join_data.userid  }, { userbalance: 1, totalwinning: 1 });
-                                    // const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
-                                    // const balance = parseFloat(user.userbalance.balance.toFixed(2));
-                                    // const winning = parseFloat(user.userbalance.winning.toFixed(2));
-                                    // const totalwinning = parseFloat(user.totalwinning.toFixed(2));
-                                    // const totalBalance = bonus + balance + winning;
+                                    const user = await userModel.findOne({ _id:join_data.userid  }, { userbalance: 1, totalwinning: 1 });
+                                    data = await QuizJoinLeaugeModel.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId ,userid:join_data.userid}, { winamount: quiz_data.winning_amount }, { new: true })
+                                    const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+                                    const balance = parseFloat(user.userbalance.balance.toFixed(2));
+                                    const winning = parseFloat(user.userbalance.winning.toFixed(2));
+                                    const totalwinning = parseFloat(user.totalwinning.toFixed(2));
+                                    const totalBalance = bonus + balance + winning;
 
                                     // let tds_amount = (31.2 / 100) * fpusv['amount'];
                                     // let amount = fpusv['amount'] - tds_amount;

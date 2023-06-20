@@ -676,7 +676,7 @@ class quizController {
           req.body.masterpassword &&
           req.body.masterpassword == req.session.data.masterpassword
         ) {
-          const getResult = await quizServices.quizdistributeWinningAmount(req);//need to check becouse crown is remove
+          const getResult = await quizServices.quizdistributeWinningAmountWithAnswerMatch(req);//need to check becouse crown is remove
 
           let updatestatus = await listMatchModel.updateOne(
             { _id: mongoose.Types.ObjectId(req.params.id) },
