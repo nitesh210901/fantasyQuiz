@@ -397,15 +397,15 @@ class quizServices {
                                     const winning = parseFloat(user.userbalance.winning.toFixed(2));
                                     const totalwinning = parseFloat(user.totalwinning.toFixed(2));
                                     const totalBalance = bonus + balance + winning;
-                                    // let tds_amount = (31.2 / 100) * fpusv['amount'];
-                                    // let amount = fpusv['amount'] - tds_amount;
-                                    // let tdsData = {
-                                    //     userid: fpusk,
-                                    //     amount: fpusv['amount'],
-                                    //     tds_amount: tds_amount,
-                                    //     challengeid: challenge._id,
-                                    //     seriesid: listmatches[0].series
-                                    // };
+                                    let tds_amount = (31.2 / 100) * quiz_data.winning_amount;
+                                    let amount = quiz_data.winning_amount - tds_amount;
+                                    let tdsData = {
+                                        userid: join_data.userid,
+                                        amount: quiz_data.winning_amount,
+                                        tds_amount: tds_amount,
+                                        challengeid: challenge._id,
+                                        seriesid: join_data.seriesid
+                                    };
                                     let transactionidsave = `${constant.APP_SHORT_NAME}-WIN-${Date.now()}-${randomStr}`;
                                     const userObj = {
                                         'userbalance.balance': balance,
@@ -415,8 +415,8 @@ class quizServices {
                                     };
                                     const transactiondata = {
                                         type: 'Quiz Winning Amount',
-                                        amount: quiz_data.winning_amount,
-                                        total_available_amt: totalBalance + quiz_data.winning_amount,
+                                        amount: amount,
+                                        total_available_amt: totalBalance + amount,
                                         transaction_by: constant.APP_SHORT_NAME,
                                         quizId: join_data.quizId,
                                         userid: join_data.userid,
@@ -429,7 +429,7 @@ class quizServices {
                                     };
                                     await Promise.all([
                                         userModel.findOneAndUpdate({ _id: join_data.userid }, userObj, { new: true }),
-                                        // tdsDetailModel.create(tdsData),
+                                        tdsDetailModel.create(tdsData),
                                         TransactionModel.create(transactiondata),
                                     ])
                                 }
