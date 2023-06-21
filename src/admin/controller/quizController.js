@@ -32,7 +32,9 @@ class quizController {
       importQuestionData:this.importQuestionData.bind(this),
       importGlobalContestPage:this.importGlobalContestPage.bind(this),
       quizimportchallengersData:this.quizimportchallengersData.bind(this),
-      quizRefundAmount:this.quizRefundAmount.bind(this)
+      quizRefundAmount:this.quizRefundAmount.bind(this),
+      updateMatchQuizStatus:this.updateMatchQuizStatus.bind(this),
+      cancelQuiz:this.cancelQuiz.bind(this)
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -663,6 +665,76 @@ class quizController {
       res.send({status:true});
     } catch (error) {
       console.log('error',error);
+    }
+  }
+
+  async updateMatchQuizStatus(req, res, next) {
+    try {
+      res.locals.message = req.flash();
+      if (req.params.status == "winnerdeclared") {
+        if (
+          req.body.masterpassword &&
+          req.body.masterpassword == req.session.data.masterpassword
+        ) {
+          const getResult = await quizServices.quizdistributeWinningAmountWithAnswerMatch(req);//need to check becouse crown is remove
+
+          let updatestatus = await listMatchModel.updateOne(
+            { _id: mongoose.Types.ObjectId(req.params.id) },
+            {
+              $set: {
+                quiz_status: req.params.status,
+              },
+            }
+          );
+          req.flash("success", `Match ${req.params.status} successfully`);
+          return res.redirect(`/match-details/${req.body.series}`);
+        } else {
+          req.flash("error", "Incorrect masterpassword");
+          res.redirect(`/match-details/${req.body.series}`);
+        }
+      } else if (
+        req.params.status == "IsAbandoned" ||
+        req.params.status == "IsCanceled"
+      ) {
+        let reason = "";
+        if (req.params.status == "IsAbandoned") {
+          reason = "Quiz abandoned";
+        } else {
+          reason = "Quiz canceled";
+        }
+        const getResult = await quizServices.quizallRefundAmount(req, reason);
+        await listMatchModel.updateOne(
+          { _id: mongoose.Types.ObjectId(req.params.id) },
+          {
+            $set: {
+              quiz_status: req.params.status,
+            },
+          }
+        );
+        req.flash("success", `Quiz ${req.params.status} successfully`);
+      }
+
+      res.redirect(`/match-details/${req.body.series}`);
+      // res.send({status:true});
+    } catch (error) {
+      req.flash('error', 'Something went wrong please try again');
+      res.redirect("/");
+    }
+  }
+
+  async cancelQuiz(req, res, next) {
+    try {
+      let dataResponse = await quizServices.cancelQuiz(req);
+      if (dataResponse.status == true) {
+        req.flash("success", dataResponse.message);
+        res.redirect(`/match-details/${req.params.id}`);
+      } else if (dataResponse.status == false) {
+        req.flash("error", dataResponse.message);
+        res.redirect(`/match-details/${req.params.id}`);
+      }
+    } catch (error) {
+      req.flash('error', 'something is wrong please try again letter');
+      res.redirect('/');
     }
   }
 }

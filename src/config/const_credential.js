@@ -251,6 +251,13 @@ const credentials = {
         IS_CANCELED: 'IsCanceled',
         PENDING: 'pending',
     },
+    MATCH_QUIZ_STATUS: {
+        WINNER_DECLARED: 'winnerdeclared',
+        IS_REVIEWED: 'IsReviewed',
+        IS_ABANDONED: 'IsAbandoned',
+        IS_CANCELED: 'IsCanceled',
+        PENDING: 'pending',
+    },
     MATCH_LAUNCH_STATUS: {
         LAUNCHED: 'launched',
         PENDING: 'pending',

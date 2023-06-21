@@ -39,12 +39,12 @@ class mcxfantasyServices {
 
     async listMCXContest(req) {
         try {
-            const { mcx_contest_cat } = req.body;
+            const { stock_contest_cat } = req.query;
             let matchpipe = [];
             let date = moment().format('YYYY-MM-DD HH:mm:ss');
             let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
             matchpipe.push({
-                $match: { fantasy_type: 'stock' }
+                $match: { fantasy_type: stock_contest_cat }
             });
             matchpipe.push({
                 $match: {
@@ -67,7 +67,6 @@ class mcxfantasyServices {
 
 
             const result = await stockContestModel.aggregate(matchpipe);
-            console.log('niteshhhh', result)
             result.sort(function (a, b) {
                 return b.match_order
             });

@@ -68,7 +68,7 @@ class UserServices {
             const data = await userModel.find({ _id: dataObj.Uid });
             const checkTeam = await userModel.find({ _id: { $ne: dataObj.Uid }, team: req.body.team });
             if (checkTeam.length > 0) {
-                let filePath = `public/${req.body.typename}/${req.file.filename}`;
+                let filePath = `public/${req.body.typename}/${req.file?.filename}`;
                             if (fs.existsSync(filePath) == true) {
                                 fs.unlinkSync(filePath);
                             }
@@ -80,7 +80,7 @@ class UserServices {
 
                 const checkEmail = await userModel.find({ _id: { $ne: dataObj.Uid }, email: req.body.email });
                 if (checkEmail.length > 0) {
-                    let filePath = `public/${req.body.typename}/${req.file.filename}`;
+                    let filePath = `public/${req.body.typename}/${req.file?.filename}`;
                             if (fs.existsSync(filePath) == true) {
                                 fs.unlinkSync(filePath);
                             }
@@ -91,7 +91,7 @@ class UserServices {
                 } else {
                     const checkMobile = await userModel.find({ _id: { $ne: dataObj.Uid }, mobile: req.body.mobile });
                     if (checkMobile.length > 0) {
-                        let filePath = `public/${req.body.typename}/${req.file.filename}`;
+                        let filePath = `public/${req.body.typename}/${req.file?.filename}`;
                             if (fs.existsSync(filePath) == true) {
                                 fs.unlinkSync(filePath);
                             }
@@ -108,7 +108,7 @@ class UserServices {
                                             fs.unlinkSync(filePath);
                                         };
                                     };
-                                    dataObj["pancard.image"] = `${process.env.BASE_URL}${req.body.typename}/${req.file.filename}`;
+                                    dataObj["pancard.image"] = `${process.env.BASE_URL}${req.body.typename}/${req.file?.filename}`;
                                 };
                             } else if (dataObj["bank.accno"]) {
                                 if (req.file) {
@@ -118,7 +118,7 @@ class UserServices {
                                             fs.unlinkSync(filePath);
                                         };
                                     };
-                                    dataObj["bank.image"] = `${process.env.BASE_URL}${req.body.typename}/${req.file.filename}`;
+                                    dataObj["bank.image"] = `${process.env.BASE_URL}${req.body.typename}/${req.file?.filename}`;
                                 };
                             } else if (req.file) {
                                 if (data[0].image) {
@@ -127,7 +127,7 @@ class UserServices {
                                         fs.unlinkSync(filePath);
                                     };
                                 };
-                                dataObj.image = `${process.env.BASE_URL}${req.body.typename}/${req.file.filename}`;
+                                dataObj.image = `${process.env.BASE_URL}${req.body.typename}/${req.file?.filename}`;
                             };
                             console.log(':::::::::::', dataObj)
                             let updatedUser = await userModel.updateOne({ _id: dataObj.Uid }, { $set: dataObj });
@@ -137,7 +137,7 @@ class UserServices {
                                     message: 'successfully update details'
                                 }
                             } else {
-                                let filePath = `https://admin.Riskle.com/${req.body.typename}/${req.file.filename}`;
+                                let filePath = `https://admin.Riskle.com/${req.body.typename}/${req.file?.filename}`;
                                 if(fs.existsSync(filePath) == true){
                                     fs.unlinkSync(filePath);
                                 } 

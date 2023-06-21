@@ -93,6 +93,28 @@ class quizfantasyServices {
             let { matchkey } = req.query;
             let pipeline = []
             pipeline.push({
+                '$addFields': {
+                  'options': {
+                    '$objectToArray': {
+                      '$arrayElemAt': [
+                        '$options', 0
+                      ]
+                    }
+                  }
+                }
+              }, {
+                '$addFields': {
+                  'options': {
+                    '$map': {
+                      'input': '$options', 
+                      'as': 'option', 
+                      'in': {
+                        'answer': '$$option.v'
+                      }
+                    }
+                  }
+                }
+              }, {
                 '$match': {
                   'matchkey': mongoose.Types.ObjectId(matchkey)
                 }
@@ -158,15 +180,16 @@ class quizfantasyServices {
                   'userIdArray': 0, 
                   'answer': 0, 
                   'bonus_percentage': 0, 
-                  'is_bonus': 0
+                    'is_bonus': 0,
+                    'quiz_status': 0
                 }
               })
             let data = await quizModel.aggregate(pipeline)
             if (data.length === 0) {
                 return {
                         status :false,
-                        message: "Match  not Found",
-                        data:{}
+                        message: "Quiz  not Found",
+                        data:[]
                     }
             }
             return {
@@ -3378,7 +3401,7 @@ for await (const rankData of rankArray) {
             const winning = parseFloat(user.userbalance.winning.toFixed(2));
             const totalBalance = bonus + balance + winning;
                 let i = 0,
-                count = 0,
+                // count = 0,
                 mainbal = 0,
                 mainbonus = 0,
                 mainwin = 0,
@@ -3407,9 +3430,9 @@ for await (const rankData of rankArray) {
 
                     const transactiondata = {
                         type: 'Contest Joining Fee',
-                        contestdetail: `${quiz.entryfee}-${count}`,
-                        amount: quiz.entryfee * count,
-                        total_available_amt: totalBalance - quiz.entryfee * count,
+                        contestdetail: `${quiz.entryfee}`,
+                        amount: quiz.entryfee,
+                        total_available_amt: totalBalance - quiz.entryfee,
                         transaction_by: constant.TRANSACTION_BY.WALLET,
                         quizId: quizId,
                         userid: req.user._id,
@@ -3457,9 +3480,9 @@ for await (const rankData of rankArray) {
                         });
                         const transactiondata = {
                             type: 'Quiz Contest Joining Fee',
-                            contestdetail: `${quiz.entryfee}-${count}`,
-                            amount: quiz.entryfee * count,
-                            total_available_amt: totalBalance - quiz.entryfee * count,
+                            contestdetail: `${quiz.entryfee}`,
+                            amount: quiz.entryfee,
+                            total_available_amt: totalBalance - quiz.entryfee,
                             transaction_by: constant.TRANSACTION_BY.WALLET,
                             quizId: quizId,
                             userid: req.user._id,
@@ -3504,9 +3527,9 @@ for await (const rankData of rankArray) {
 
                         const transactiondata = {
                             type: 'Quiz Contest Joining Fee',
-                            contestdetail: `${quiz.entryfee}-${count}`,
-                            amount: quiz.entryfee * count,
-                            total_available_amt: totalBalance - quiz.entryfee * count,
+                            contestdetail: `${quiz.entryfee}`,
+                            amount: quiz.entryfee,
+                            total_available_amt: totalBalance - quiz.entryfee,
                             transaction_by: constant.TRANSACTION_BY.WALLET,
                             quizId: quizId,
                             userid: req.user._id,
@@ -3601,8 +3624,6 @@ for await (const rankData of rankArray) {
                     },
                 });
                 const joinedLeaugesCount = await QuizJoinLeaugeModel.find({ quizId: quizDataId ,matchkey:listmatchId}).count();
-                let usercount = []
-                usercount.push(req.user._id)
                 if (result == 1) {
                     totalchallenges = 1;
                     if (joinedMatch == 0) {
@@ -3612,8 +3633,6 @@ for await (const rankData of rankArray) {
                         }
                     }
                 }
-                count++;
-               
                 if (quizjoinLeaugeResult._id) {
                     mainbal = mainbal + resultForBalance.cons_amount;
                     mainbonus = mainbonus + resultForBonus.cons_bonus;
@@ -3626,10 +3645,10 @@ for await (const rankData of rankArray) {
                     //     }, { new: true });
                     // } else {
                         // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
-                        const gg = await quizModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(quizId) }, {
-                            status: 'opened',
-                            user: usercount,
-                        }, { new: true });
+                        // const gg = await quizModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(quizId) }, {
+                        //     status: 'opened',
+                        //     user: usercount,
+                        // }, { new: true });
                     // }
                 }
                 // else
@@ -3656,9 +3675,9 @@ for await (const rankData of rankArray) {
                     });
                     const transactiondata = {
                         type: 'Contest Joining Fee',
-                        contestdetail: `${quiz.entryfee}-${count}`,
-                        amount: quiz.entryfee * count,
-                        total_available_amt: totalBalance - quiz.entryfee * count,
+                        contestdetail: `${quiz.entryfee}`,
+                        amount: quiz.entryfee,
+                        total_available_amt: totalBalance - quiz.entryfee,
                         transaction_by: constant.TRANSACTION_BY.WALLET,
                         quizId: quizId,
                         userid: req.user._id,
