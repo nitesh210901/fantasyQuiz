@@ -42,7 +42,7 @@ class overfantasyServices {
 
   async listStockContest(req) {
     try {
-      const { stock_contest_cat } = req.body;
+      const { stock_contest_cat } = req.query;
       let matchpipe = [];
       let date = moment().format('YYYY-MM-DD HH:mm:ss');
       let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');

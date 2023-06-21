@@ -35,6 +35,7 @@ class quizController {
       quizRefundAmount:this.quizRefundAmount.bind(this),
       updateMatchQuizStatus:this.updateMatchQuizStatus.bind(this),
       cancelQuiz:this.cancelQuiz.bind(this)
+      
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -676,6 +677,7 @@ class quizController {
           req.body.masterpassword &&
           req.body.masterpassword == req.session.data.masterpassword
         ) {
+          console.log("aaaya")
           const getResult = await quizServices.quizdistributeWinningAmountWithAnswerMatch(req);//need to check becouse crown is remove
 
           let updatestatus = await listMatchModel.updateOne(
