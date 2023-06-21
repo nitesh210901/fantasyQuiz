@@ -3,6 +3,7 @@ const moment = require('moment');
 const axios = require('axios');
 const joinStockTeamModel = require('../../models/JoinStockTeamModel');
 const stockContestModel = require('../../models/stockContestModel');
+const stockCategoryModel = require('../../models/stockcategoryModel');
 const stockContestCategoryModel = require('../../models/stockContestCategory')
 const joinStockLeagueModel = require('../../models/joinStockLeagueModel');
 const TransactionModel = require('../../models/transactionModel');
@@ -11,7 +12,8 @@ const constant = require('../../config/const_credential');
 const randomstring = require("randomstring");
 const stockLeaderBoardModel = require('../../models/stockLeaderboardModel');
 const stockModel = require('../../models/stockModel');
-const { test } = require('../../utils/websocketKiteConnect')
+const { test } = require('../../utils/websocketKiteConnect');
+const { pipeline } = require('stream');
 
 
 
@@ -31,6 +33,8 @@ class overfantasyServices {
       myContestleaderboard: this.myContestleaderboard.bind(this),
       getStockMyTeams: this.getStockMyTeams.bind(this),
       updateResultStocks: this.updateResultStocks.bind(this),
+      getStockCategory: this.getStockCategory.bind(this),
+      getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
       // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
       // getMyStockTeam: this.getMyStockTeam.bind(this),
     }
@@ -39,7 +43,7 @@ class overfantasyServices {
 
   async listStockContest(req) {
     try {
-      const { stock_contest_cat } = req.body;
+      const { stock_contest_cat } = req.query;
       let matchpipe = [];
       let date = moment().format('YYYY-MM-DD HH:mm:ss');
       let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
@@ -638,6 +642,94 @@ class overfantasyServices {
           message: 'Stock Contests Categories not found',
           status: false,
           data: {}
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async getStockCategory(req) {
+    try {
+      const data = await stockCategoryModel.find()
+      if (data.length > 0) {
+        return {
+          message: 'All Stock Categories',
+          status: true,
+          data: data
+        }
+      } else {
+        return {
+          message: 'Stock Categories not found',
+          status: false,
+          data: {}
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async getStockAccordingCategory(req) {
+    try {
+      let {stockcategory}  = req.query
+      let pipeline = []
+      pipeline.push({
+        '$match': {
+          '_id': mongoose.Types.ObjectId(stockcategory)
+        }
+      }, {
+        '$addFields': {
+          'stocks_id': {
+            '$map': {
+              'input': '$stocks_id', 
+              'as': 'stock', 
+              'in': {
+                '$toObjectId': '$$stock'
+              }
+            }
+          }
+        }
+      }, {
+        '$lookup': {
+          'from': 'stocks', 
+          'let': {
+            'id': '$stocks_id'
+          }, 
+          'pipeline': [
+            {
+              '$match': {
+                '$expr': {
+                  '$in': [
+                    '$_id', '$$id'
+                  ]
+                }
+              }
+            }
+          ], 
+          'as': 'stocks'
+        }
+      }, {
+        '$project': {
+          '_id': 0, 
+          'stocks': 1
+        }
+      })
+
+      let data = await stockCategoryModel.aggregate(pipeline)
+      if (data.length > 0) {
+        return {
+          status: true,
+          message: "Stock Fatch Successfully",
+          data: data[0].stocks
+        }
+      } else {
+        return {
+          status: false,
+          message: "Stock Not Found",
+          data: []
         }
       }
     } catch (error) {
