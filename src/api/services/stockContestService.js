@@ -1415,23 +1415,31 @@ class overfantasyServices {
           if (currentDate1 >= matchTimings) {
             result = await this.getSockScoresUpdates(contestId);
             let arr = [];
-            for(let ele of result)for(let stock of ele.stockTeam)arr.push(stock.instrument_token)
+            for(let ele of result){
+              let insertData={};
+              insertData['userId'] =ele.userid;
+              insertData['teamid'] =ele.teamid;
+              insertData['contestId'] =ele.contestId;
+
+              for(let stock of ele.stockTeam){
+                arr.push(stock.instrument_token)
+              }}
             let uniqueStockToken = [... new Set(arr)];
+            
+            // const headers = {
+            //   "Authorization":"token 74f8oggch3zuubyp:EJmQMyd34V2jcMrpTS4aQVH7Kfnh4lP6"
+            // }
 
-            const headers = {
-              "Authorization":"token 74f8oggch3zuubyp:EJmQMyd34V2jcMrpTS4aQVH7Kfnh4lP6"
-            }
-
-            for(let i of uniqueStockToken){
-              try {
-                const resp = await axios.get(`https://api.kite.trade/instruments/historical/${i}/minute?from=2023-06-21+15:15:00&to=2023-06-21+15:15:00`, {
-                  "headers":headers
-                });
-                console.log('+++++++++++++))))))))',resp.data.data.candles);
-            } catch (err) {
-                console.error(err);
-            }
-            }
+            // for(let i of uniqueStockToken){
+            //   try {
+            //     const resp = await axios.get(`https://api.kite.trade/instruments/historical/${i}/minute?from=2023-06-21+15:15:00&to=2023-06-21+15:15:00`, {
+            //       "headers":headers
+            //     });
+            //     console.log('+++++++++++++))))))))',resp.data.data.candles);
+            // } catch (err) {
+            //     console.error(err);
+            // }
+            // }
             
           }
         }
