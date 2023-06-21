@@ -39,7 +39,7 @@ class challengersController {
     async viewAddStockContestPage(req,res,next){
         try {
             res.locals.message = req.flash();
-            let getstockcontestcategory = await stockContestCategoryModel.find()
+            let getstockcontestcategory = await stockContestCategoryModel.find();
             let stockcategory = await stockCategoryModel.find()
             res.render("stockManager/addStockContest", { sessiondata: req.session.data, msg:undefined, data: "",getstockcontestcategory,stockcategory });
         } catch (error) {
@@ -56,7 +56,6 @@ class challengersController {
             if (postStockContest.status == true) {
                 if(postStockContest.renderStatus){
                     if(postStockContest.renderStatus=='Amount'){
-                            console.log(postStockContest);
                             req.flash('success',postStockContest.message);
                             res.redirect(`/addStockpricecard/${postStockContest.data._id}`);
                                            
