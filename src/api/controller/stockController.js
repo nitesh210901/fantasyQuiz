@@ -24,6 +24,7 @@ class matchController {
             getStockMyTeams: this.getStockMyTeams.bind(this),
             myContestleaderboard: this.myContestleaderboard.bind(this),
             updateResultStocks: this.updateResultStocks.bind(this),
+            getAllStockWithAllSelector: this.getAllStockWithAllSelector.bind(this),
         }
     }
 
@@ -122,6 +123,19 @@ class matchController {
     async getStockCategory(req, res){
         try {
             const data = await stockContestService.getStockCategory(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: data.status }, data));
+            }
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+    async getAllStockWithAllSelector(req, res){
+        try {
+            const data = await stockContestService.getAllStockWithAllSelector(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
