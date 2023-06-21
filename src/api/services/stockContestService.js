@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const moment = require('moment');
+const axios = require('axios');
 const joinStockTeamModel = require('../../models/JoinStockTeamModel');
 const stockContestModel = require('../../models/stockContestModel');
 const stockCategoryModel = require('../../models/stockcategoryModel');
@@ -1398,14 +1399,12 @@ class overfantasyServices {
       const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
 
       const listContest = await stockContestModel.find({
-        fantasy_type: "Stocks",
+        fantasy_type: { $ne: 'CRICKET' },
         start_date: { $gte: currentDate },
         launch_status: 'launched',
         final_status: { $nin: ['winnerdeclared', 'IsCanceled'] },
         status: { $ne: 'completed' }
       });
-
-
       let result;
       if (listContest.length > 0) {
         for (let index of listContest) {
@@ -1416,16 +1415,32 @@ class overfantasyServices {
           if (currentDate1 >= matchTimings) {
             result = await this.getSockScoresUpdates(contestId);
             let arr = [];
-            let newArr = [];  
             for(let ele of result){
-              newArr.push(ele.userid);
-              newArr.push(ele.teamid);
-              newArr.push(ele.contestId);
+              let insertData={};
+              insertData['userId'] =ele.userid;
+              insertData['teamid'] =ele.teamid;
+              insertData['contestId'] =ele.contestId;
+
               for(let stock of ele.stockTeam){
-                arr.push(stock.instrument_token);
-              }
-            }
-            test(newArr,arr);
+                arr.push(stock.instrument_token)
+              }}
+            let uniqueStockToken = [... new Set(arr)];
+            
+            // const headers = {
+            //   "Authorization":"token 74f8oggch3zuubyp:EJmQMyd34V2jcMrpTS4aQVH7Kfnh4lP6"
+            // }
+
+            // for(let i of uniqueStockToken){
+            //   try {
+            //     const resp = await axios.get(`https://api.kite.trade/instruments/historical/${i}/minute?from=2023-06-21+15:15:00&to=2023-06-21+15:15:00`, {
+            //       "headers":headers
+            //     });
+            //     console.log('+++++++++++++))))))))',resp.data.data.candles);
+            // } catch (err) {
+            //     console.error(err);
+            // }
+            // }
+            
           }
         }
 

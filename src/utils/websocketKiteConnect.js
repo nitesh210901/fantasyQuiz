@@ -8,6 +8,7 @@ let globalData;
 ticker.connect();
 
 function test(result, allData) {
+  console.log(allData)
   globalData = allData;
   ticker.on("connect", subscribe(result, allData));
   return true;
@@ -15,7 +16,7 @@ function test(result, allData) {
 
 
 
-function subscribe(obj) {
+function subscribe(req, obj) {
   for (let i of obj)
   {var items = i;
   ticker.subscribe(items);
