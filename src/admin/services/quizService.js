@@ -17,6 +17,7 @@ const userModel = require('../../models/userModel')
 const finalQuizResultModel = require('../../models/finalQuizResultModel')
 const constant = require('../../config/const_credential');
 const LevelServices = require("./LevelServices");
+const randomstring = require("randomstring");
 class quizServices {
     constructor() {
         return {
@@ -368,20 +369,20 @@ class quizServices {
     async quizdistributeWinningAmountWithAnswerMatch(req) {
         try {
             let { id, status } = req.params;
-            let joinData = await QuizJoinLeaugeModel.find({ matchkey:id })
+            let joinData = await QuizJoinLeaugeModel.find({ matchkey: id })
             let quizData = await quizModel.find({ matchkey: id })
             if (joinData.length == 0) {
                 return {
                     message: "Quiz Answer Not Found",
                     status: false,
-                    data:{}
+                    data: {}
                 }
             }
             if (quizData.length == 0) {
                 return {
                     message: " Quiz not found",
                     status: false,
-                    data:{}
+                    data: {}
                 }
             }
             let data;
@@ -389,50 +390,61 @@ class quizServices {
                 for (let join_data of joinData) {
                     for (let quiz_data of quizData) {
                         if (quiz_data._id.toString() === join_data.quizId.toString() && quiz_data.matchkey.toString() === join_data.matchkey.toString()) {
-                            console.log(quiz_data._id,"pppppoooo",join_data.quizId)
-                                // if (join_data.answer === quiz_data.answer) {
-                                //     const user = await userModel.findOne({ _id:join_data.userid  }, { userbalance: 1, totalwinning: 1 });
-                                //     data = await QuizJoinLeaugeModel.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId ,userid:join_data.userid}, { winamount: quiz_data.winning_amount }, { new: true })
-                                //     const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
-                                //     const balance = parseFloat(user.userbalance.balance.toFixed(2));
-                                //     const winning = parseFloat(user.userbalance.winning.toFixed(2));
-                                //     const totalwinning = parseFloat(user.totalwinning.toFixed(2));
-                                //     const totalBalance = bonus + balance + winning;
-                                //     let transactionidsave = `${constant.APP_SHORT_NAME}-WIN-${Date.now()}-${randomStr}`;
-                                //     const userObj = {
-                                //         'userbalance.balance': balance,
-                                //         'userbalance.bonus': bonus,
-                                //         'userbalance.winning': winning + quiz_data.winning_amount,
-                                //         'totalwinning': totalwinning + quiz_data.winning_amount
-                                //     };
-                                //     const transactiondata = {
-                                //         type: 'Quiz Winning Amount',
-                                //         amount: quiz_data.winning_amount,
-                                //         total_available_amt: totalBalance + quiz_data.winning_amount,
-                                //         transaction_by: constant.APP_SHORT_NAME,
-                                //         quizId: join_data.quizId,
-                                //         userid: join_data.userid,
-                                //         paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                                //         bal_bonus_amt: bonus,
-                                //         bal_win_amt: winning + quiz_data.winning_amount,
-                                //         bal_fund_amt: balance,
-                                //         win_amt: quiz_data.winning_amount,
-                                //         transaction_id: transactionidsave
-                                //     };
-                                //     await Promise.all([
-                                //         userModel.findOneAndUpdate({ _id: join_data.userid }, userObj, { new: true }),
-                                //         TransactionModel.create(transactiondata),
-                                //     ])
-                                // }
+                            let keys = Object.keys(quiz_data.options[0])
+                            for (let res of keys) {
+                                if (res === quiz_data.answer) {
+                                    if (quiz_data.options[0][res] === join_data.answer) {
+                                        const user = await userModel.findOne({ _id:join_data.userid  }, { userbalance: 1, totalwinning: 1 });
+                                        data = await QuizJoinLeaugeModel.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId ,userid:join_data.userid}, { winamount: quiz_data.winning_amount }, { new: true })
+                                        const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+                                        const balance = parseFloat(user.userbalance.balance.toFixed(2));
+                                        const winning = parseFloat(user.userbalance.winning.toFixed(2));
+                                        const totalwinning = parseFloat(user.totalwinning.toFixed(2));
+                                        const totalBalance = bonus + balance + winning;
+                                        let randomStr = randomstring.generate({
+                                            length: 4,
+                                            charset: 'alphabetic',
+                                            capitalization: 'uppercase'
+                                        });
+                                        let transactionidsave = `${constant.APP_SHORT_NAME}-WIN-${Date.now()}-${randomStr}`;
+                                        const userObj = {
+                                            'userbalance.balance': balance,
+                                            'userbalance.bonus': bonus,
+                                            'userbalance.winning': winning + quiz_data.winning_amount,
+                                            'totalwinning': totalwinning + quiz_data.winning_amount
+                                        };
+                                        const transactiondata = {
+                                            type: 'Quiz Winning Amount',
+                                            amount: quiz_data.winning_amount,
+                                            total_available_amt: totalBalance + quiz_data.winning_amount,
+                                            transaction_by: constant.APP_SHORT_NAME,
+                                            quizId: join_data.quizId,
+                                            userid: join_data.userid,
+                                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                                            bal_bonus_amt: bonus,
+                                            bal_win_amt: winning + quiz_data.winning_amount,
+                                            bal_fund_amt: balance,
+                                            win_amt: quiz_data.winning_amount,
+                                            transaction_id: transactionidsave
+                                        }
+                                
+                                        await Promise.all([
+                                            userModel.findOneAndUpdate({ _id: join_data.userid }, userObj, { new: true }),
+                                            TransactionModel.create(transactiondata),
+                                        ])
+                                    }
+                                }
+                            }
                         }
                     }
-                    return {
-                        message: "Quiz Amount distribute successfully",
-                        status: true,
-                        data: joinData
-                    }
+                }
+                return {
+                    message: "Quiz Amount distribute successfully",
+                    status: true,
+                    data: joinData
                 }
             }
+        
         }catch(error){
             throw error;
         }
