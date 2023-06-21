@@ -397,39 +397,39 @@ class quizServices {
                                     const winning = parseFloat(user.userbalance.winning.toFixed(2));
                                     const totalwinning = parseFloat(user.totalwinning.toFixed(2));
                                     const totalBalance = bonus + balance + winning;
-                                    let tds_amount = (31.2 / 100) * quiz_data.winning_amount;
-                                    let amount = quiz_data.winning_amount - tds_amount;
-                                    let tdsData = {
-                                        userid: join_data.userid,
-                                        amount: quiz_data.winning_amount,
-                                        tds_amount: tds_amount,
-                                        challengeid: challenge._id,
-                                        seriesid: join_data.seriesid
-                                    };
+                                    // let tds_amount = (31.2 / 100) * quiz_data.winning_amount;
+                                    // let amount = quiz_data.winning_amount - tds_amount;
+                                    // let tdsData = {
+                                    //     userid: join_data.userid,
+                                    //     amount: quiz_data.winning_amount,
+                                    //     tds_amount: tds_amount,
+                                    //     challengeid: challenge._id,
+                                    //     seriesid: join_data.seriesid
+                                    // };
                                     let transactionidsave = `${constant.APP_SHORT_NAME}-WIN-${Date.now()}-${randomStr}`;
                                     const userObj = {
                                         'userbalance.balance': balance,
                                         'userbalance.bonus': bonus,
-                                        'userbalance.winning': winning + amount,
-                                        'totalwinning': totalwinning + amount
+                                        'userbalance.winning': winning + quiz_data.winning_amount,
+                                        'totalwinning': totalwinning + quiz_data.winning_amount
                                     };
                                     const transactiondata = {
                                         type: 'Quiz Winning Amount',
-                                        amount: amount,
-                                        total_available_amt: totalBalance + amount,
+                                        amount: quiz_data.winning_amount,
+                                        total_available_amt: totalBalance + quiz_data.winning_amount,
                                         transaction_by: constant.APP_SHORT_NAME,
                                         quizId: join_data.quizId,
                                         userid: join_data.userid,
                                         paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                                         bal_bonus_amt: bonus,
-                                        bal_win_amt: winning + amount,
+                                        bal_win_amt: winning + quiz_data.winning_amount,
                                         bal_fund_amt: balance,
-                                        win_amt: amount,
+                                        win_amt: quiz_data.winning_amount,
                                         transaction_id: transactionidsave
                                     };
                                     await Promise.all([
                                         userModel.findOneAndUpdate({ _id: join_data.userid }, userObj, { new: true }),
-                                        tdsDetailModel.create(tdsData),
+                                        // tdsDetailModel.create(tdsData),
                                         TransactionModel.create(transactiondata),
                                     ])
                                 }

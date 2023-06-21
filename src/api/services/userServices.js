@@ -1984,7 +1984,7 @@ class UserServices {
       let image;
       // const image = `${constant.BASE_URL_LOCAL}${req.body.typename}/${req.file.filename}`;
       if (req.body.typename)
-        image = `${req.body?.typename}/${req.file?.filename}`; // typename = pancard
+        image = `${req.body?.typename}/${req.file?.filename}` || ''; // typename = pancard
       const update = {};
       update["$set"] = {
         "user_verify.pan_verify": constant.PROFILE_VERIFY_PAN_BANK.SUBMITED,
