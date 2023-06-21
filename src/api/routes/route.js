@@ -350,6 +350,7 @@ router.get('/get-stock-contest-category', auth, stockController.getStockContestC
 router.get('/getAllContestStock', auth, stockController.getAllNewStock);
 router.get("/saveStocks", auth, stockController.saveStocks);
 router.get("/get-stock-category", auth, stockController.getStockCategory);
+router.get('/getAllStockWithAllSelector', auth, stockController.getAllStockWithAllSelector);
 router.get("/getallstockaccordingcategory", auth, stockController.getStockAccordingCategory);
 router.get('/myjoinedstockcontests', auth, stockController.myJoinedStockContests);
 router.get('/get-single-contest-details', auth, stockController.getSingleContestDetails);

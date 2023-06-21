@@ -34,6 +34,7 @@ class overfantasyServices {
       updateResultStocks: this.updateResultStocks.bind(this),
       getStockCategory: this.getStockCategory.bind(this),
       getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
+      getAllStockWithAllSelector: this.getAllStockWithAllSelector.bind(this),
       // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
       // getMyStockTeam: this.getMyStockTeam.bind(this),
     }
@@ -661,6 +662,28 @@ class overfantasyServices {
       } else {
         return {
           message: 'Stock Categories not found',
+          status: false,
+          data: {}
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async getAllStockWithAllSelector(req) {
+    try {
+      const data = await stockModel.find().limit(50)
+      if (data.length > 0) {
+        return {
+          message: 'All Stock With All Selectors Cateories',
+          status: true,
+          data: data
+        }
+      } else {
+        return {
+          message: 'Stock not found',
           status: false,
           data: {}
         }
