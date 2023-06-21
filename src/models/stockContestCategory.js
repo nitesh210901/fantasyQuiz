@@ -14,4 +14,4 @@ let stockContestCategorySchema = new Schema({
     timestamps: true,
     versionKey: false
 })
-module.exports = mongoose.model('stockcontestcategory', stockContestCategorySchema);
+module.exports = mongoose.model('stockcontestcategory', stockContestCategorySchema,"stockcontestcategory");

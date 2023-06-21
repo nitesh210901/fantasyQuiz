@@ -82,8 +82,25 @@ class overfantasyServices {
     try {
       const { stock, teamnumber, contestId } = req.body;
       let stockArray = stock.map(item => item.stockId);
+      const chkStockExist = await stockModel.find({'_id': { $in: stockArray}});
+    
+      if (!chkStockExist) {
+        return {
+          message: 'Stocks Not Found',
+          status: false,
+          data: {}
+        }
+      }
 
       const chkStockLimit = await stockContestModel.findById({ _id: contestId }, { select_team: 1 });
+     
+      if (!chkStockLimit) {
+        return {
+          message: 'Contest Not Found',
+          status: false,
+          data: {}
+        }
+      }
 
       if (stockArray.length > chkStockLimit.select_team) {
         return {
@@ -210,7 +227,6 @@ class overfantasyServices {
         joinedMatch = 0;
 
       const chkContest = await stockContestModel.findOne({ _id: stockContestId, isCancelled: false, isEnable: true, launch_status: 'launched', final_status: 'pending' });
-      console.log(chkContest)
       if (!chkContest) {
         return {
           message: 'Contest Not Found Or May Be Cancelled',
@@ -298,7 +314,6 @@ class overfantasyServices {
             winning - mainwin,
             balance - mainbal
           );
-          console.log('resultForBonus', resultForBonus);
           if (resultForBonus == false) {
 
             if (i > 1) {
@@ -630,7 +645,6 @@ class overfantasyServices {
       contestId: challengeDetails._id,
       userid: userId,
     });
-    console.log(joinedLeauges)
     if (joinedLeauges.length == 0) return 1;
     if (joinedLeauges.length > 0) {
       if (challengeDetails.multi_entry == 0) {
@@ -1292,25 +1306,37 @@ class overfantasyServices {
         final_status: { $nin: ['winnerdeclared', 'IsCanceled'] },
         status: { $ne: 'completed' }
       });
+
+
       let result;
       if (listContest.length > 0) {
         for (let index of listContest) {
           let matchTimings = index.start_date;
           let contestId = index._id;
           let investment = index?.investment;
-          const currentDate1 = moment().format('YYYY-MM-DD HH:mm:ss');
+          const currentDate1 = moment().format('YYYY-MM-DD');
           if (currentDate1 >= matchTimings) {
-            result = await this.getSockScoresUpdates(contestId, investment);
-
-            for(let ele of result[0].stockTeam){
-              +ele.instrument_token && test(+ele.instrument_token, result);
+            result = await this.getSockScoresUpdates(contestId);
+            let arr = [];
+            let newArr = [];  
+            for(let ele of result){
+              newArr.push(ele.userid);
+              newArr.push(ele.teamid);
+              newArr.push(ele.contestId);
+              for(let stock of ele.stockTeam){
+                arr.push(stock.instrument_token);
+              }
             }
-
+            test(newArr,arr);
           }
         }
 
       }
-      return result;
+      
+      return {
+        "message":"League Data",
+          data:result
+      };
 
     } catch (error) {
       console.log(error);
@@ -1318,7 +1344,7 @@ class overfantasyServices {
     }
   }
 
-  async getSockScoresUpdates(contestId, investment) {
+  async getSockScoresUpdates(contestId) {
     try {
       const constedleaugeData = await joinStockLeagueModel.aggregate([
         {
@@ -1327,23 +1353,23 @@ class overfantasyServices {
           }
         }, {
           '$lookup': {
-            'from': 'stock_contests',
-            'localField': 'contestId',
-            'foreignField': '_id',
+            'from': 'stock_contests', 
+            'localField': 'contestId', 
+            'foreignField': '_id', 
             'as': 'contestData'
           }
         }, {
           '$lookup': {
-            'from': 'joinstockteams',
-            'localField': 'teamid',
-            'foreignField': '_id',
+            'from': 'joinstockteams', 
+            'localField': 'teamid', 
+            'foreignField': '_id', 
             'as': 'teamData'
           }
         }, {
           '$addFields': {
             'stock': {
               '$getField': {
-                'field': 'stock',
+                'field': 'stock', 
                 'input': {
                   '$arrayElemAt': [
                     '$teamData', 0
@@ -1353,44 +1379,71 @@ class overfantasyServices {
             }
           }
         }, {
-          '$addFields': {
-            'stockId': {
-              '$map': {
-                'input': '$stock',
-                'as': 'item',
-                'in': '$$item.stockId'
-              }
-            }
+          '$unwind': {
+            'path': '$stock'
           }
         }, {
           '$lookup': {
-            'from': 'stocks',
+            'from': 'stocks', 
             'let': {
-              'id': '$stockId'
-            },
+              'id': '$stock.stockId'
+            }, 
             'pipeline': [
               {
                 '$match': {
                   '$expr': {
-                    '$in': [
+                    '$eq': [
                       '$_id', '$$id'
                     ]
                   }
                 }
               }
-            ],
+            ], 
             'as': 'stockTeam'
           }
         }, {
+          '$addFields': {
+            'stockTeam': {
+              '$arrayElemAt': [
+                '$stockTeam', 0
+              ]
+            }
+          }
+        }, {
+          '$addFields': {
+            'stockTeam.percentage': '$stock.percentage'
+          }
+        }, {
           '$project': {
-            'stock': 0,
-            'stockId': 0
+            'stock': 0, 
+            'teamData': 0, 
+            'leaugestransaction': 0
+          }
+        }, {
+          '$group': {
+            '_id': '$_id', 
+            'transaction_id': {
+              '$first': '$transaction_id'
+            }, 
+            'userid': {
+              '$first': '$userid'
+            }, 
+            'teamid': {
+              '$first': '$teamid'
+            }, 
+            'contestId': {
+              '$first': '$contestId'
+            }, 
+            'contestData': {
+              '$first': '$contestData'
+            }, 
+            'stockTeam': {
+              '$push': '$stockTeam'
+            }
           }
         }
       ]);
       return constedleaugeData;
-
-
     } catch (error) {
       console.log("error" + error);
       throw error;
