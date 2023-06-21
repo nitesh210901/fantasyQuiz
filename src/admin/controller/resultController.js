@@ -308,6 +308,7 @@ class resultController {
 
         listMatchesModel.aggregate(condition).exec((err, rows1) => {
           rows1.forEach(async (doc) => {
+            // console.log(doc,"oooooooo")
 
             let dateFormat = moment(`${doc.start_date}`, "YYYY-MM-DD HH:mm:ss");
             let day = dateFormat.format("dddd");
@@ -484,7 +485,7 @@ class resultController {
                                 <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable  w-100 h-100">
                                     <div class="modal-content">
                                     <div class="modal-header">
-                                        <h4 class="modal-title">IsWinnerDeclared</h4>
+                                        <h4 class="modal-title">Quiz WinnerDeclared</h4>
                                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                                     </div>
                                     <div class="modal-body abcd">
