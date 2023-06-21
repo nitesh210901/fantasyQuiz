@@ -38,7 +38,7 @@ class overfantasyServices {
 
   async listStockContest(req) {
     try {
-      const { stock_contest_cat } = req.query;
+      const { stock_contest_cat } = req.body;
       let matchpipe = [];
       let date = moment().format('YYYY-MM-DD HH:mm:ss');
       let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
@@ -63,16 +63,24 @@ class overfantasyServices {
           match_order: 1
         }
       });
-
-
       const result = await stockContestModel.aggregate(matchpipe);
-      console.log('niteshhhh', result)
-      result.sort(function (a, b) {
-        return b.match_order
-      });
-      if (result.length > 0) return result
-
-      else return [];
+      if (result.length > 0) { 
+        return {
+          status: true,
+          message: "Stock Contest Fatch Successfully",
+          data: result
+        }
+      } else {
+        return {
+          status: false,
+          message: "Stock Contest Not Found",
+          data:[]
+        }
+      }
+      // result.sort(function (a, b) {
+      //   return b.match_order
+      // });
+      // if (result.length > 0) return result
     } catch (error) {
       throw error;
     }
