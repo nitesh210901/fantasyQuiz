@@ -6,10 +6,10 @@ let stockContestCategorySchema = new Schema({
         type: String,
         default: ''
     },
-    isDeleted: {
-        type: Boolean,
-        default: false
-    },
+    order: {
+        type: String,
+        default: ''
+    }
 }, {
     timestamps: true,
     versionKey: false

@@ -273,9 +273,7 @@ class resultController {
     try {
       let limit = req.query.length;
       let start = req.query.start;
-      console.log("id",`"${req.params.id}"`)
       let fantasy_type=req.query?.fantasy_type
-      console.log("fantasy_type",fantasy_type)
       let sortObj = {},
         dir,
         join;

@@ -349,7 +349,7 @@ router.post('/join-stock-contest', auth, stockController.stockJoinContest);
 router.get('/get-stock-contest-category', auth, stockController.getStockContestCategory);
 router.get('/getAllContestStock', auth, stockController.getAllNewStock);
 router.get("/saveStocks", auth, stockController.saveStocks);
-router.get("/get-stock-category", auth, stockController.getStockCategory);
+// router.get("/get-stock-category", auth, stockController.getStockCategory);
 router.get("/getallstockaccordingcategory", auth, stockController.getStockAccordingCategory);
 router.get('/myjoinedstockcontests', auth, stockController.myJoinedStockContests);
 router.get('/get-single-contest-details', auth, stockController.getSingleContestDetails);
@@ -359,9 +359,6 @@ router.get('/my-contest-leaderboard', auth, stockController.myContestleaderboard
 
 router.get('/getStockMyTeams', auth, stockController.getStockMyTeams);
 router.get('/point-calculation-stock', auth, stockController.updateResultStocks);
-
-
-
 
 // -------------------------MCX Manager-------------------------
 router.get('/get-mcx-contest',  mcxController.listMCXContest);
