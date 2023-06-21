@@ -1316,16 +1316,9 @@ class overfantasyServices {
           if (currentDate1 >= matchTimings) {
             result = await this.getSockScoresUpdates(contestId);
             let arr = [];
-            let newArr = [];  
-            for(let ele of result){
-              newArr.push(ele.userid);
-              newArr.push(ele.teamid);
-              newArr.push(ele.contestId);
-              for(let stock of ele.stockTeam){
-                arr.push(stock.instrument_token);
-              }
-            }
-            test(newArr,arr);
+            for(let ele of result)for(let stock of ele.stockTeam)arr.push(stock.instrument_token)
+            let uniqueStockToken = [... new Set(arr)];
+            
           }
         }
 
