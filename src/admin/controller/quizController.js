@@ -719,6 +719,7 @@ class quizController {
       res.redirect(`/match-details/${req.body.series}`);
       // res.send({status:true});
     } catch (error) {
+      console.log(error)
       req.flash('error', 'Something went wrong please try again');
       res.redirect("/");
     }
