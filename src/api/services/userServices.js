@@ -750,7 +750,7 @@ class UserServices {
         const data = await userModel.find({ _id: dataObj.Uid });
         const checkTeam = await userModel.find({ _id: { $ne: dataObj.Uid }, team: req.body.team });
         if (checkTeam.length > 0) {
-          let filePath = `public/${req.body.typename}/${req.file.filename}`;
+          let filePath = `public/${req.body?.typename}/${req.file?.filename}`;
           if (fs.existsSync(filePath) == true) {
             fs.unlinkSync(filePath);
           }
@@ -762,7 +762,7 @@ class UserServices {
 
           const checkEmail = await userModel.find({ _id: { $ne: dataObj.Uid }, email: req.body.email });
           if (checkEmail.length > 0) {
-            let filePath = `public/${req.body.typename}/${req.file.filename}`;
+            let filePath = `public/${req.body?.typename}/${req.file?.filename}`;
             if (fs.existsSync(filePath) == true) {
               fs.unlinkSync(filePath);
             }
@@ -773,7 +773,7 @@ class UserServices {
           } else {
             const checkMobile = await userModel.find({ _id: { $ne: dataObj.Uid }, mobile: req.body.mobile });
             if (checkMobile.length > 0) {
-              let filePath = `public/${req.body.typename}/${req.file.filename}`;
+              let filePath = `public/${req.body?.typename}/${req.file?.filename}`;
               if (fs.existsSync(filePath) == true) {
                 fs.unlinkSync(filePath);
               }
@@ -790,7 +790,7 @@ class UserServices {
                     fs.unlinkSync(filePath);
                   }
                 }
-                dataObj.image = `/${req.body.typename}/${req.file.filename}`;
+                dataObj.image = `/${req.body?.typename}/${req.file?.filename}`;
 
               }
               let updatedUser = await userModel.updateOne({ _id: dataObj.Uid }, { $set: dataObj });
@@ -800,7 +800,7 @@ class UserServices {
                   message: 'successfully update details'
                 }
               } else {
-                let filePath = `public/${req.body.typename}/${req.file.filename}`;
+                let filePath = `public/${req.body?.typename}/${req.file?.filename}`;
                 if (fs.existsSync(filePath) == true) {
                   fs.unlinkSync(filePath);
                 }
@@ -1984,7 +1984,7 @@ class UserServices {
       let image;
       // const image = `${constant.BASE_URL_LOCAL}${req.body.typename}/${req.file.filename}`;
       if (req.body.typename)
-        image = `${req.body.typename}/${req.file.filename}`; // typename = pancard
+        image = `${req.body?.typename}/${req.file?.filename}`; // typename = pancard
       const update = {};
       update["$set"] = {
         "user_verify.pan_verify": constant.PROFILE_VERIFY_PAN_BANK.SUBMITED,
@@ -2116,7 +2116,7 @@ class UserServices {
         };
       }
       let image;
-      image = `${req.body.typename}/${req.file.filename}`; // typename = bank
+      image = `${req.body?.typename}/${req.file?.filename}`; // typename = bank
       const update = {};
       update["$set"] = {
         "user_verify.bank_verify": constant.PROFILE_VERIFY_PAN_BANK.SUBMITED,
@@ -4104,7 +4104,7 @@ class UserServices {
     try {
       console.log(`req.file`, req.file);
       // const image = `${constant.BASE_URL_LOCAL}${req.body.typename}/${req.file.filename}`;
-      const image = `${constant.BASE_URL}${req.body.typename}/${req.file.filename}`;
+      const image = `${constant.BASE_URL}${req.body?.typename}/${req.file?.filename}`;
       const payload = await userModel.findOneAndUpdate(
         { _id: req.user._id },
         { image: image },
