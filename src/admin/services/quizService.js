@@ -44,7 +44,8 @@ class quizServices {
             quizRefundAmount: this.quizRefundAmount.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
             cancelQuiz: this.cancelQuiz.bind(this),
-            quizdistributeWinningAmountWithAnswerMatch: this.quizdistributeWinningAmountWithAnswerMatch.bind(this)
+            quizdistributeWinningAmountWithAnswerMatch: this.quizdistributeWinningAmountWithAnswerMatch.bind(this),
+            quizCancel: this.quizCancel.bind(this)
 
         }
     }
@@ -1369,7 +1370,8 @@ class quizServices {
             }
             return {
                 status:true,
-                message:'quiz answer update successfully'
+                message: 'quiz answer update successfully',
+                data:data
             }
         } catch (error) {
             throw error;
@@ -1694,6 +1696,94 @@ class quizServices {
             }
 
         }catch(error){
+            console.log(error)
+        }
+    }
+
+    async quizCancel(req) {
+        try {
+            const getMatchContestData = await quizModel.findOne({ _id: req.params.QuidId, matchkey: req.query.matchkey });
+            if (getMatchContestData) {
+                let joinLeagues = await QuizJoinLeaugeModel.find({ matchkey: getMatchContestData.matchkey, quizId: getMatchContestData._id });
+                if (joinLeagues.length > 0) {
+                    for (let league of joinLeagues) {
+                        let leaugestransaction = league.leaugestransaction;
+                        let randomStr = randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization: 'uppercase'
+                        });
+                        let refund_data = await refundMatchModel.findOne({ joinid: mongoose.Types.ObjectId(league._id) });
+                        console.log("--refund_data--", refund_data)
+                        if (!refund_data) {
+                            const user = await userModel.findOne({ _id: leaugestransaction.user_id }, { userbalance: 1 });
+                            if (user) {
+                                const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+                                const balance = parseFloat(user.userbalance.balance.toFixed(2));
+                                const winning = parseFloat(user.userbalance.winning.toFixed(2));
+                                const totalBalance = bonus + balance + winning;
+                                const userObj = {
+                                    'userbalance.balance': balance + leaugestransaction.balance,
+                                    'userbalance.bonus': bonus + leaugestransaction.bonus,
+                                    'userbalance.winning': winning + leaugestransaction.winning,
+                                };
+
+                                let transaction_id = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+                                let refundData = {
+                                    userid: leaugestransaction.user_id,
+                                    amount: getMatchContestData.entryfee,
+                                    joinid: league._id,
+                                    quizId: league.quizId,
+                                    matchkey: getMatchContestData.matchkey,
+                                    reason: 'cancel quiz',
+                                    transaction_id: transaction_id
+                                };
+
+                                const transactiondata = {
+                                    type: 'Refund',
+                                    amount: getMatchContestData.entryfee,
+                                    total_available_amt: totalBalance + getMatchContestData.entryfee,
+                                    transaction_by: constant.APP_SHORT_NAME,
+                                    quizId: getMatchContestData._id,
+                                    userid: leaugestransaction.user_id,
+                                    paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                                    bal_bonus_amt: bonus + leaugestransaction.bonus,
+                                    bal_win_amt: winning + leaugestransaction.winning,
+                                    bal_fund_amt: balance + leaugestransaction.balance,
+                                    bonus_amt: leaugestransaction.bonus,
+                                    win_amt: leaugestransaction.winning,
+                                    addfund_amt: leaugestransaction.balance,
+                                    transaction_id: transaction_id
+                                };
+
+                                let profmiss = await Promise.all([
+                                    userModel.findOneAndUpdate({ _id: leaugestransaction.user_id }, userObj, { new: true }),
+                                    refundMatchModel.create(refundData),
+                                    TransactionModel.create(transactiondata)
+                                ]);
+                                console.log("--profmiss---", profmiss)
+                            }
+                        }
+                    }
+                }
+                const getMatchContestData1 = await quizModel.updateOne({ _id: req.params.QuidId }, {
+                    $set: {
+                        quiz_status: "canceled"
+                    }
+                });
+                return {
+                    status: true,
+                    message: 'quiz canceled'
+                };
+
+            } else {
+                return {
+                    status: false,
+                    message: 'quiz not found ..error'
+                }
+            }
+
+        } catch (error) {
             console.log(error)
         }
     }

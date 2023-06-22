@@ -37,7 +37,7 @@ class quizController {
       cancelQuiz:this.cancelQuiz.bind(this),
       matchAllquiz:this.matchAllquiz.bind(this),
       matchAllquizData:this.matchAllquizData.bind(this),
-      
+      quizCancel:this.quizCancel.bind(this),
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -215,8 +215,8 @@ class quizController {
                       "Match Name":matchName[0].match_name,
                         "question": index.question,
                         "options": `${option}`,
-                      "answer": `${answer}` || `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key304"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${index.answer}</span></a>
-                      <div class="modal fade" id="key304" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      "answer": `${answer}` || `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key${count}"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${index.answer}</span></a>
+                      <div class="modal fade" id="key${count}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                       <div class="modal-dialog col-6">
                       <div class="modal-content">
                           <div class="modal-header">
@@ -652,7 +652,7 @@ class quizController {
         if(data.status == true){
           req.flash('success', data.message)
           if (req.query.quiz) {
-            res.redirect(`/allquiz/${req.params.id}`);
+            res.redirect(`/allquiz/${data.data?.matchkey}`);
           } else {
             res.redirect(`/view_quiz`);
           }
@@ -799,15 +799,15 @@ class quizController {
             }
             
               if(doc.status != 'canceled'){
-                actions += `<a href="/contestcancel/${doc._id}?page=${doc.matchkey}" class="btn btn-sm btn-secondary w-35px h-35px" data-toggle="tooltip" title="Cancel Contest" data-original-title="Cancel Contest" aria-describedby="tooltip768867"><i class="fas fa-window-close"></i></a></div>`
+                actions += `<a href="/quizcancel/${doc._id}?matchkey=${doc.matchkey}" class="btn btn-sm btn-secondary w-35px h-35px" data-toggle="tooltip" title="Cancel Quiz" data-original-title="Cancel Contest" aria-describedby="tooltip768867"><i class="fas fa-window-close"></i></a></div>`
               }else{
                 actions += " | <tagname style='color:red;'>Canceled"
               }
             data.push({
               count: count,
               question: doc.question,
-              admin_answer: `${answer}`|| `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key304"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${doc.answer}</span></a>
-              <div class="modal fade" id="key304" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              admin_answer: `${answer}`|| `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key${count}"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${doc.answer}</span></a>
+              <div class="modal fade" id="key${count}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog col-6">
               <div class="modal-content">
                   <div class="modal-header">
@@ -851,6 +851,21 @@ class quizController {
       });
     } catch (error) {
       
+    }
+  }
+
+  async quizCancel(req, res, next) {
+    try {
+      const isCancelQuiz = await quizServices.quizCancel(req);
+      if (isCancelQuiz.status == true) {
+        req.flash("success", isCancelQuiz.message);
+        res.redirect(`/view_quiz`);
+      } else if (isCancelQuiz.status == false) {
+        req.flash("error", isCancelQuiz.message);
+        res.redirect(`/view_quiz`);
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 }
