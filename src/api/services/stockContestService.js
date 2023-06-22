@@ -44,20 +44,35 @@ class overfantasyServices {
 
   async listStockContest(req) {
     try {
-      const { stock_contest_cat } = req.query;
+      const { stock_contest_cat ,stock_contest } = req.query;
       let matchpipe = [];
       let date = moment().format('YYYY-MM-DD HH:mm:ss');
       let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
       matchpipe.push({
         $match: { fantasy_type: stock_contest_cat }
       });
-      matchpipe.push({
-        $match: {
-          $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
-          final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
-        }
-      });
-
+      if (stock_contest === "live") {
+        matchpipe.push({
+          $match: {
+            $and: [{ status: 'started' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } } ],
+            final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+          }
+        });
+      } else if (stock_contest === "upcoming") {
+        matchpipe.push({
+          $match: {
+            $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+            final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+          }
+        });
+      } else if (stock_contest === "completed") {
+        matchpipe.push({
+          $match: {
+            $and: [{ status: 'completed' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $gt: EndDate } }],
+            final_status: "winnerdeclared"
+          }
+        });
+      }
       matchpipe.push({
         $sort: {
           start_date: 1,
@@ -697,50 +712,57 @@ class overfantasyServices {
 
   async getStockAccordingCategory(req) {
     try {
-      let {stockcategory}  = req.query
-      let pipeline = []
-      pipeline.push({
-        '$match': {
-          '_id': mongoose.Types.ObjectId(stockcategory)
-        }
-      }, {
-        '$addFields': {
-          'stocks_id': {
-            '$map': {
-              'input': '$stocks_id', 
-              'as': 'stock', 
-              'in': {
-                '$toObjectId': '$$stock'
-              }
-            }
+      let { stockcategory } = req.query
+      let pipeline = [];
+      if (stockcategory) {
+        pipeline.push({
+          '$match': {
+            '_id': mongoose.Types.ObjectId(stockcategory)
           }
-        }
-      }, {
-        '$lookup': {
-          'from': 'stocks', 
-          'let': {
-            'id': '$stocks_id'
-          }, 
-          'pipeline': [
-            {
-              '$match': {
-                '$expr': {
-                  '$in': [
-                    '$_id', '$$id'
-                  ]
+        }, {
+          '$addFields': {
+            'stocks_id': {
+              '$map': {
+                'input': '$stocks_id',
+                'as': 'stock',
+                'in': {
+                  '$toObjectId': '$$stock'
                 }
               }
             }
-          ], 
-          'as': 'stocks'
+          }
+        }, {
+          '$lookup': {
+            'from': 'stocks',
+            'let': {
+              'id': '$stocks_id'
+            },
+            'pipeline': [
+              {
+                '$match': {
+                  '$expr': {
+                    '$in': [
+                      '$_id', '$$id'
+                    ]
+                  }
+                }
+              }
+            ],
+            'as': 'stocks'
+          }
+        }, {
+          '$project': {
+            '_id': 0,
+            'stocks': 1
+          }
+        })
+      } else {
+        return {
+          status: false,
+          message: "Stock Not Found",
+          data: []
         }
-      }, {
-        '$project': {
-          '_id': 0, 
-          'stocks': 1
-        }
-      })
-
+      }
       let data = await stockCategoryModel.aggregate(pipeline)
       if (data.length > 0) {
         return {

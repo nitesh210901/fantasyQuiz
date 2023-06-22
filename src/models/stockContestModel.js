@@ -128,6 +128,10 @@ let stockContestModel = new Schema({
         type: Boolean,
         default: true
     },
+    joinedusers:{
+        type: Number,
+        default: 0
+    },
     final_status: {
         type: String,
         default:"pending"

@@ -247,6 +247,7 @@
                     <script>
                          $('input[name=is_bonus]').change(function () {
                             if ($('input[name=is_bonus]').prop('checked') == true) {
+                                cosnole.log("hello")
                             $('input[name=bonus_percentage]').val('');
                             $("input[name=bonus_percentage]").prop('disabled', false);
                             $("#bonuspercentage").removeClass('d-none');

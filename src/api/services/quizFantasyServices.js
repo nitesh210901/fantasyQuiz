@@ -3652,10 +3652,9 @@ for await (const rankData of rankArray) {
                     // }
                 }
                 // else
-                //     await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
-                //         status: 'opened',
-                //         joinedusers: joinedLeaugesCount,
-                //     }, { new: true });
+                    await quizModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(quizId) }, {
+                        joinedusers: joinedLeaugesCount,
+                    }, { new: true });
                 // if (i == quizanswers.length) {
                     // console.log(`---------------------9TH IF--------${i}---------`);
                     const userObj = {
