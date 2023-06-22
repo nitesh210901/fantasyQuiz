@@ -648,10 +648,14 @@ class quizController {
   async QuizGIveAnswer(req,res,next){
     try{
         res.locals.message = req.flash();
-        const data=await quizServices.QuizGIveAnswer(req);
+       const data = await quizServices.QuizGIveAnswer(req);
         if(data.status == true){
-            req.flash('success',data.message)
+          req.flash('success', data.message)
+          if (req.query.quiz) {
+            res.redirect(`/allquiz/${req.params.id}`);
+          } else {
             res.redirect(`/view_quiz`);
+          }
         }else{
             req.flash('error',data.message)
             res.redirect(`/view_quiz`);
@@ -769,16 +773,6 @@ class quizController {
           matchkey: mongoose.Types.ObjectId(req.params.id),
         },
       });
-  
-      // condition.push({
-      //   $lookup: {
-      //     from: "listmatches",
-      //     localField: "matchkey",
-      //     foreignField: "_id",
-      //     as: "matchdata",
-      //   },
-      // });
-  
       quizModel.countDocuments(condition).exec((err, rows) => {
         let totalFiltered = rows;
         let data = [];
@@ -786,6 +780,16 @@ class quizController {
   
         quizModel.aggregate(condition).exec((err, rows1) => {
           rows1.forEach(async (doc) => {
+            let showopt = ""
+            let answer = ""
+            for (let item in doc.options[0]) {
+              console.log(doc._id)
+              console.log(doc.options[0][item],"ppppooooo")
+              showopt += `<option value="${item}">${doc.options[0][item]}</option>`
+              if (doc.answer === item) {
+                answer+= doc.options[0][item]
+              }
+            }
             let matchStatus = "";
             let actions="";
             if(doc.joinedusers != 0){
@@ -802,8 +806,35 @@ class quizController {
             data.push({
               count: count,
               question: doc.question,
-              admin_answer: doc.answer,
-              user_answer: "hello",
+              admin_answer: `${answer}`|| `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key304"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${doc.answer}</span></a>
+              <div class="modal fade" id="key304" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog col-6">
+              <div class="modal-content">
+                  <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Answer</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">×</span>
+                  </button>
+                  </div>
+                  <div class="modal-body">
+                      <form action="/quiz_give_answer/${doc._id}?quiz='result'" method="post">
+                          <div class="col-md-12 col-sm-12 form-group">
+                              <label>Give Your Answer</label>
+                              <select class="form-control" style="text-align:center;" name="answer">
+                              ${showopt}
+                              </select>
+                          </div>
+                          <div class="col-md-12 col-sm-12 form-group">
+                              <input type="submit" class="btn btn-info btn-sm text-uppercase" value="Submit">
+                          </div>
+                          </form>
+                  </div>
+                  <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary btn-sm text-uppercase" data-dismiss="modal">Close</button>
+                  </div>
+              </div>
+              </div>
+             </div>`,
               entryfee: doc.entryfee,
               joined_user: doc.joinedusers,
               action:`<div class="text-center">${actions}</div>`,
