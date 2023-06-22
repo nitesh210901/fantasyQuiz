@@ -26,19 +26,6 @@ let leaderboardSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         
     },
-    captain: {
-        type: mongoose.Schema.Types.ObjectId,
-        
-    },
-    vicecaptain: {
-        type: mongoose.Schema.Types.ObjectId,
-        
-    },
-    players: {
-        type: String,
-        default:""
-        
-    },
     points: {
         type: Number,
         default: 0
