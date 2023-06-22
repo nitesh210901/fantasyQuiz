@@ -303,7 +303,8 @@ class quizServices {
 
         }
         let image = `/${req.body.typename}/${req.file?.filename}` || "";
-        let { matchkey, question, options, answer, entryfee, winning_amount ,bonus_percentage,is_bonus} = req.body
+        let { matchkey, question, options, answer, entryfee, winning_amount, bonus_percentage, is_bonus } = req.body
+        console.log(is_bonus,"pppp",bonus_percentage)
             let option = []
             let opt = {}
             if (options.length > 0) {
@@ -333,7 +334,7 @@ class quizServices {
                     answer: answer,
                     entryfee: entryfee,
                     winning_amount: winning_amount * entryfee,
-                     is_bonus:is_bonus,
+                    is_bonus:is_bonus,
                     bonus_percentage: bonus_percentage
                 }
             }
