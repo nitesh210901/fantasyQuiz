@@ -296,11 +296,19 @@ class resultController {
         },
       });
       condition.push({
+        $lookup: {
+          from: "quizzes",
+          localField: "_id",
+          foreignField: "matchkey",
+          as: "quizData",
+        },
+      });
+      condition.push({
         $sort: {
           start_date: -1,
         },
       });
-      console.log(condition,"pppppoooooooooooo")
+      console.log(condition,"llll");
       listMatchesModel.countDocuments(condition).exec((err, rows) => {
         let totalFiltered = rows;
         let data = [];
@@ -558,6 +566,13 @@ class resultController {
                                 <div class="col-12 my-1">
                                     <a class="text-decoration-none text-secondary font-weight-600" href="/allcontests/${doc._id}">
                                         Total Contest ${doc.contestdata.length} 
+                                        &nbsp; 
+                                        <i class="fad fa-caret-right"></i>
+                                    </a>
+                                </div>
+                                <div class="col-12 my-1">
+                                    <a class="text-decoration-none text-secondary font-weight-600" href="/allquiz/${doc._id}">
+                                        Total Quiz ${doc.quizData.length} 
                                         &nbsp; 
                                         <i class="fad fa-caret-right"></i>
                                     </a>

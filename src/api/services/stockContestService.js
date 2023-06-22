@@ -696,50 +696,57 @@ class overfantasyServices {
 
   async getStockAccordingCategory(req) {
     try {
-      let {stockcategory}  = req.query
-      let pipeline = []
-      pipeline.push({
-        '$match': {
-          '_id': mongoose.Types.ObjectId(stockcategory)
-        }
-      }, {
-        '$addFields': {
-          'stocks_id': {
-            '$map': {
-              'input': '$stocks_id', 
-              'as': 'stock', 
-              'in': {
-                '$toObjectId': '$$stock'
-              }
-            }
+      let { stockcategory } = req.query
+      let pipeline = [];
+      if (stockcategory) {
+        pipeline.push({
+          '$match': {
+            '_id': mongoose.Types.ObjectId(stockcategory)
           }
-        }
-      }, {
-        '$lookup': {
-          'from': 'stocks', 
-          'let': {
-            'id': '$stocks_id'
-          }, 
-          'pipeline': [
-            {
-              '$match': {
-                '$expr': {
-                  '$in': [
-                    '$_id', '$$id'
-                  ]
+        }, {
+          '$addFields': {
+            'stocks_id': {
+              '$map': {
+                'input': '$stocks_id',
+                'as': 'stock',
+                'in': {
+                  '$toObjectId': '$$stock'
                 }
               }
             }
-          ], 
-          'as': 'stocks'
+          }
+        }, {
+          '$lookup': {
+            'from': 'stocks',
+            'let': {
+              'id': '$stocks_id'
+            },
+            'pipeline': [
+              {
+                '$match': {
+                  '$expr': {
+                    '$in': [
+                      '$_id', '$$id'
+                    ]
+                  }
+                }
+              }
+            ],
+            'as': 'stocks'
+          }
+        }, {
+          '$project': {
+            '_id': 0,
+            'stocks': 1
+          }
+        })
+      } else {
+        return {
+          status: false,
+          message: "Stock Not Found",
+          data: []
         }
-      }, {
-        '$project': {
-          '_id': 0, 
-          'stocks': 1
-        }
-      })
-
+      }
       let data = await stockCategoryModel.aggregate(pipeline)
       if (data.length > 0) {
         return {
