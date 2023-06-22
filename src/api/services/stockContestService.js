@@ -37,6 +37,8 @@ class overfantasyServices {
       getStockCategory: this.getStockCategory.bind(this),
       getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
       getAllStockWithAllSelector: this.getAllStockWithAllSelector.bind(this),
+      saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
+      updateResultStocks: this.updateResultStocks.bind(this),
       // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
       // getMyStockTeam: this.getMyStockTeam.bind(this),
     }
@@ -1682,5 +1684,43 @@ class overfantasyServices {
 
 
   }
+
+  async saveCurrentPriceOfStock(req, res) {
+    try {
+        const stockData = await stockModel.find({ isEnable: true });
+      
+        const headers = {
+          "Authorization": "token 74f8oggch3zuubyp:MwZ6cmx0cQxzS6WBile8U7lWHlFlrclI"
+        };
+      
+        const formattedDate = moment().format('YYYY-MM-DD+HH:mm');
+        const requests = stockData.map(async (stock) => {
+          try {
+            const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}:00&to=${formattedDate}:00`, {
+              "headers": headers
+            });
+      
+            const historicalData = resp.data.data.candles;
+            const updates = historicalData.map(async (candle) => {
+              const openPrice = candle[1];
+              const closePrice = candle[4];
+              await stockModel.findOneAndUpdate({ instrument_token: stock.instrument_token }, { "openPrice": openPrice,'closePrice':closePrice}, { upsert: true });
+            });
+      
+            await Promise.all(updates);
+          } catch (err) {
+            throw err; 
+          }
+        });
+        await Promise.all(requests);
+        return {
+          "message": "League Data",
+          data: requests || {}
+        };
+      } catch (error) {
+        throw error;
+      }
+}    
 }
+
 module.exports = new overfantasyServices();

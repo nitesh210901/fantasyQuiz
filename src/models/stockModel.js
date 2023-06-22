@@ -40,6 +40,15 @@ let stockModelSchema = new Schema({
     exchange:{
         type:String
     },
+    isEnable:{
+        type:Boolean,
+        default:false
+    },openPrice:{
+        type:String
+    },
+    closePrice:{
+        type:String
+    },
 }, {
     timestamps: true,
     versionKey: false

@@ -11,6 +11,7 @@ class stockCategory {
             saveStockCategory: this.saveStockCategory.bind(this),
             addStockCategoryPage: this.addStockCategoryPage.bind(this),
             viewCategoryStockDatabale: this.viewCategoryStockDatabale.bind(this),
+            enableDisableStock: this.enableDisableStock.bind(this),
         }
     }
 
@@ -122,7 +123,11 @@ class stockCategory {
                       } else {
                           image = `<img src="/uploadImage/defaultImage.jpg" class="w-40px view_team_table_images h-40px rounded-pill">`
                       }
-                      
+                      let btnStatus;
+
+                      if(index.isEnable == true)btnStatus = 'Disable';
+                      else btnStatus = 'Enable'
+
                       data.push({
                           's_no': `<div class="custom-control custom-checkbox">
                           <input type="checkbox" class="custom-control-input checkbox" name="checkCat" id="check${index._id}" value="${index._id}">
@@ -139,6 +144,9 @@ class stockCategory {
                           "instrument_type": index.instrument_type,
                           "segment": index.segment,
                           "exchange": index.exchange,
+                          "action": `<div>
+                            <a class="btn btn-primary btn-md rounded-pill" href="/enable-disble-stock?id=${index._id}">${btnStatus}</a>
+                          </div>`,
                       });
                       count++;
 
@@ -167,17 +175,18 @@ class stockCategory {
         if (req.query.searchName) {
             let searchName = req.query.searchName;
             conditions.name = { $regex: new RegExp("^" + searchName.toLowerCase(), "i") }
+           
         }
+        conditions.isEnable = "true"
         stockModel.countDocuments(conditions).exec((err, rows) => {
             let totalFiltered = rows;
             let data = [];
+            let image;
             let count = 1;
             stockModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 }).exec(async (err, rows1) => {
-                console.log('-----------------------',rows)
                 if (err) console.log(err);
                 for (let index of rows1) {
 
-                    let image, leaderBoard, L_status, l_board;
                     if (index.image) {
                         image = `<img src="${index.image}" class="w-40px view_team_table_images h-40px rounded-pill">`
                     } else {
@@ -229,6 +238,21 @@ class stockCategory {
           throw error;
       }
   }
+
+  async enableDisableStock(req, res) {
+    try {
+        const data = await stockModel.findOne({_id:req.query.id});
+        if(data.isEnable == true)data.isEnable = false;
+        else data.isEnable = true;
+        await data.save();
+        res.redirect('back');
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+
 
 }
 module.exports = new stockCategory();

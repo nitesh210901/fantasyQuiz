@@ -542,6 +542,7 @@ router.post("/save-stockcategory", auth, stockController.saveStockCategory);
 router.get("/viewStockDatabale", auth, getUrl, stockController.viewStockDatabale);
 router.get("/add_Stock_category", auth, getUrl, stockController.addStockCategoryPage);
 router.get("/viewCategoryStockDatabale", auth, getUrl, stockController.viewCategoryStockDatabale);
+router.get("/enable-disble-stock", auth, getUrl, stockController.enableDisableStock);
 
 // ---------------------------------Stock Category Manager-----------------------------------------
 router.get("/viewStockCategory", auth, getUrl, stockCategoryController.stockCategoryPage);
