@@ -25,6 +25,8 @@ class matchController {
             myContestleaderboard: this.myContestleaderboard.bind(this),
             updateResultStocks: this.updateResultStocks.bind(this),
             getAllStockWithAllSelector: this.getAllStockWithAllSelector.bind(this),
+            saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
+
         }
     }
 
@@ -244,5 +246,16 @@ class matchController {
             next(error);
         }
     }
+
+
+    async saveCurrentPriceOfStock(req, res, next) {
+        try {
+            const data = await stockContestService.saveCurrentPriceOfStock(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
+            next(error);
+        }
+    }
+       
 }
 module.exports = new matchController();

@@ -8,7 +8,7 @@ const boatUserService = require('../admin/services/botUserService');
 const classBotService = require('../admin/services/classicBotService');
 const refund_amount = require("../admin/controller/resultController");
 const quizAnswerMatch = require("../api/controller/quizFantasyController");
-// const battingBotService = require('../admin/services/battingBotService');
+const stockContestService = require('../api/services/stockContestService');
 // const bowlingBotService = require('../admin/services/bowlingBotService');
 // const reverseBotService = require('../admin/services/reverseBotService');
 const randomizePlayerSelectionClassic = require('../admin/controller/randomizePlayerSelectionClassic');
@@ -224,8 +224,17 @@ exports.saveStocks = new CronJob("30 8 * * *", async function () {
 exports.updateResultOfStocks = new CronJob('*/1 * * * *', async function () {
     try {
         console.log('<------ update stock result cron ------>');
-        resultServices.updateResultStocks();
+        stockContestService.updateResultStocks();
     } catch (error) {
         return error;
     }
 });
+
+exports.saveCurrentPriceOfStock = new CronJob("*/1 * * * *", async function () {
+    try {
+        console.log('<------ SaveCurrent stock ------>');
+        stockContestService.saveCurrentPriceOfStock();
+    } catch (error) {
+        return error;
+    }
+})

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const moment = require('moment');
 const axios = require('axios');
 const joinStockTeamModel = require('../../models/JoinStockTeamModel');
+const stockFinalResult = require('../../models/stockFinalResult');
 const stockContestModel = require('../../models/stockContestModel');
 const stockCategoryModel = require('../../models/stockcategoryModel');
 const stockContestCategoryModel = require('../../models/stockContestCategory')
@@ -36,6 +37,8 @@ class overfantasyServices {
       getStockCategory: this.getStockCategory.bind(this),
       getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
       getAllStockWithAllSelector: this.getAllStockWithAllSelector.bind(this),
+      saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
+      updateResultStocks: this.updateResultStocks.bind(this),
       // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
       // getMyStockTeam: this.getMyStockTeam.bind(this),
     }
@@ -85,7 +88,7 @@ class overfantasyServices {
         }
       });
       const result = await stockContestModel.aggregate(matchpipe);
-      if (result.length > 0) { 
+      if (result.length > 0) {
         return {
           status: true,
           message: "Stock Contest Fatch Successfully",
@@ -95,7 +98,7 @@ class overfantasyServices {
         return {
           status: false,
           message: "Stock Contest Not Found",
-          data:[]
+          data: []
         }
       }
       // result.sort(function (a, b) {
@@ -111,8 +114,8 @@ class overfantasyServices {
     try {
       const { stock, teamnumber, contestId } = req.body;
       let stockArray = stock.map(item => item.stockId);
-      const chkStockExist = await stockModel.find({'_id': { $in: stockArray}});
-    
+      const chkStockExist = await stockModel.find({ '_id': { $in: stockArray } });
+
       if (!chkStockExist) {
         return {
           message: 'Stocks Not Found',
@@ -122,7 +125,7 @@ class overfantasyServices {
       }
 
       const chkStockLimit = await stockContestModel.findById({ _id: contestId }, { select_team: 1 });
-     
+
       if (!chkStockLimit) {
         return {
           message: 'Contest Not Found',
@@ -1442,7 +1445,7 @@ class overfantasyServices {
   async updateResultStocks(req) {
     try {
       const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
-
+      let newData;
       const listContest = await stockContestModel.find({
         fantasy_type: { $ne: 'CRICKET' },
         start_date: { $gte: currentDate },
@@ -1457,43 +1460,97 @@ class overfantasyServices {
           let contestId = index._id;
           let investment = index?.investment;
           const currentDate1 = moment().format('YYYY-MM-DD');
+          // if (currentDate1 >= matchTimings) {
+          //   result = await this.getSockScoresUpdates(contestId);
+          //   for (let ele of result) {
+          //     let insertData = {};
+          //     insertData['userId'] = ele.userid;
+          //     insertData['teamid'] = ele.teamid;
+          //     insertData['contestId'] = ele.contestId;
+          //     insertData['joinId'] = ele._id;
+          //     let investment = +ele.invested;
+          //     let startDate = +ele.start_date;
+
+          //     const headers = {
+          //           "Authorization": "token 74f8oggch3zuubyp:MwZ6cmx0cQxzS6WBile8U7lWHlFlrclI"
+          //         };
+          //     let total = 0
+          //     for (let stock of ele.stockTeam) {
+          //       try {
+
+          //         const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${startDate}&to=${startDate}`, {
+          //           "headers": headers
+          //         });
+
+          //         for (let i of resp.data.data.candles) {
+          //           let openPrice = i[1]
+          //           let closePrice = i[4]
+          //           total += investment * closePrice / openPrice;
+          //         }
+
+          //       } catch (err) {
+          //         console.error(err);
+          //       }
+          //     }
+          //     insertData['finalvalue'] = total;
+          //     await stockFinalResult.findOneAndUpdate({ userId: ele.userid, teamid: ele.teamid, contestId: ele.contestId }, insertData, { upsert: true })
+          //   }
+          // }
+
           if (currentDate1 >= matchTimings) {
-            result = await this.getSockScoresUpdates(contestId);
-            let arr = [];
-            for(let ele of result){
-              let insertData={};
-              insertData['userId'] =ele.userid;
-              insertData['teamid'] =ele.teamid;
-              insertData['contestId'] =ele.contestId;
+            const result = await this.getSockScoresUpdates(listContest);
+          
+            const headers = {
+              "Authorization": "token 74f8oggch3zuubyp:MwZ6cmx0cQxzS6WBile8U7lWHlFlrclI"
+            };
+          
+            await Promise.all(result.map(async (ele) => {
+              const insertData = {
+                userId: ele.userid,
+                teamid: ele.teamid,
+                contestId: ele.contestId,
+                joinId: ele._id,
+              };
+              
+              const investment = +ele.invested;
+              const startDate = ele.start_date;
+              const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
 
-              for(let stock of ele.stockTeam){
-                arr.push(stock.instrument_token)
-              }}
-            let uniqueStockToken = [... new Set(arr)];
-            
-            // const headers = {
-            //   "Authorization":"token 74f8oggch3zuubyp:EJmQMyd34V2jcMrpTS4aQVH7Kfnh4lP6"
-            // }
+              let total = 0;
+          
+              await Promise.all(ele.stockTeam.map(async (stock) => {
+                try {                                                                                             
+                  const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}&to=${formattedDate}`, {
+                    headers: headers
+                  });
 
-            // for(let i of uniqueStockToken){
-            //   try {
-            //     const resp = await axios.get(`https://api.kite.trade/instruments/historical/${i}/minute?from=2023-06-21+15:15:00&to=2023-06-21+15:15:00`, {
-            //       "headers":headers
-            //     });
-            //     console.log('+++++++++++++))))))))',resp.data.data.candles);
-            // } catch (err) {
-            //     console.error(err);
-            // }
-            // }
-            
+                  total += resp.data.data.candles.reduce((acc, candle) => {
+                    const openPrice = candle[1];
+                    const closePrice = candle[4];
+                    return acc + (investment * closePrice / openPrice);
+                  }, 0);
+                } catch (err) {
+                  console.error(err);
+                }
+              }));
+          
+              insertData.finalvalue = total;
+              
+            newData = await stockFinalResult.findOneAndUpdate(
+                { userId: ele.userid, teamid: ele.teamid, contestId: ele.contestId },
+                insertData,
+                { upsert: true }
+              );
+            }));
           }
+          
         }
 
       }
-      
+
       return {
-        "message":"League Data",
-          data:result
+        "message": "League Data",
+        data: newData || {}
       };
 
     } catch (error) {
@@ -1502,19 +1559,35 @@ class overfantasyServices {
     }
   }
 
-  async getSockScoresUpdates(contestId) {
+  async getSockScoresUpdates(listContest) {
     try {
+      const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
       const constedleaugeData = await joinStockLeagueModel.aggregate([
         {
-          '$match': {
-            'contestId': new mongoose.Types.ObjectId(contestId)
-          }
-        }, {
           '$lookup': {
             'from': 'stock_contests', 
             'localField': 'contestId', 
             'foreignField': '_id', 
             'as': 'contestData'
+          }
+        }, {
+          '$match': {
+            'contestData': {
+              '$elemMatch': {
+                'launch_status': 'launched', 
+                'final_status': {
+                  '$nin': [
+                    'winnerdeclared', 'IsCanceled'
+                  ]
+                }, 
+                'fantasy_type': {
+                  '$ne': 'CRICKET'
+                }, 
+                'status': {
+                  '$ne': 'completed'
+                }, 'start_date': { $gte: currentDate },
+              }
+            }
           }
         }, {
           '$lookup': {
@@ -1599,8 +1672,32 @@ class overfantasyServices {
               '$push': '$stockTeam'
             }
           }
+        }, {
+          '$addFields': {
+            'invested': {
+              '$getField': {
+                'field': 'investment', 
+                'input': {
+                  '$arrayElemAt': [
+                    '$contestData', 0
+                  ]
+                }
+              }
+            }, 
+            'start_date': {
+              '$getField': {
+                'field': 'start_date', 
+                'input': {
+                  '$arrayElemAt': [
+                    '$contestData', 0
+                  ]
+                }
+              }
+            }
+          }
         }
       ]);
+      
       return constedleaugeData;
     } catch (error) {
       console.log("error" + error);
@@ -1609,5 +1706,43 @@ class overfantasyServices {
 
 
   }
+
+  async saveCurrentPriceOfStock(req, res) {
+    try {
+        const stockData = await stockModel.find({ isEnable: true });
+      
+        const headers = {
+          "Authorization": "token 74f8oggch3zuubyp:MwZ6cmx0cQxzS6WBile8U7lWHlFlrclI"
+        };
+      
+        const formattedDate = moment().format('YYYY-MM-DD+HH:mm');
+        const requests = stockData.map(async (stock) => {
+          try {
+            const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}:00&to=${formattedDate}:00`, {
+              "headers": headers
+            });
+      
+            const historicalData = resp.data.data.candles;
+            const updates = historicalData.map(async (candle) => {
+              const openPrice = candle[1];
+              const closePrice = candle[4];
+              await stockModel.findOneAndUpdate({ instrument_token: stock.instrument_token }, { "openPrice": openPrice,'closePrice':closePrice}, { upsert: true });
+            });
+      
+            await Promise.all(updates);
+          } catch (err) {
+            throw err; 
+          }
+        });
+        await Promise.all(requests);
+        return {
+          "message": "League Data",
+          data: requests || {}
+        };
+      } catch (error) {
+        throw error;
+      }
+}    
 }
+
 module.exports = new overfantasyServices();

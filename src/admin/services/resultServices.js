@@ -75,7 +75,6 @@ class resultServices {
             importPlayer:this.importPlayer.bind(this),
             callingForExtraPlayer:this.callingForExtraPlayer.bind(this),
             userTeamModified: this.userTeamModified.bind(this),
-            updateResultStocks: this.updateResultStocks.bind(this),
         }
     }
 
@@ -2642,125 +2641,6 @@ class resultServices {
             console.log(error)
         }
     }
-
-    async updateResultStocks(req) {
-        try {
-            const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
-
-            const listContest = await stockContestModel.find({
-                fantasy_type: "Stocks",
-                start_date: { $gte: currentDate },
-                launch_status: 'launched',
-                final_status: { $nin: ['winnerdeclared','IsCanceled'] },
-                status: { $ne: 'completed' }
-            });
-
-            if (listContest.length > 0) {
-                for (let index of listContest) {
-                    let matchTimings = index.start_date;
-                    let contestId = index._id;
-                    let investment = index?.investment;
-                    const currentDate1 = moment().format('YYYY-MM-DD HH:mm:ss');
-                    if (currentDate1 >= matchTimings) {
-                        this.getSockScoresUpdates(contestId, investment);
-                    }
-                }
-
-            }
-            return listContest;
-
-        } catch (error) {
-            console.log(error);
-            throw error;
-        }
-    }
-
-    async getSockScoresUpdates(contestId, investment) {
-        try {
-            console.log('hellloo')
-            const constedleaugeData = await joinStockLeagueModel.aggregate([
-                {
-                  '$match': {
-                    'contestId': new mongoose.Types.ObjectId(contestId)
-                  }
-                }, {
-                  '$lookup': {
-                    'from': 'stock_contests', 
-                    'localField': 'contestId', 
-                    'foreignField': '_id', 
-                    'as': 'contestData'
-                  }
-                }, {
-                  '$unwind': {
-                    'path': '$contestData'
-                  }
-                }, {
-                  '$lookup': {
-                    'from': 'joinstockteams', 
-                    'localField': 'teamid', 
-                    'foreignField': '_id', 
-                    'as': 'teamData'
-                  }
-                }, {
-                  '$addFields': {
-                    'teamData': {
-                      '$map': {
-                        'input': '$teamData', 
-                        'as': 'item', 
-                        'in': {
-                          'stock': '$$item.stock'
-                        }
-                      }
-                    }
-                  }
-                }, {
-                  '$addFields': {
-                    'teamData': {
-                      '$arrayElemAt': [
-                        '$teamData', 0
-                      ]
-                    }
-                  }
-                }, {
-                  '$unwind': {
-                    'path': '$teamData.stock'
-                  }
-                }, {
-                  '$addFields': {
-                    'stockid': '$teamData.stock.stockId'
-                  }
-                }, {
-                  '$lookup': {
-                    'from': 'stocks', 
-                    'let': {
-                      'id': '$stockid'
-                    }, 
-                    'pipeline': [
-                      {
-                        '$match': {
-                          '$expr': {
-                            '$eq': [
-                              '$_id', '$$id'
-                            ]
-                          }
-                        }
-                      }
-                    ], 
-                    'as': 'stocks'
-                  }
-                }
-              ]);
-              console.log(constedleaugeData,'+++++++++++++++++++++');
-
-              
-
-        } catch (error) {
-            console.log("error"+error);
-            throw error;
-        }
-    }
-    
-    
 }
 
 module.exports = new resultServices();
