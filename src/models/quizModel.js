@@ -42,6 +42,10 @@ let quizSchema = new Schema({
         type: Number,
         default: 0
     },
+    is_seleted: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true,
     versionKey: false
