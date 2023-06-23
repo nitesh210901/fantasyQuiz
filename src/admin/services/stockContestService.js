@@ -3,8 +3,13 @@ const mongoose = require('mongoose');
 const moment = require('moment');
 const randomstring = require("randomstring");
 const stockContestModel = require('../../models/stockContestModel');
+const joinStockLeagueModel = require('../../models/joinStockLeagueModel');
 const stockPriceCardModel = require('../../models/stockPriceCardModel');
 const contestCategoryModel = require('../../models/contestcategoryModel');
+const userModel = require('../../models/userModel');
+const refundMatchModel = require('../../models/refundModel');
+const TransactionModel = require('../../models/transactionModel');
+const constant = require('../../config/const_credential');
 
 class challengersService {
     constructor() {
@@ -21,6 +26,8 @@ class challengersService {
             editStockContestPage: this.editStockContestPage.bind(this),
             editStockContestData: this.editStockContestData.bind(this),
             launchStockContest: this.launchStockContest.bind(this),
+            allRefundAmount: this.allRefundAmount.bind(this),
+            refundprocess: this.refundprocess.bind(this),
         }
     }
    
@@ -890,6 +897,188 @@ class challengersService {
         } catch (error) {
             console.log(error);
             throw error;
+        }
+    }
+
+    async cancelContestStock(req){
+        try{
+            const matchContest= await stockContestModel.find({_id:req.query.contestId});
+            if(matchContest.length > 0){
+                for await(let key of matchContest){
+                    req.params.stockContestId=key._id
+                  
+                    const getMatchContestData = await stockContestModel.findOne({ _id: req.params.stockContestId});
+           
+              if (getMatchContestData) {
+                let joinLeagues = await joinStockLeagueModel.find({ contestId: getMatchContestData._id });
+       
+                if (joinLeagues.length > 0) {
+                    for (let league of joinLeagues) {
+                        let leaugestransaction = league.leaugestransaction;
+                        let randomStr=randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization:'uppercase'
+                          });
+                        let refund_data = await refundMatchModel.findOne({ joinid: mongoose.Types.ObjectId(league._id) });
+                  
+                        if (!refund_data) {
+                            const user = await userModel.findOne({ _id: leaugestransaction.user_id }, { userbalance: 1 });
+                            if (user) {
+                                const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+                                const balance = parseFloat(user.userbalance.balance.toFixed(2));
+                                const winning = parseFloat(user.userbalance.winning.toFixed(2));
+                                const totalBalance = bonus + balance + winning;
+                                const userObj = {
+                                    'userbalance.balance': balance + leaugestransaction.balance,
+                                    'userbalance.bonus': bonus + leaugestransaction.bonus,
+                                    'userbalance.winning': winning + leaugestransaction.winning,
+                                };
+                               
+                                let transaction_id = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+                                let refundData = {
+                                    userid: leaugestransaction.user_id,
+                                    amount: getMatchContestData.entryfee,
+                                    joinid: league._id,
+                                    stockContestId: league.contestId,
+                                    reason: 'cancel stock contest',
+                                    transaction_id: transaction_id
+                                };
+                               
+                                const transactiondata = {
+                                    type: 'Refund',
+                                    amount: getMatchContestData.entryfee,
+                                    total_available_amt: totalBalance + getMatchContestData.entryfee,
+                                    transaction_by: constant.APP_SHORT_NAME,
+                                    stockContestId: getMatchContestData._id,
+                                    userid: leaugestransaction.user_id,
+                                    paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                                    bal_bonus_amt: bonus + leaugestransaction.bonus,
+                                    bal_win_amt: winning + leaugestransaction.winning,
+                                    bal_fund_amt: balance + leaugestransaction.balance,
+                                    bonus_amt: leaugestransaction.bonus,
+                                    win_amt: leaugestransaction.winning,
+                                    addfund_amt: leaugestransaction.balance,
+                                    transaction_id: transaction_id
+                                };
+                               
+                                let profmiss =await Promise.all([
+                                    userModel.findOneAndUpdate({ _id: leaugestransaction.user_id }, userObj, { new: true }),
+                                    refundMatchModel.create(refundData),
+                                    TransactionModel.create(transactiondata)
+                                ]);
+                             
+                            }
+                        }
+                    }
+                }
+                const getMatchContestData1 = await stockContestModel.updateOne({ _id: req.params.stockContestId }, {
+                    $set: {
+                        status: constant.MATCH_CHALLENGE_STATUS.CANCELED
+                    }
+                });
+               
+                
+              } 
+             }
+           }
+            const updateStockCancel = await stockContestModel.updateOne({_id:req.query.contestId},{
+                $set:{
+                    final_status:req.query.status
+                }
+            })
+          
+            return{
+                status:true,
+                message:'stock Contest cancel successfully'
+            }
+
+        }catch(error){
+            console.log(error)
+        }
+    }
+
+    async refundprocess(contestid, entryfee, reason) {
+        console.log("-------------------------------------refundprocess-----------------------------")
+        let joinLeagues = await joinStockLeagueModel.find({
+            contestId: mongoose.Types.ObjectId(contestid),
+        });
+        if (joinLeagues.length > 0) {
+            for (let league of joinLeagues) {
+                let leaugestransaction = league.leaugestransaction;
+                let refund_data = await refundMatchModel.findOne({ joinid: mongoose.Types.ObjectId(league._id) });
+                if (!refund_data) {
+                    const user = await userModel.findOne({ _id: leaugestransaction.user_id }, { userbalance: 1 });
+                    if (user) {
+                        const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
+                        const balance = parseFloat(user.userbalance.balance.toFixed(2));
+                        const winning = parseFloat(user.userbalance.winning.toFixed(2));
+                        const totalBalance = bonus + balance + winning;
+                        const userObj = {
+                            'userbalance.balance': balance + leaugestransaction.balance,
+                            'userbalance.bonus': bonus + leaugestransaction.bonus,
+                            'userbalance.winning': winning + leaugestransaction.winning,
+                        };
+                        let randomStr = randomstring.generate({
+                            length: 4,
+                            charset: 'alphabetic',
+                            capitalization: 'uppercase'
+                        });
+                        console.log("------randomStr-------2", randomStr)
+                        let transaction_id = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+                        let refundData = {
+                            userid: leaugestransaction.user_id,
+                            amount: entryfee,
+                            joinid: league._id,
+                            stockContestId: league.contestId,
+                            reason: reason,
+                            transaction_id: transaction_id
+                        };
+                        const transactiondata = {
+                            type: 'Refund',
+                            amount: entryfee,
+                            total_available_amt: totalBalance + entryfee,
+                            transaction_by: constant.APP_SHORT_NAME,
+                            stockContestId: contestid,
+                            userid: leaugestransaction.user_id,
+                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                            bal_bonus_amt: bonus + leaugestransaction.bonus,
+                            bal_win_amt: winning + leaugestransaction.winning,
+                            bal_fund_amt: balance + leaugestransaction.balance,
+                            bonus_amt: leaugestransaction.bonus,
+                            win_amt: leaugestransaction.winning,
+                            addfund_amt: leaugestransaction.balance,
+                            transaction_id: transaction_id
+                        };
+                        console.log("----refundprocess----transactiondata----",transactiondata)
+                        console.log("----refundprocess----refundData----",refundData)
+                        await Promise.all([
+                            userModel.findOneAndUpdate({ _id: leaugestransaction.user_id }, userObj, { new: true }),
+                            refundMatchModel.create(refundData),
+                            TransactionModel.create(transactiondata)
+                        ]);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    async allRefundAmount(req, reason) {
+        console.log("-------------------------------------allRefundAmount-------------------------")
+        let { id, status } = req.params;
+        let stockContestData = await stockContestModel.find({ _id: id });
+        if (stockContestData.length > 0) {
+            for (let stockContest of stockContestData) {
+                let getresponse = await this.refundprocess(stockContest._id, stockContest.entryfee,reason);
+                if (getresponse == true) {
+                    await stockContestModel.updateOne({ _id: mongoose.Types.ObjectId(stockContest._id) }, {
+                        $set: {
+                            status: 'canceled'
+                        }
+                    });
+                }
+            }
         }
     }
 }

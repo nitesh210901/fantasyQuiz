@@ -15,9 +15,6 @@ const stockLeaderBoardModel = require('../../models/stockLeaderboardModel');
 const stockModel = require('../../models/stockModel');
 const { test } = require('../../utils/websocketKiteConnect');
 const { pipeline } = require('stream');
-
-
-
 class overfantasyServices {
   constructor() {
     return {
@@ -1773,7 +1770,7 @@ class overfantasyServices {
         const stockData = await stockModel.find({ isEnable: true });
       
         const headers = {
-          "Authorization": "token 74f8oggch3zuubyp:MwZ6cmx0cQxzS6WBile8U7lWHlFlrclI"
+          "Authorization": "token 74f8oggch3zuubyp:kBSpoIJAgnNPmRXahfb8g1OxPuris7nk"
         };
       
         const formattedDate = moment().format('YYYY-MM-DD+HH:mm');
