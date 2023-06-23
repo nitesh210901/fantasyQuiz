@@ -7,6 +7,7 @@ const listMatchModel = require("../../models/listMatchesModel");
 const globalQuizModel = require("../../models/globalQuizModel");
 const { default: mongoose } = require("mongoose");
 const { pipeline } = require("form-data");
+const QuizJoinLeaugeModel = require("../../models/QuizJoinLeaugeModel");
 class quizController {
   constructor() {
     return {
@@ -38,6 +39,10 @@ class quizController {
       matchAllquiz:this.matchAllquiz.bind(this),
       matchAllquizData:this.matchAllquizData.bind(this),
       quizCancel:this.quizCancel.bind(this),
+      quizUserDetails:this.quizUserDetails.bind(this),
+      quizUserDetailsData:this.quizUserDetailsData.bind(this),
+      quizviewtransactions:this.quizviewtransactions.bind(this),
+      quizviewTransactionsDataTable:this.quizviewTransactionsDataTable.bind(this),
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -859,14 +864,428 @@ class quizController {
       const isCancelQuiz = await quizServices.quizCancel(req);
       if (isCancelQuiz.status == true) {
         req.flash("success", isCancelQuiz.message);
-        res.redirect(`/view_quiz`);
+        res.redirect(`/allquiz/${req.query.matchkey}`);
       } else if (isCancelQuiz.status == false) {
         req.flash("error", isCancelQuiz.message);
-        res.redirect(`/view_quiz`);
+        res.redirect(`/allquiz/${req.query.matchkey}`);
       }
     } catch (error) {
       console.log(error);
     }
   }
-}
+  async quizUserDetails(req, res, next) {
+    try {
+      res.locals.message = req.flash();
+      res.render("quiz/quizUserDetails", {
+        sessiondata: req.session.data,
+        matchkey: req.params.matchkey,
+        qid: req.query.quizId,
+        teamName: req.query.teamName,//newnk
+        Email: req.query.Email,
+        Mobile: req.query.Mobile
+      });
+    } catch (error) {
+      req.flash('error', 'Something went wrong please try again');
+      res.redirect("/");
+    }
+  }
+  async quizUserDetailsData(req, res, next) {
+    try {
+      console.log("-----quiztUserDetailsData table-----quizId--------", req.query.quizId)
+      let limit = req.query.length;
+      let start = req.query.start;
+      let sortObj = {},
+        dir,
+        join;
+
+      let condition = [];
+
+      condition.push({
+        $match: {
+          quizId: mongoose.Types.ObjectId(req.query.quizId),
+        },
+      });
+
+      // condition.push({
+      //   $lookup: {
+      //     from: "users",
+      //     localField: "userid",
+      //     foreignField: "_id",
+      //     as: "userdata",
+      //   },
+      // });
+      //nandlalcode
+      let obj = {};
+      let match = {};
+      // if (req.query.teamName != "") {
+      //   match.team = { $regex: req.query.teamName, $options: "i" }
+      // }
+      if (req.query.Email != "") {
+        match.email = { $regex: req.query.Email, $options: "i" }
+      }
+      if (req.query.Mobile != "") {
+        match.mobile = Number(req.query.Mobile)
+      }
+      obj.$match = match;
+     
+      if (obj) {
+        condition.push({
+          $lookup: {
+            from: "users",
+            localField: "userid",
+            foreignField: "_id",
+            pipeline: [obj, {
+              $project: {
+                email: 1,
+                mobile: 1,
+                team: 1,
+              }
+            }],
+            as: "userdata",
+          },
+        });
+      } else {
+        condition.push({
+          $lookup: {
+            from: "users",
+            localField: "userid",
+            foreignField: "_id",
+            pipeline: [{
+              $project: {
+                email: 1,
+                mobile: 1,
+                // team: 1,
+              }
+            }],
+            as: "userdata",
+          },
+        });
+      }//newnk
+      //nandlalcode
+
+      condition.push({
+        $unwind: {
+          path: "$userdata",
+        },
+      });
+
+      condition.push({
+        $lookup: {
+          from: "quizzes",
+          localField: "quizId",
+          foreignField: "_id",
+          as: "quizdata",
+        },
+      });
+
+      condition.push({
+        $unwind: {
+          path: "$quizdata",
+        },
+      });
+
+      condition.push({
+        $lookup: {
+          from: "finalresults",
+          localField: "_id",
+          foreignField: "joinedid",
+          as: "finalResultData"
+        }
+      },)
+      condition.push({
+        $unwind: { path: "$finalResultData",preserveNullAndEmptyArrays:true },
+        
+      })
+      QuizJoinLeaugeModel.countDocuments(condition).exec((err, rows) => {
+        let totalFiltered = rows;
+        let data = [];
+        let count = 1;
+        QuizJoinLeaugeModel.aggregate(condition).exec((err, rows1) => {
+          rows1.forEach(async (doc) => {
+            let option = '<ol>'
+                for (let item in doc.quizdata.options[0]) {
+                  option += `<li>${doc.quizdata.options[0][item]}</li>`
+                }
+            option += "</ol>"
+            let winnerAmt= 0;
+            let rank = 0;
+            let points =0;
+            if(doc?.finalResultData){
+              if (doc.finalResultData?.prize != "") {
+                winnerAmt = doc.finalResultData?.prize
+              } else {
+                winnerAmt = doc.finalResultData?.amount
+              }
+              rank= doc.finalResultData.rank;
+              points= doc.finalResultData.points;
+            }
+            
+            data.push({
+              count: count,
+              // teamName: doc.userdata.team,//nandlal
+              //userName: doc.userdata.username,
+              email: doc.userdata.email,
+              mobile: doc.userdata.mobile,
+              quiz_option: `${option}`,
+              user_answer:doc.answer,
+              transactionId: doc.transaction_id,
+              points: points,
+              amount: winnerAmt,
+              action: `<a target="blank" class="btn btn-sm btn-info w-35px h-35px" data-toggle="tooltip" title="View Transaction" href="/quizviewtransactions/${doc.userdata._id}?quizId=${doc.quizId}"><i class="fas fa-eye"></i></a>`,
+            });
+            count++;
+            if (count > rows1.length) {
+              let json_data = JSON.stringify({ data });
+              res.send(json_data);
+            }
+          });
+        });
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async quizviewtransactions(req, res, next) {
+    try {
+      const findTransactions = await quizServices.viewtransactions(req);
+      if (findTransactions.status == true) {
+        const { start_date, end_date, quizId } = req.query;
+        res.render("quiz/viewTransactions", {
+          sessiondata: req.session.data,
+          findTransactionsId: findTransactions.data.userid,
+          start_date: start_date,
+          end_date: end_date,
+          quizId: quizId,
+        });
+      }
+    } catch (error) {
+      req.flash("warning", "No transaction to show");
+      res.redirect("/");
+    }
+  }
+
+  async viewTransactionsDataTable(req, res, next) {
+    try {
+      let limit1 = req.query.length;
+      let start = req.query.start;
+      let sortObject = {},
+        dir,
+        join,
+        conditions = { userid: req.params.id };
+      let name;
+      if (req.query.start_date) {
+        conditions.createdAt = { $gte: new Date(req.query.start_date) };
+      }
+      if (req.query.end_date) {
+        conditions.createdAt = { $lt: new Date(req.query.end_date) };
+      }
+
+      if (req.query.start_date && req.query.end_date) {
+        conditions.createdAt = {
+          $gte: new Date(req.query.start_date),
+          $lt: new Date(req.query.end_date),
+        };
+      }
+
+      if (req.query.challengeid) {
+        conditions.challengeid = mongoose.Types.ObjectId(req.query.challengeid);
+      }
+
+      let arr_cr = [
+        "Bank verification bank bonus",
+        "Email Bonus",
+        "Mobile Bonus",
+        'Pan Bonus',
+        "Cash added",
+        "Offer bonus",
+        "Bonus refer",
+        "Series Winning Amount",
+        "Refund amount",
+        "Challenge Winning Amount",
+        "Challenge Winning Gift",
+        "Refund",
+        "Pan verification pan bonus",
+        "special  ",
+        "Youtuber Bonus",
+        "Referred Signup bonus",
+        "Winning Adjustment",
+        "Add Fund Adjustments",
+        "Bonus Adjustments",
+        "Refer Bonus",
+        "withdraw cancel",
+        "Amount Withdraw Failed",
+        'Mobile Bonus',
+        'Email Bonus',
+        'Signup Bonus',
+        'extra cash',
+        'Special Bonus',
+        'Cash Added',
+        'Bank Bonus',
+        'Pan Bonus',
+        'Refer Bonus',
+        'Application download bonus'
+      ];
+      let arr_db = ["Amount Withdraw", "Contest Joining Fee"];
+
+      transactionModel.countDocuments(conditions).exec((err, rows) => {
+        let totalFiltered = rows;
+        let data = [];
+        let count = 1;
+        transactionModel
+          .find(conditions)
+          .skip(Number(start) ? Number(start) : "")
+          .limit(Number(limit1) ? Number(limit1) : "")
+          .sort(sortObject)
+          .exec((err, rows1) => {
+            if (err) console.log(err);
+            rows1.forEach((index) => {
+              const dateby = index.createdAt;
+              let setDate = moment(dateby).format("DD-MM-YYYY");
+              let setTime = moment(dateby).format("h:mm:ss");
+              data.push({
+                id: `<a href="/getUserDetails/${index.userid}">${count}</a>`,
+                date: `<span class="text-warning">${setDate}</span> <span class="text-success">${setTime}</span>`,
+                amt: index.amount,
+                ttype: arr_cr.includes(index.type) ? "Credit" : "Debit",
+                treason: index.type,
+                bonusA: (index.bal_bonus_amt).toFixed(2),
+                bonusC: index.bonus_amt.toFixed(2),
+                bonusD: index.cons_bonus.toFixed(2),
+                winningA: index.bal_win_amt.toFixed(2),
+                winningC: index.win_amt.toFixed(2),
+                winningD: index.cons_win.toFixed(2),
+                balanceA: index.bal_fund_amt.toFixed(2),
+                balanceC: index.addfund_amt.toFixed(2),
+                balanceD: index.cons_amount.toFixed(2),
+                total: index.total_available_amt.toFixed(2),
+              });
+              count++;
+              if (count > rows1.length) {
+                let json_data = JSON.stringify({
+                  recordsTotal: rows,
+                  recordsFiltered: totalFiltered,
+                  data: data,
+                });
+                res.send(json_data);
+              }
+            });
+          });
+      });
+    } catch (error) {
+      
+    }
+  }
+  async quizviewTransactionsDataTable(req, res, next) {
+    try {
+      let limit1 = req.query.length;
+      let start = req.query.start;
+      let sortObject = {},
+        dir,
+        join,
+        conditions = { userid: req.params.id };
+      let name;
+      if (req.query.start_date) {
+        conditions.createdAt = { $gte: new Date(req.query.start_date) };
+      }
+      if (req.query.end_date) {
+        conditions.createdAt = { $lt: new Date(req.query.end_date) };
+      }
+
+      if (req.query.start_date && req.query.end_date) {
+        conditions.createdAt = {
+          $gte: new Date(req.query.start_date),
+          $lt: new Date(req.query.end_date),
+        };
+      }
+
+      if (req.query.quizId) {
+        conditions.quizId = mongoose.Types.ObjectId(req.query.quizId);
+      }
+
+      let arr_cr = [
+        "Bank verification bank bonus",
+        "Email Bonus",
+        "Mobile Bonus",
+        'Pan Bonus',
+        "Cash added",
+        "Offer bonus",
+        "Bonus refer",
+        "Series Winning Amount",
+        "Refund amount",
+        "Challenge Winning Amount",
+        "Challenge Winning Gift",
+        "Refund",
+        "Pan verification pan bonus",
+        "special  ",
+        "Youtuber Bonus",
+        "Referred Signup bonus",
+        "Winning Adjustment",
+        "Add Fund Adjustments",
+        "Bonus Adjustments",
+        "Refer Bonus",
+        "withdraw cancel",
+        "Amount Withdraw Failed",
+        'Mobile Bonus',
+        'Email Bonus',
+        'Signup Bonus',
+        'extra cash',
+        'Special Bonus',
+        'Cash Added',
+        'Bank Bonus',
+        'Pan Bonus',
+        'Refer Bonus',
+        'Application download bonus'
+      ];
+      let arr_db = ["Amount Withdraw", "Contest Joining Fee"];
+
+      transactionModel.countDocuments(conditions).exec((err, rows) => {
+        let totalFiltered = rows;
+        let data = [];
+        let count = 1;
+        transactionModel
+          .find(conditions)
+          .skip(Number(start) ? Number(start) : "")
+          .limit(Number(limit1) ? Number(limit1) : "")
+          .sort(sortObject)
+          .exec((err, rows1) => {
+            if (err) console.log(err);
+            rows1.forEach((index) => {
+              const dateby = index.createdAt;
+              let setDate = moment(dateby).format("DD-MM-YYYY");
+              let setTime = moment(dateby).format("h:mm:ss");
+              data.push({
+                id: `<a href="/getUserDetails/${index.userid}">${count}</a>`,
+                date: `<span class="text-warning">${setDate}</span> <span class="text-success">${setTime}</span>`,
+                amt: index.amount,
+                ttype: arr_cr.includes(index.type) ? "Credit" : "Debit",
+                treason: index.type,
+                bonusA: (index.bal_bonus_amt).toFixed(2),
+                bonusC: index.bonus_amt.toFixed(2),
+                bonusD: index.cons_bonus.toFixed(2),
+                winningA: index.bal_win_amt.toFixed(2),
+                winningC: index.win_amt.toFixed(2),
+                winningD: index.cons_win.toFixed(2),
+                balanceA: index.bal_fund_amt.toFixed(2),
+                balanceC: index.addfund_amt.toFixed(2),
+                balanceD: index.cons_amount.toFixed(2),
+                total: index.total_available_amt.toFixed(2),
+              });
+              count++;
+              if (count > rows1.length) {
+                let json_data = JSON.stringify({
+                  recordsTotal: rows,
+                  recordsFiltered: totalFiltered,
+                  data: data,
+                });
+                res.send(json_data);
+              }
+            });
+          });
+      });
+    } catch (error) {
+      
+    }
+  }
+  }
 module.exports = new quizController();
