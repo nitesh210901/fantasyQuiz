@@ -37,6 +37,7 @@ class overfantasyServices {
       saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
       updateResultStocks: this.updateResultStocks.bind(this),
       updateJoinedusers: this.updateJoinedusers.bind(this),
+      getStockUsableBalance: this.getStockUsableBalance.bind(this),
 
       liveStockRanksLeaderboard: this.liveStockRanksLeaderboard.bind(this),
       // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
@@ -53,9 +54,9 @@ class overfantasyServices {
         query.stock_contest_cat = req.query.stock_contest_cat
         query.contest_type = 'Amount'
         query.status = 'opened'
-        const matchchallengesData = await stockContestModel.find(query);
-        if (matchchallengesData.length > 0) {
-            for (let matchchallenge of matchchallengesData) {
+        const contestData = await stockContestModel.find(query);
+        if (contestData.length > 0) {
+            for (let matchchallenge of contestData) {
                 const totalJoinedUserInLeauge = await joinStockLeagueModel.find({ contestId: mongoose.Types.ObjectId(matchchallenge._id) });
                 if (matchchallenge.maximum_user == totalJoinedUserInLeauge.length) {
                     const update = {
@@ -1977,6 +1978,44 @@ class overfantasyServices {
         throw error;
     }
   }
+
+  async getStockUsableBalance(req) {
+    try {
+        const { contestId } = req.query;
+        const contestData = await stockContestModel.findOne({ _id: mongoose.Types.ObjectId(contestId) });
+        await this.updateJoinedusers(req);
+        if (!contestData) {
+            return {
+                message: 'Invalid details',
+                status: false,
+                data: {}
+            }
+        }
+        const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
+        const bonus = parseFloat(user.userbalance.bonus.toFixed(2)) || 0;
+        const balance = parseFloat(user.userbalance.balance.toFixed(2)) || 0;
+        const winning = parseFloat(user.userbalance.winning.toFixed(2)) || 0;
+        const totalBalance = bonus + balance + winning;
+        const findUsableBalance = balance + winning;
+        let findBonusAmount = 0,
+            usedBonus = 0;
+        if (contestData.is_bonus == 1 && contestData.bonus_percentage) findBonusAmount = (contestData.bonus_percentage / 100) * contestData.entryfee;
+        if (bonus >= findBonusAmount) usedBonus = findBonusAmount;
+        else usedBonus = bonus;
+        return {
+            message: 'Get amount to be used',
+            status: true,
+            data: {
+                usablebalance: findUsableBalance.toFixed(2).toString(),
+                usertotalbalance: totalBalance.toFixed(2).toString(),
+                entryfee: contestData.entryfee.toFixed(2).toString(),
+                bonus: usedBonus.toFixed(2).toString(),
+            }
+        }
+    } catch (error) {
+        throw error;
+    }
+}
 
 }
 
