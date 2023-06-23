@@ -45,8 +45,8 @@ class quizServices {
             quizrefundprocess: this.quizrefundprocess.bind(this),
             cancelQuiz: this.cancelQuiz.bind(this),
             quizdistributeWinningAmountWithAnswerMatch: this.quizdistributeWinningAmountWithAnswerMatch.bind(this),
-            quizCancel: this.quizCancel.bind(this)
-
+            quizCancel: this.quizCancel.bind(this),
+            viewtransactions: this.viewtransactions.bind(this)
         }
     }
 
@@ -1785,6 +1785,20 @@ class quizServices {
 
         } catch (error) {
             console.log(error)
+        }
+    }
+
+    async viewtransactions(req) {
+        try {
+            const findTransactions = await TransactionModel.findOne({ userid: req.params.id });
+            if (findTransactions) {
+                return {
+                    status: true,
+                    data: findTransactions,
+                }
+            }
+        } catch (error) {
+           throw error;
         }
     }
 }

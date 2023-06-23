@@ -394,7 +394,11 @@ router.post("/user-teams-tabled", resultController.viewTeamsData);
 router.get("/cancelMatch/:id",auth,resultController.cancelMatch);
 router.get("/cancelQuiz/:id",auth,QuizController.cancelQuiz);
 router.get("/allquiz/:id", auth,  getUrl, QuizController.matchAllquiz);
-router.post("/allquiz-table/:id", auth, QuizController.matchAllquizData);
+router.post("/allquiz-table/:id", auth, QuizController.matchAllquizData);   
+router.get('/quiz-user-details/:matchkey', auth, getUrl, QuizController.quizUserDetails);
+router.post('/quiz-user-details-table/:matchkey', auth, QuizController.quizUserDetailsData);
+router.get('/quizviewtransactions/:id', auth, getUrl, QuizController.quizviewtransactions);
+router.post('/quizviewTransactions-Data-Table/:id', auth, QuizController.quizviewTransactionsDataTable);
 // -----------------------edit user teams by admin  ----------------------
 router.get("/edit-user-teams",auth,resultController.editUserTeams)
 router.post("/edit-user-teams-tabled",auth,resultController.editUserTeamsTable)

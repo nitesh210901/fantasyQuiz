@@ -121,7 +121,15 @@ class challengersService {
                         data.multi_entry = 1;
                         data.multi_entry = req.body.multi_entry;
                         data.team_limit = req.body.team_limit;
-                }
+                   }
+                    let start_date
+                    if (req.body.start_date) {
+                    start_date = moment(req.body.start_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
+                    }
+                    let end_date
+                    if (req.body.end_date) {
+                     end_date = moment(req.body.end_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
+                    }
                     data.contest_type = req.body.contest_type;
                     data.fantasy_type = req.body.stock_contest_cat;
                     data.pricecard_type = req.body.pricecard_type;
@@ -134,8 +142,8 @@ class challengersService {
                     data.win_amount = req.body.win_amount;
                     data.amount_type = req.body.amount_type;
                     data.select_team = req.body.select_team;
-                    data.start_date = req.body.start_date;
-                    data.end_date = req.body.end_date;
+                    data.start_date = start_date;
+                    data.end_date = end_date;
                     data.stock_contest_cat = req.body.stock_contest_cat;
                     data.stock_categoryId = req.body.stock_categoryId;
                     if (req.body.contest_type == 'Amount') {
