@@ -417,21 +417,14 @@ async showStockResulTable(req, res, next) {
                               </div>
                               <div class="col-12 my-1">
                                   <a class="text-decoration-none text-secondary font-weight-600" href="/allcontests/${doc._id}">
-                                      Total Contest  
-                                      &nbsp; 
-                                      <i class="fad fa-caret-right"></i>
-                                  </a>
-                              </div>
-                              <div class="col-12 my-1">
-                                  <a class="text-decoration-none text-secondary font-weight-600" href="/allquiz/${doc._id}">
-                                      Total Quiz 
+                                      Total Joined User ${doc.joinedusers} 
                                       &nbsp; 
                                       <i class="fad fa-caret-right"></i>
                                   </a>
                               </div>
                               <div class="col-12 my-1">
                                   <span class="text-decoration-none text-dark font-weight-600">
-                                      Match Status : ${doc.final_status}
+                                      Contest Status : ${doc.final_status}
                                   </span>
                               </div>
                           </div>`,
