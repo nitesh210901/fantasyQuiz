@@ -543,6 +543,8 @@ router.get("/viewStockDatabale", auth, getUrl, stockController.viewStockDatabale
 router.get("/add_Stock_category", auth, getUrl, stockController.addStockCategoryPage);
 router.get("/viewCategoryStockDatabale", auth, getUrl, stockController.viewCategoryStockDatabale);
 router.get("/enable-disble-stock", auth, getUrl, stockController.enableDisableStock);
+router.get("/show-stock-final-result", auth, getUrl, stockController.showStockFinalResult);
+router.post("/stock-result-table", auth, getUrl, stockController.showStockResulTable);
 
 // ---------------------------------Stock Category Manager-----------------------------------------
 router.get("/viewStockCategory", auth, getUrl, stockCategoryController.stockCategoryPage);
