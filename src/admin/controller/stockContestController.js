@@ -363,9 +363,9 @@ class stockContestController {
               req.body.masterpassword &&
               req.body.masterpassword == req.session.data.masterpassword
             ) {
-              const getResult = await resultServices.distributeWinningAmount(req);//need to check becouse crown is remove
+              const getResult = await stockContestService.distributeWinningAmount(req);//need to check becouse crown is remove
     
-              let updatestatus = await listMatchesModel.updateOne(
+              let updatestatus = await stockContestModel.updateOne(
                 { _id: mongoose.Types.ObjectId(req.params.id) },
                 {
                   $set: {
@@ -373,11 +373,11 @@ class stockContestController {
                   },
                 }
               );
-              req.flash("success", `Match ${req.params.status} successfully`);
-              return res.redirect(`/match-details/${req.body.series}`);
+              req.flash("success", `contest ${req.params.status} successfully`);
+              return res.redirect(`/show-stock-final-result`);
             } else {
               req.flash("error", "Incorrect masterpassword");
-              res.redirect(`/match-details/${req.body.series}`);
+              res.redirect(`/show-stock-final-result`);
             }
           } else if (
             req.params.status == "IsAbandoned" ||
@@ -401,9 +401,10 @@ class stockContestController {
             req.flash("success", `Stock Contest ${req.params.status} successfully`);
           }
     
-          res.redirect(`/match-details/${req.body.series}`);
+          res.redirect(`/show-stock-final-result`);
           // res.send({status:true});
         } catch (error) {
+            console.log(error)
           req.flash('error', 'Something went wrong please try again');
           res.redirect("/");
         }
