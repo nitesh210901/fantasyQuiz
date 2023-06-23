@@ -26,6 +26,7 @@ class matchController {
             updateResultStocks: this.updateResultStocks.bind(this),
             getAllStockWithAllSelector: this.getAllStockWithAllSelector.bind(this),
             saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
+            liveStockRanksLeaderboard: this.liveStockRanksLeaderboard.bind(this),
 
         }
     }
@@ -256,6 +257,14 @@ class matchController {
             next(error);
         }
     }
-       
+    
+    async liveStockRanksLeaderboard(req, res, next) {
+        try {
+            const data = await stockContestService.liveStockRanksLeaderboard(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 module.exports = new matchController();

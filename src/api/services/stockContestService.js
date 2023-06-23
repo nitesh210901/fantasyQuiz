@@ -39,6 +39,7 @@ class overfantasyServices {
       getAllStockWithAllSelector: this.getAllStockWithAllSelector.bind(this),
       saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
       updateResultStocks: this.updateResultStocks.bind(this),
+      liveStockRanksLeaderboard: this.liveStockRanksLeaderboard.bind(this),
       // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
       // getMyStockTeam: this.getMyStockTeam.bind(this),
     }
@@ -1075,6 +1076,7 @@ class overfantasyServices {
   async myContestleaderboard(req) {
     try {
       const { contestId } = req.query;
+      console.log(contestId)
       const joinedleaugeA = await joinStockLeagueModel.aggregate([
         {
           '$match': {
@@ -1193,7 +1195,7 @@ class overfantasyServices {
           }
         }
       ]);
-      const joinedleaugeB = await JoinLeaugeModel.aggregate([
+      const joinedleaugeB = await joinStockLeagueModel.aggregate([
         {
           '$match': {
             'contestId': new mongoose.Types.ObjectId(contestId)
@@ -1350,8 +1352,6 @@ class overfantasyServices {
       ]);
       const joinedleauge = joinedleaugeA.concat(joinedleaugeB);
       if (joinedleauge.length > 0) {
-        let teamNum = [];
-        let teamnumber11 = 1;
         for (let joinUser of joinedleauge) {
           if (joinUser.teamnumber == 0) {
             joinUser.teamnumber = joinUser.joinTeamNumber;
@@ -1742,7 +1742,236 @@ class overfantasyServices {
       } catch (error) {
         throw error;
       }
-}    
+  }    
+
+  async liveStockRanksLeaderboard(req) {
+    try {
+        let skip = (req.query?.skip) ? Number(req.query.skip) : 0;
+        let limit = (req.query?.limit) ? Number(req.query.limit) : 10;
+        let aggPipe = [];
+        aggPipe.push({
+            '$match': {
+                'matchkey': mongoose.Types.ObjectId(req.query.matchkey),
+                'challengeid': mongoose.Types.ObjectId(req.query.matchchallengeid)
+            }
+        });
+        aggPipe.push({
+            $lookup: {
+                from: "users",
+                localField: "userid",
+                foreignField: "_id",
+                as: "user",
+            }
+        })
+
+        aggPipe.push({
+            $addFields: {
+                team: {
+                    $ifNull: [
+                        {
+                            $arrayElemAt: ["$user.team", 0],
+                        },
+                        "",
+                    ],
+                },
+                userno: {
+                    $cond: {
+                        if: {
+                            $and: [
+                                {
+                                    $eq: ["$userid", mongoose.Types.ObjectId(req.user._id)],
+                                },
+                            ],
+                        },
+                        then: "-1",
+                        else: "0",
+                    },
+                },
+            }
+        })
+
+        aggPipe.push({
+            $lookup: {
+                from: "leaderboards",
+                localField: "_id",
+                foreignField: "joinId",
+                as: "leaderboards",
+            }
+        })
+
+        aggPipe.push({
+            $lookup: {
+                from: "finalresults",
+                localField: "_id",
+                foreignField: "joinedid",
+                as: "finalResult",
+            }
+        })
+        aggPipe.push({
+            $project: {
+                _id: 0,
+                userjoinid: "$_id",
+                userid: "$userid",
+                jointeamid: "$teamid",
+                teamnumber: 1,
+                challengeid: 1,
+                userno: 1,
+                points: {
+                    $ifNull: [
+                        {
+                            $arrayElemAt: ["$leaderboards.points", 0],
+                        },
+                        0,
+                    ],
+                },
+                getcurrentrank: {
+                    $ifNull: [
+                        {
+                            $arrayElemAt: ["$leaderboards.rank", 0],
+                        },
+                        0,
+                    ],
+                },
+                teamname: {
+                    $ifNull: ["$team", 0],
+                },
+                image: {
+                    $cond: {
+                        if: {
+                            $eq: [
+                                {
+                                    $getField: {
+                                        field: "image",
+                                        input: {
+                                            $arrayElemAt: ["$user", 0],
+                                        },
+                                    },
+                                },
+                                "",
+                            ],
+                        },
+                        then: "https://admin.mygames11.com/avtar1.png",
+                        else: {
+                            $getField: {
+                                field: "image",
+                                input: {
+                                    $arrayElemAt: ["$user", 0],
+                                },
+                            },
+                        },
+                    },
+                },
+                player_type: "classic",
+                winingamount: {
+                    $cond: {
+                        if: {
+                            $ne: [
+                                {
+                                    $arrayElemAt: [
+                                        "$finalResult.amount",
+                                        0,
+                                    ],
+                                },
+                                0,
+                            ],
+                        },
+                        then: {
+                            $toString: {
+                                $ifNull: [
+                                    {
+                                        $arrayElemAt: [
+                                            "$finalResult.amount",
+                                            0,
+                                        ],
+                                    },
+                                    "",
+                                ],
+                            },
+                        },
+                        else: {
+                            $toString: {
+                                $ifNull: [
+                                    {
+                                        $arrayElemAt: [
+                                            "$finalResult.prize",
+                                            0,
+                                        ],
+                                    },
+                                    "",
+                                ],
+                            },
+                        },
+                    },
+                },
+            }
+        });
+
+        aggPipe.push({
+            $lookup: {
+                from: "matchchallenges",
+                localField: "challengeid",
+                foreignField: "_id",
+                as: "challengeData",
+            }
+        });
+
+        aggPipe.push({
+            $addFields: {
+                contest_winning_type: {
+                    $ifNull: [
+                        {
+                            $arrayElemAt: [
+                                "$challengeData.amount_type",
+                                0,
+                            ],
+                        },
+                        "0",
+                    ],
+                },
+                challengeData: "",
+            }
+        });
+
+        aggPipe.push({
+            $sort: {
+                userno: 1,
+                getcurrentrank: 1
+            }
+        });
+        aggPipe.push({
+            $facet: {
+                data: [{ $skip: skip }, { $limit: limit }]
+            }
+        })
+        const finalData = await JoinLeaugeModel.aggregate(aggPipe);
+
+
+        if (finalData[0].data.length > 0) {
+            return {
+                message: "Live score lederbord of match",
+                status: true,
+                data: {
+                    team_number_get: finalData[0].data[0].teamnumber,
+                    userrank: finalData[0].data[0].getcurrentrank,
+                    pdfname: '',
+                    jointeams: finalData[0].data ? finalData[0].data : [],
+
+                }
+            }
+        } else {
+            return {
+                message: 'Live score lederbord of match Not Found',
+                status: false,
+                data: {},
+
+            }
+        }
+    }
+    catch (error) {
+        throw error;
+    }
+  }
+
 }
 
 module.exports = new overfantasyServices();
