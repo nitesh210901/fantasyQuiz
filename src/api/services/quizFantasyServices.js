@@ -2684,6 +2684,7 @@ class quizfantasyServices {
         }
 
     };
+    
     async getAllNewContests(req) {
         try {
             await this.updateJoinedusers(req);
@@ -3652,7 +3653,8 @@ for await (const rankData of rankArray) {
                     // }
                 }
                 // else
-                    await quizModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(quizId) }, {
+            await quizModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(quizId) }, {
+                        is_seleted:true,
                         joinedusers: joinedLeaugesCount,
                     }, { new: true });
                 // if (i == quizanswers.length) {

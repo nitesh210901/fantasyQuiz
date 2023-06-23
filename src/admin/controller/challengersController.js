@@ -598,7 +598,8 @@ class challengersController {
         } catch (error) {
           console.log(error);
         }
-      }
+    }
+   
       async joinedBotUser(req,res,next){
         try{
          
