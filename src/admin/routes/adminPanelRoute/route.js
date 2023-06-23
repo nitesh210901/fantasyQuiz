@@ -536,7 +536,8 @@ router.get("/edit-stock-contest/:id", auth, getUrl, stockContestController.editS
 router.post("/edit-stock-contest-data", auth, stockContestController.editStockContestData);
 router.get("/launch-contest/:id", auth, stockContestController.launchStockContest);
 router.get("/cancelStockContest/:id",auth,stockContestController.cancelContestStock);
-router.post("/updateStockFinalStatus/:id/:status", auth, stockContestController.updateStockFinalStatus);
+router.post("/updateStockFinalStatus/:id/:status", auth, stockContestController.updateStockFinalStatus);  
+
 
 // ---------------------------------Stocks---------------------------------------------------------
 router.get("/viewStocks", auth, stockController.viewStock);
