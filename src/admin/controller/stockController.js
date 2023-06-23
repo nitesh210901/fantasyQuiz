@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
 // const stocksOfCategoryModel = require("../../models/stocksOfCategoryModel");
 const stockCategoryModel = require("../../models/stockcategoryModel");
+const stockContestModel = require("../../models/stockContestModel");
 const stockModel = require("../../models/stockModel");
 
 class stockCategory {
@@ -12,6 +14,8 @@ class stockCategory {
             addStockCategoryPage: this.addStockCategoryPage.bind(this),
             viewCategoryStockDatabale: this.viewCategoryStockDatabale.bind(this),
             enableDisableStock: this.enableDisableStock.bind(this),
+            showStockFinalResult: this.showStockFinalResult.bind(this),
+            showStockResulTable: this.showStockResulTable.bind(this),
         }
     }
 
@@ -27,6 +31,19 @@ class stockCategory {
           res.redirect("/");
       }
   }
+
+  async showStockFinalResult(req, res) {
+    try {
+        res.locals.message = req.flash();
+        let name = req.query.name;
+        const stockData = await stockContestModel.find({launch_status:'launched', status:'started', final_status:'pending'});
+        res.render("stockManager/finalStockResult", { sessiondata: req.session.data, name, stockData});
+
+    } catch (error) {
+        req.flash('error', 'Something went wrong please try again');
+        res.redirect("/");
+    }
+}
 
   async viewStock(req, res) {
       try {
@@ -252,6 +269,193 @@ class stockCategory {
     }
 }
 
+async showStockResulTable(req, res, next) {
+  try {
+
+    let condition = {};
+    // condition = {"fantasy_type":req.query.fantasy_type, "launch_status":"launched", "status":"started" , final_status:"pending"};
+
+    stockContestModel.countDocuments({condition}).exec((err, rows) => {
+      let totalFiltered = rows;
+      let data = [];
+      let count = 1;
+
+      stockContestModel.find(condition).exec((err, rows1) => {
+        rows1.forEach(async (doc) => {
+         console.log('++++++++++++++++++=',doc)
+          let dateFormat = moment(`${doc.start_date}`, "YYYY-MM-DD HH:mm:ss");
+          let day = dateFormat.format("dddd");
+          let date = dateFormat.format("YYYY-MM-DD");
+          let time = dateFormat.format("hh:mm:ss a");
+          let contestStatus = "";
+          // console.log("-------------doc.status -------------------",doc.status ,"-----------doc.name----------",doc.name)
+          if (doc.status != "notstarted") {
+            if (doc.final_status == "pending") {
+              contestStatus = `<div class="row">
+                                              <div class="col-12 my-1">
+                                                  <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this match?')">
+                                                      Is Abandoned
+                                                      &nbsp;
+                                                      <i class="fad fa-caret-right"></i>
+                                                  </a>
+                                              </div>
+                                              <div class="col-12 my-1">
+                                                  <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this match?')">
+                                                      Is Canceled
+                                                      &nbsp;
+                                                      <i class="fad fa-caret-right"></i>
+                                                  </a>
+                                              </div>
+                                          </div>`;
+            } else if (doc.final_status == "IsReviewed") {
+              contestStatus = `<div class="row">
+                                      <div class="col-12 my-1">
+                                          <a class="text-warning text-decoration-none font-weight-600" href="">
+                                              Is Reviewed
+                                              &nbsp;
+                                              <i class="fad fa-caret-right"></i>
+                                          </a>
+                                      </div>
+                                      <div class="col-12 my-1">
+                                          <a class="text-success text-decoration-none font-weight-600 pointer" data-toggle="modal" data-target="#keys${count}">
+                                              Is Winner Declared
+                                              &nbsp;
+                                              <i class="fad fa-caret-right"></i>
+                                          </a>
+                                      </div>
+                                      <div class="col-12 my-1">
+                                          <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this match?')">
+                                              Is Abandoned
+                                              &nbsp;
+                                              <i class="fad fa-caret-right"></i>
+                                          </a>
+                                      </div>
+                                      <div class="col-12 my-1">
+                                          <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this match?')">
+                                              Is Canceled
+                                              &nbsp;
+                                              <i class="fad fa-caret-right"></i>
+                                          </a>
+                                      </div>
+                                  </div>
+                                  
+                              <div id="keys${count}" class="modal fade" role="dialog" >
+                              <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable  w-100 h-100">
+                                  <div class="modal-content">
+                                  <div class="modal-header">
+                                      <h4 class="modal-title">IsWinnerDeclared</h4>
+                                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                  </div>
+                                  <div class="modal-body abcd">
+                                      <form action="/updateMatchFinalStatus/${doc._id}/winnerdeclared" method="post">
+                                      <div class="col-md-12 col-sm-12 form-group">
+                                      <label> Enter Your Master Password </label>
+                                      
+                                      <input type="hidden"  name="series" value="${doc.series}">
+                                      <input type="password"  name="masterpassword" class="form-control form-control-solid" placeholder="Enter password here">
+                                      </div>
+                                      <div class="col-auto text-right ml-auto mt-4 mb-2">
+                                      <button type="submit" class="btn btn-sm btn-success text-uppercase "><i class="far fa-check-circle"></i>&nbsp;Submit</button>
+                                      </div>
+                                      </form>
+                                  </div>
+                                  <div class="modal-footer">
+                                      <button type="button" class="btn btn-sm btn-default" data-dismiss="modal" >Close</button>
+                                  </div>
+                                  </div>
+                              </div>
+                              </div>`;
+            } else if (doc.final_status == "winnerdeclared") {
+              contestStatus = `<div class="row">
+                                  <div class="col-12 my-1">
+                                      <span class="text-success text-decoration-none font-weight-600 pointer" data-toggle="modal" data-target="#keys4">
+                                          Winner Declared
+                                          &nbsp;
+                                      </span>
+                                  </div>
+                              </div>`;
+            } else {
+              contestStatus = ``;
+            }
+          } else {
+            contestStatus = "";
+            contestStatus = `<div class="row">
+                              <div class="col-12 my-1">
+                                  <span class="text-danger text-decoration-none font-weight-600">
+                                      Not Started
+                                      &nbsp;
+                                  </span>
+                              </div>
+                          </div>
+                          <div class="col-12 my-1">
+                                          <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this match?')">
+                                              Is Canceled
+                                              &nbsp;
+                                              <i class="fad fa-caret-right"></i>
+                                          </a>
+                                      </div>`
+          }
+          if(doc.final_status == 'IsCanceled'){
+            contestStatus = ``;
+          }
+
+
+          // ---------------quiz----------
+
+         
+          data.push({
+            count: count,
+            matches: `<div class="row">
+                              <div class="col-12 my-1">
+                                  <a class="text-decoration-none text-secondary font-weight-600 fs-16" href="/match-score/${doc._id}">
+                                      ${doc.contest_name} 
+                                      &nbsp; 
+                                      <i class="fad fa-caret-right"></i>
+                                  </a>
+                              </div>
+                              <div class="col-12 my-1">
+                                  <span class="text-dark">${day},</span>
+                                  <span class="text-warning">${date}</span>
+                                  <span class="text-success ml-2">${time}</span>
+                              </div>
+                              <div class="col-12 my-1">
+                                  <a class="text-decoration-none text-secondary font-weight-600" href="/allcontests/${doc._id}">
+                                      Total Contest  
+                                      &nbsp; 
+                                      <i class="fad fa-caret-right"></i>
+                                  </a>
+                              </div>
+                              <div class="col-12 my-1">
+                                  <a class="text-decoration-none text-secondary font-weight-600" href="/allquiz/${doc._id}">
+                                      Total Quiz 
+                                      &nbsp; 
+                                      <i class="fad fa-caret-right"></i>
+                                  </a>
+                              </div>
+                              <div class="col-12 my-1">
+                                  <span class="text-decoration-none text-dark font-weight-600">
+                                      Match Status : ${doc.final_status}
+                                  </span>
+                              </div>
+                          </div>`,
+
+            contestStatus: contestStatus
+          });
+          count++;
+          if (count > rows1.length) {
+            let json_data = JSON.stringify({
+              data,
+            });
+            res.send(json_data);
+          }
+        });
+      });
+    });
+  } catch (error) {
+    console.log("error",error)
+    next(error);
+  }
+}
 
 
 }
