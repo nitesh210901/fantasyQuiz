@@ -271,7 +271,6 @@ class stockCategory {
 
 async showStockResulTable(req, res, next) {
   try {
-
     let condition = {};
     // condition = {"fantasy_type":req.query.fantasy_type, "launch_status":"launched", "status":"started" , final_status:"pending"};
 
@@ -282,25 +281,24 @@ async showStockResulTable(req, res, next) {
 
       stockContestModel.find(condition).exec((err, rows1) => {
         rows1.forEach(async (doc) => {
-         console.log('++++++++++++++++++=',doc)
           let dateFormat = moment(`${doc.start_date}`, "YYYY-MM-DD HH:mm:ss");
           let day = dateFormat.format("dddd");
           let date = dateFormat.format("YYYY-MM-DD");
           let time = dateFormat.format("hh:mm:ss a");
-          let contestStatus = "";
+          let constest_status = "";
           // console.log("-------------doc.status -------------------",doc.status ,"-----------doc.name----------",doc.name)
           if (doc.status != "notstarted") {
             if (doc.final_status == "pending") {
-              contestStatus = `<div class="row">
+              constest_status = `<div class="row">
                                               <div class="col-12 my-1">
-                                                  <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this match?')">
+                                                  <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this stock contest?')">
                                                       Is Abandoned
                                                       &nbsp;
                                                       <i class="fad fa-caret-right"></i>
                                                   </a>
                                               </div>
                                               <div class="col-12 my-1">
-                                                  <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this match?')">
+                                                  <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this stock contest?')">
                                                       Is Canceled
                                                       &nbsp;
                                                       <i class="fad fa-caret-right"></i>
@@ -308,7 +306,7 @@ async showStockResulTable(req, res, next) {
                                               </div>
                                           </div>`;
             } else if (doc.final_status == "IsReviewed") {
-              contestStatus = `<div class="row">
+              constest_status = `<div class="row">
                                       <div class="col-12 my-1">
                                           <a class="text-warning text-decoration-none font-weight-600" href="">
                                               Is Reviewed
@@ -324,14 +322,14 @@ async showStockResulTable(req, res, next) {
                                           </a>
                                       </div>
                                       <div class="col-12 my-1">
-                                          <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this match?')">
+                                          <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this stock contest?')">
                                               Is Abandoned
                                               &nbsp;
                                               <i class="fad fa-caret-right"></i>
                                           </a>
                                       </div>
                                       <div class="col-12 my-1">
-                                          <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this match?')">
+                                          <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this stock contest?')">
                                               Is Canceled
                                               &nbsp;
                                               <i class="fad fa-caret-right"></i>
@@ -343,15 +341,14 @@ async showStockResulTable(req, res, next) {
                               <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable  w-100 h-100">
                                   <div class="modal-content">
                                   <div class="modal-header">
-                                      <h4 class="modal-title">IsWinnerDeclared</h4>
+                                      <h4 class="modal-title">Stock IsWinnerDeclared</h4>
                                       <button type="button" class="close" data-dismiss="modal">&times;</button>
                                   </div>
                                   <div class="modal-body abcd">
-                                      <form action="/updateMatchFinalStatus/${doc._id}/winnerdeclared" method="post">
+                                      <form action="/updateStockFinalStatus/${doc._id}/winnerdeclared" method="post">
                                       <div class="col-md-12 col-sm-12 form-group">
                                       <label> Enter Your Master Password </label>
-                                      
-                                      <input type="hidden"  name="series" value="${doc.series}">
+                                    
                                       <input type="password"  name="masterpassword" class="form-control form-control-solid" placeholder="Enter password here">
                                       </div>
                                       <div class="col-auto text-right ml-auto mt-4 mb-2">
@@ -366,7 +363,7 @@ async showStockResulTable(req, res, next) {
                               </div>
                               </div>`;
             } else if (doc.final_status == "winnerdeclared") {
-              contestStatus = `<div class="row">
+              constest_status = `<div class="row">
                                   <div class="col-12 my-1">
                                       <span class="text-success text-decoration-none font-weight-600 pointer" data-toggle="modal" data-target="#keys4">
                                           Winner Declared
@@ -375,11 +372,11 @@ async showStockResulTable(req, res, next) {
                                   </div>
                               </div>`;
             } else {
-              contestStatus = ``;
+              constest_status = ``;
             }
           } else {
-            contestStatus = "";
-            contestStatus = `<div class="row">
+            constest_status = "";
+            constest_status = `<div class="row">
                               <div class="col-12 my-1">
                                   <span class="text-danger text-decoration-none font-weight-600">
                                       Not Started
@@ -388,7 +385,7 @@ async showStockResulTable(req, res, next) {
                               </div>
                           </div>
                           <div class="col-12 my-1">
-                                          <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelMatch/${doc.series}?matchkey=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this match?')">
+                                          <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this stock contest?')">
                                               Is Canceled
                                               &nbsp;
                                               <i class="fad fa-caret-right"></i>
@@ -396,7 +393,7 @@ async showStockResulTable(req, res, next) {
                                       </div>`
           }
           if(doc.final_status == 'IsCanceled'){
-            contestStatus = ``;
+            constest_status = ``;
           }
 
 
@@ -405,7 +402,7 @@ async showStockResulTable(req, res, next) {
          
           data.push({
             count: count,
-            matches: `<div class="row">
+            contest_name: `<div class="row">
                               <div class="col-12 my-1">
                                   <a class="text-decoration-none text-secondary font-weight-600 fs-16" href="/match-score/${doc._id}">
                                       ${doc.contest_name} 
@@ -439,7 +436,7 @@ async showStockResulTable(req, res, next) {
                               </div>
                           </div>`,
 
-            contestStatus: contestStatus
+            constest_status: constest_status
           });
           count++;
           if (count > rows1.length) {

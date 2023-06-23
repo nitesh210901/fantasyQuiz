@@ -60,7 +60,7 @@ include("../../partials/sideNav") %>
       </script>
 
       <div class="card mb-4">
-        <div class="card-header">Match Listing - All Matches</div>
+        <div class="card-header">Stock Contest Listing - All Stock Contest</div>
         <div class="card-body">
           <div class="datatable table-responsive">
             <table
@@ -69,18 +69,11 @@ include("../../partials/sideNav") %>
               width="100%"
               cellspacing="0"
             >
-              <input
-                type="hidden"
-                id="seriesID"
-                name="seriesID"
-                value=""
-              />
               <thead>
                 <tr>
                   <th>Sno.</th>
                   <th>ContestName</th>
                   <th>Contest Status</th>
-                  <th>ContestStatus</th>
                 </tr>
               </thead>
               <tfoot>
@@ -88,7 +81,6 @@ include("../../partials/sideNav") %>
                   <th>Sno.</th>
                   <th>ContestName</th>
                   <th>Contest Status</th>
-                  <th>ContestStatus</th>
                 </tr>
               </tfoot>
             </table>
@@ -118,13 +110,10 @@ include("../../partials/sideNav") %>
                 data: "count",
               },
               {
-                data: "matches",
+                data: "contest_name",
               },
               {
-                data: "matchStatus",
-              },
-              {
-                data: "contestStatus",
+                data: "constest_status",
               },
             ],
           });
