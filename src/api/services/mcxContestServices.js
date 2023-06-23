@@ -38,44 +38,69 @@ class mcxfantasyServices {
     
 
     async listMCXContest(req) {
-        try {
-            const { stock_contest_cat } = req.query;
-            let matchpipe = [];
-            let date = moment().format('YYYY-MM-DD HH:mm:ss');
-            let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
-            matchpipe.push({
-                $match: { fantasy_type: stock_contest_cat }
-            });
-            matchpipe.push({
-                $match: {
-                    $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
-                    final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
-                }
-            });
-
-            matchpipe.push({
-                $sort: {
-                    start_date: 1,
-                },
-            });
-            
-            matchpipe.push({
-                $sort: {
-                    match_order: 1
-                }
-            });
-
-
-            const result = await stockContestModel.aggregate(matchpipe);
-            result.sort(function (a, b) {
-                return b.match_order
-            });
-            if (result.length > 0) return result
-
-            else return [];
-        } catch (error) {
-            throw error;
+      try {
+        const { stock_contest_cat, stock_contest } = req.query;
+        await this.updateJoinedusers(req)
+        let matchpipe = [];
+        let date = moment().format('YYYY-MM-DD HH:mm:ss');
+        let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
+        matchpipe.push({
+          $match: { fantasy_type: stock_contest_cat }
+        });
+        if (stock_contest === "live") {
+          matchpipe.push({
+            $match: {
+              $and: [{ status: 'started' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } } ],
+              final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+            }
+          });
+        } else if (stock_contest === "upcoming") {
+          matchpipe.push({
+            $match: {
+              $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+              final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+            }
+          });
+        } else if (stock_contest === "completed") {
+          matchpipe.push({
+            $match: {
+              $and: [{ status: 'completed' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $gt: EndDate } }],
+              final_status: "winnerdeclared"
+            }
+          });
         }
+        matchpipe.push({
+          $sort: {
+            start_date: 1,
+          },
+        });
+  
+        matchpipe.push({
+          $sort: {
+            match_order: 1
+          }
+        });
+        const result = await stockContestModel.aggregate(matchpipe);
+        if (result.length > 0) {
+          return {
+            status: true,
+            message: "Stock Contest Fatch Successfully",
+            data: result
+          }
+        } else {
+          return {
+            status: false,
+            message: "Stock Contest Not Found",
+            data: []
+          }
+        }
+        // result.sort(function (a, b) {
+        //   return b.match_order
+        // });
+        // if (result.length > 0) return result
+      } catch (error) {
+        throw error;
+      }
     }
     async stockCreateTeam(req) {
         try {
@@ -674,93 +699,93 @@ class mcxfantasyServices {
     }
 
     async updateJoinedusers(req) {
-        try {
-            console.log("--updateJoinedusers----")
-            const query = {};
-            query.matchkey = req.query.matchkey
-            query.contest_type = 'Amount'
-            query.status = 'opened'
-            const matchchallengesData = await matchchallengesModel.find(query);
-            if (matchchallengesData.length > 0) {
-                for (let matchchallenge of matchchallengesData) {
-                    const totalJoinedUserInLeauge = await JoinLeaugeModel.find({ challengeid: mongoose.Types.ObjectId(matchchallenge._id) });
-                    if (matchchallenge.maximum_user == totalJoinedUserInLeauge.length) {
-                        const update = {
-                            $set: {
-                                'status': 'closed',
-                                'is_duplicated': 1,
-                                'joinedusers': totalJoinedUserInLeauge.length,
-                            },
-                        };
-                        // console.log("--matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1--",matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1)
-                        if (matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1) {
-                            let newmatchchallenge = {};
-                            // delete newmatchchallenge._id;
-                            // delete newmatchchallenge.createdAt;
-                            // delete newmatchchallenge.updatedAt;
-                            newmatchchallenge.joinedusers = 0;
-                            newmatchchallenge.contestid = matchchallenge.contestid
-                            newmatchchallenge.contest_cat = matchchallenge.contest_cat
-                            newmatchchallenge.challenge_id = matchchallenge.challenge_id
-                            newmatchchallenge.matchkey = matchchallenge.matchkey
-                            newmatchchallenge.fantasy_type = matchchallenge.fantasy_type
-                            newmatchchallenge.entryfee = matchchallenge.entryfee
-                            newmatchchallenge.win_amount = matchchallenge.win_amount
-                            newmatchchallenge.multiple_entryfee = matchchallenge.multiple_entryfee
-                            newmatchchallenge.expert_teamid = matchchallenge.expert_teamid
-                            newmatchchallenge.maximum_user = matchchallenge.maximum_user
-                            newmatchchallenge.status = matchchallenge.status
-                            newmatchchallenge.created_by = matchchallenge.created_by
-                            newmatchchallenge.contest_type = matchchallenge.contest_type
-                            newmatchchallenge.expert_name = matchchallenge.expert_name
-                            newmatchchallenge.contest_name = matchchallenge.contest_name || ''
-                            newmatchchallenge.amount_type = matchchallenge.amount_type
-                            newmatchchallenge.mega_status = matchchallenge.mega_status
-                            newmatchchallenge.winning_percentage = matchchallenge.winning_percentage
-                            newmatchchallenge.is_bonus = matchchallenge.is_bonus
-                            newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
-                            newmatchchallenge.pricecard_type = matchchallenge.pricecard_type
-                            newmatchchallenge.minimum_user = matchchallenge.minimum_user
-                            newmatchchallenge.confirmed_challenge = matchchallenge.confirmed_challenge
-                            newmatchchallenge.multi_entry = matchchallenge.multi_entry
-                            newmatchchallenge.team_limit = matchchallenge.team_limit
-                            newmatchchallenge.image = matchchallenge.image
-                            newmatchchallenge.c_type = matchchallenge.c_type
-                            newmatchchallenge.is_private = matchchallenge.is_private
-                            newmatchchallenge.is_running = matchchallenge.is_running
-                            newmatchchallenge.is_expert = matchchallenge.is_expert
-                            newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
-                            newmatchchallenge.matchpricecards = matchchallenge.matchpricecards
-                            newmatchchallenge.is_expert = matchchallenge.is_expert
-                            newmatchchallenge.team1players = matchchallenge.team1players
-                            newmatchchallenge.team2players = matchchallenge.team2players
-                            // console.log("---newmatchchallenge--",newmatchchallenge)
-                            let data = await matchchallengesModel.findOne({
-                                matchkey: matchchallenge.matchkey,
-                                fantasy_type: matchchallenge.fantasy_type,
-                                entryfee: matchchallenge.entryfee,
-                                win_amount: matchchallenge.win_amount,
-                                maximum_user: matchchallenge.maximum_user,
-                                joinedusers: 0,
-                                status: matchchallenge.status,
-                                is_duplicated: { $ne: 1 }
-                            });
-                            if (!data) {
-                                let createNewContest = new matchchallengesModel(newmatchchallenge);
-                                let mynewContest = await createNewContest.save();
-                            }
-                            // console.log("---createNewContest----",mynewContest)
-                        }
-                        await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(matchchallenge._id) }, update);
-                    }
-                }
-
-            }
-        } catch (error) {
-            throw error;
-        }
-
-    };
+      try {
+          console.log("--updateJoinedusers----")
+          const query = {};
+          query.fantasy_type = req.query.stock_contest_cat
+          query.stock_contest_cat = req.query.stock_contest_cat
+          query.contest_type = 'Amount'
+          query.status = 'opened'
+          const matchchallengesData = await stockContestModel.find(query);
+          if (matchchallengesData.length > 0) {
+              for (let matchchallenge of matchchallengesData) {
+                  const totalJoinedUserInLeauge = await joinStockLeagueModel.find({ contestId: mongoose.Types.ObjectId(matchchallenge._id) });
+                  if (matchchallenge.maximum_user == totalJoinedUserInLeauge.length) {
+                      const update = {
+                          $set: {
+                              'status': 'closed',
+                              'is_duplicated': 1,
+                              'joinedusers': totalJoinedUserInLeauge.length,
+                          },
+                      };
+                      // console.log("--matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1--",matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1)
+                      if (matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1) {
+                          let newmatchchallenge = {};
+                          // delete newmatchchallenge._id;
+                          // delete newmatchchallenge.createdAt;
+                          // delete newmatchchallenge.updatedAt;
+                          newmatchchallenge.joinedusers = 0;
+                          newmatchchallenge.contestId = matchchallenge.contestId
+                          newmatchchallenge.contest_cat = matchchallenge.contest_cat
+                          // newmatchchallenge.challenge_id = matchchallenge.challenge_id
+                          // newmatchchallenge.matchkey = matchchallenge.matchkey
+                          newmatchchallenge.fantasy_type = matchchallenge.fantasy_type
+                          newmatchchallenge.entryfee = matchchallenge.entryfee
+                          newmatchchallenge.win_amount = matchchallenge.win_amount
+                          newmatchchallenge.multiple_entryfee = matchchallenge.multiple_entryfee
+                          newmatchchallenge.expert_teamid = matchchallenge.expert_teamid
+                          newmatchchallenge.maximum_user = matchchallenge.maximum_user
+                          newmatchchallenge.status = matchchallenge.status
+                          newmatchchallenge.created_by = matchchallenge.created_by
+                          newmatchchallenge.contest_type = matchchallenge.contest_type
+                          newmatchchallenge.expert_name = matchchallenge.expert_name
+                          newmatchchallenge.contest_name = matchchallenge.contest_name || ''
+                          newmatchchallenge.amount_type = matchchallenge.amount_type
+                          newmatchchallenge.mega_status = matchchallenge.mega_status
+                          newmatchchallenge.winning_percentage = matchchallenge.winning_percentage
+                          newmatchchallenge.is_bonus = matchchallenge.is_bonus
+                          newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
+                          newmatchchallenge.pricecard_type = matchchallenge.pricecard_type
+                          newmatchchallenge.minimum_user = matchchallenge.minimum_user
+                          newmatchchallenge.confirmed_challenge = matchchallenge.confirmed_challenge
+                          newmatchchallenge.multi_entry = matchchallenge.multi_entry
+                          newmatchchallenge.team_limit = matchchallenge.team_limit
+                          newmatchchallenge.image = matchchallenge.image
+                          newmatchchallenge.c_type = matchchallenge.c_type
+                          newmatchchallenge.is_private = matchchallenge.is_private
+                          newmatchchallenge.is_running = matchchallenge.is_running
+                          newmatchchallenge.is_expert = matchchallenge.is_expert
+                          newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
+                          newmatchchallenge.matchpricecards = matchchallenge.matchpricecards
+                          newmatchchallenge.is_expert = matchchallenge.is_expert
+                          newmatchchallenge.team1players = matchchallenge.team1players
+                          newmatchchallenge.team2players = matchchallenge.team2players
+                          // console.log("---newmatchchallenge--",newmatchchallenge)
+                          let data = await stockContestModel.findOne({
+                              contestId: matchchallenge.contestId,
+                              fantasy_type: matchchallenge.fantasy_type,
+                              entryfee: matchchallenge.entryfee,
+                              win_amount: matchchallenge.win_amount,
+                              maximum_user: matchchallenge.maximum_user,
+                              joinedusers: 0,
+                              status: matchchallenge.status,
+                              is_duplicated: { $ne: 1 }
+                          });
+                          if (!data) {
+                              let createNewContest = new stockContestModel(newmatchchallenge);
+                              let mynewContest = await createNewContest.save();
+                          }
+                          // console.log("---createNewContest----",mynewContest)
+                      }
+                      await stockContestModel.updateOne({ _id: mongoose.Types.ObjectId(matchchallenge._id) }, update);
+                  }
+              }
+          }
+      } catch (error) {
+          throw error;
+      }
+  
+  };
 
     async getAllNewStock(req) {
         try {
