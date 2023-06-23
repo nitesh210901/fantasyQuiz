@@ -361,7 +361,7 @@ router.get("/save-current-stock-price", auth, stockController.saveCurrentPriceOf
 
 router.get('/getStockMyTeams', auth, stockController.getStockMyTeams);
 router.get('/point-calculation-stock', auth, stockController.updateResultStocks);
-
+router.get("live-stock-rank-leaderboard", auth, stockController.liveStockRanksLeaderboard)
 // -------------------------MCX Manager-------------------------
 router.get('/get-mcx-contest',  mcxController.listMCXContest);
 module.exports = router;
