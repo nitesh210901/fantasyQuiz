@@ -16,6 +16,7 @@ const randomizePlayerSelectionClassic = require('../admin/controller/randomizePl
 // const randomizePlayerSelectionBowling = require('../admin/controller/randomizePlayerSelectionBowling');
 // const randomizePlayerSelectionReverse = require('../admin/controller/randomizePlayerSelectionReverse');
 const autoWinnerDeclared = require('../admin/controller/resultController');
+const stockController = require('../api/controller/stockController');
 
 const adminModel = require('../models/adminModel');
 const stockModel = require('../models/stockModel');
@@ -234,6 +235,15 @@ exports.saveCurrentPriceOfStock = new CronJob("*/1 * * * *", async function () {
     try {
         console.log('<------ SaveCurrent stock ------>');
         stockContestService.saveCurrentPriceOfStock();
+    } catch (error) {
+        return error;
+    }
+})
+
+exports.saveStocks = new CronJob("0 0 * * *", async function () {
+    try {
+        console.log('<------ Save stocks ------>');
+        stockController.saveStocks();
     } catch (error) {
         return error;
     }
