@@ -3430,7 +3430,7 @@ for await (const rankData of rankArray) {
                     });
 
                     const transactiondata = {
-                        type: 'Contest Joining Fee',
+                        type: 'Quiz Joining Fee',
                         contestdetail: `${quiz.entryfee}`,
                         amount: quiz.entryfee,
                         total_available_amt: totalBalance - quiz.entryfee,
@@ -3480,7 +3480,7 @@ for await (const rankData of rankArray) {
                             capitalization: 'uppercase'
                         });
                         const transactiondata = {
-                            type: 'Quiz Contest Joining Fee',
+                            type: 'Quiz Joining Fee',
                             contestdetail: `${quiz.entryfee}`,
                             amount: quiz.entryfee,
                             total_available_amt: totalBalance - quiz.entryfee,
@@ -3527,7 +3527,7 @@ for await (const rankData of rankArray) {
                         });
 
                         const transactiondata = {
-                            type: 'Quiz Contest Joining Fee',
+                            type: 'Quiz Joining Fee',
                             contestdetail: `${quiz.entryfee}`,
                             amount: quiz.entryfee,
                             total_available_amt: totalBalance - quiz.entryfee,
@@ -3675,7 +3675,7 @@ for await (const rankData of rankArray) {
                         capitalization: 'uppercase'
                     });
                     const transactiondata = {
-                        type: 'Contest Joining Fee',
+                        type: 'Quiz Joining Fee',
                         contestdetail: `${quiz.entryfee}`,
                         amount: quiz.entryfee,
                         total_available_amt: totalBalance - quiz.entryfee,
@@ -3698,7 +3698,7 @@ for await (const rankData of rankArray) {
                     // ----------------------------------------------------------------------------------------------------------------------
 
                     return {
-                        message: 'Contest Joined',
+                        message: 'Quiz Joined',
                         status: true,
                         data: {
                             joinedusers: joinedLeaugesCount,
