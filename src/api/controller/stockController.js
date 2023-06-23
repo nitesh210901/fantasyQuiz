@@ -4,7 +4,7 @@ const stockModel = require('../../models/stockModel');
 const stockContestService = require("../services/stockContestService");
 const axios = require('axios');
 
-class matchController {
+class stockController {
 
     constructor() {
 
@@ -27,6 +27,7 @@ class matchController {
             getAllStockWithAllSelector: this.getAllStockWithAllSelector.bind(this),
             saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
             liveStockRanksLeaderboard: this.liveStockRanksLeaderboard.bind(this),
+            getStockUsableBalance: this.getStockUsableBalance.bind(this),
 
         }
     }
@@ -267,5 +268,15 @@ class matchController {
             next(error);
         }
     }
+
+    async getStockUsableBalance(req, res, next) {
+        try {
+            // console.log(`here`, req.user._id);
+            const data = await stockContestService.getStockUsableBalance(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
+            next(error);
+        }
+    }
 }
-module.exports = new matchController();
+module.exports = new stockController();
