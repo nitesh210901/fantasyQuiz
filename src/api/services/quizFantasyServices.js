@@ -2684,6 +2684,7 @@ class quizfantasyServices {
         }
 
     };
+    
     async getAllNewContests(req) {
         try {
             await this.updateJoinedusers(req);

@@ -286,6 +286,7 @@ router.post("/add-edit-price-card-Post",auth, upload.single("image"), challenger
 router.get("/deleteMatchPriceCard/:id", auth, getUrl, challengersController.deleteMatchPriceCard);
 router.post('/add-edit-price-card-Post-byPercentage', auth, challengersController.addEditPriceCardPostbyPercentage);
 router.get("/contestcancel/:MatchChallengerId",auth,challengersController.contestCancel);
+router.get("/quizcancel/:QuidId",auth,QuizController.quizCancel);
 router.post("/joined_bot_user/:id",challengersController.joinedBotUser);
 
 // ------------------------------exports contests----------------------
