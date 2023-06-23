@@ -4,7 +4,7 @@ const stockContestModel = require('../../models/stockContestModel');
 const stockCategoryModel = require("../../models/stockcategoryModel")
 const stockContestCategoryModel = require('../../models/stockContestCategory');
 
-class challengersController {
+class stockContestController {
     constructor() {
         return {
             viewStockContestPage: this.viewStockContestPage.bind(this),
@@ -21,6 +21,8 @@ class challengersController {
             editStockContestPage: this.editStockContestPage.bind(this),
             editStockContestData: this.editStockContestData.bind(this),
             launchStockContest: this.launchStockContest.bind(this),
+            cancelContestStock: this.cancelContestStock.bind(this),
+            updateStockFinalStatus: this.updateStockFinalStatus.bind(this),
         }
     }
    
@@ -335,6 +337,77 @@ class challengersController {
             throw error;
         }
     }
+
+    async cancelContestStock(req, res, next) {
+        try {
+          let dataResponse = await stockContestService.cancelContestStock(req);
+          // res.send(dataResponse)
+          if (dataResponse.status == true) {
+            req.flash("success", dataResponse.message);
+            res.redirect(`/match-details/${req.params.id}`);
+          } else if (dataResponse.status == false) {
+            req.flash("error", dataResponse.message);
+            res.redirect(`/match-details/${req.params.id}`);
+          }
+        } catch (error) {
+          req.flash('error', 'something is wrong please try again letter');
+          res.redirect('/');
+        }
+    }
+
+    async updateStockFinalStatus(req, res, next) {
+        try {
+          res.locals.message = req.flash();
+          if (req.params.status == "winnerdeclared") {
+            if (
+              req.body.masterpassword &&
+              req.body.masterpassword == req.session.data.masterpassword
+            ) {
+              const getResult = await resultServices.distributeWinningAmount(req);//need to check becouse crown is remove
+    
+              let updatestatus = await listMatchesModel.updateOne(
+                { _id: mongoose.Types.ObjectId(req.params.id) },
+                {
+                  $set: {
+                    final_status: req.params.status,
+                  },
+                }
+              );
+              req.flash("success", `Match ${req.params.status} successfully`);
+              return res.redirect(`/match-details/${req.body.series}`);
+            } else {
+              req.flash("error", "Incorrect masterpassword");
+              res.redirect(`/match-details/${req.body.series}`);
+            }
+          } else if (
+            req.params.status == "IsAbandoned" ||
+            req.params.status == "IsCanceled"
+          ) {
+            let reason = "";
+            if (req.params.status == "IsAbandoned") {
+              reason = "Stock Contest abandoned";
+            } else {
+              reason = "Stock Contest canceled";
+            }
+            const getResult = await stockContestService.allRefundAmount(req, reason);
+            await stockContestService.updateOne(
+              { _id: mongoose.Types.ObjectId(req.params.id) },
+              {
+                $set: {
+                  final_status: req.params.status,
+                },
+              }
+            );
+            req.flash("success", `Stock Contest ${req.params.status} successfully`);
+          }
+    
+          res.redirect(`/match-details/${req.body.series}`);
+          // res.send({status:true});
+        } catch (error) {
+          req.flash('error', 'Something went wrong please try again');
+          res.redirect("/");
+        }
+      }
     
 }
-module.exports = new challengersController();
+module.exports = new stockContestController();

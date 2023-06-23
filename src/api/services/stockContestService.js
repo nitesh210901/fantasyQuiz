@@ -15,9 +15,6 @@ const stockLeaderBoardModel = require('../../models/stockLeaderboardModel');
 const stockModel = require('../../models/stockModel');
 const { test } = require('../../utils/websocketKiteConnect');
 const { pipeline } = require('stream');
-
-
-
 class overfantasyServices {
   constructor() {
     return {

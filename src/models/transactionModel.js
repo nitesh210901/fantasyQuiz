@@ -40,6 +40,11 @@ let Transaction = new Schema({
         ref: 'matchchallenge', //MatchChallenge,
         index:true
     },
+    stockContestId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'stock_contest', //MatchChallenge,
+        index:true
+    },
     quizId: {
         type: mongoose.Types.ObjectId,
         ref: 'quiz', //quiz,
