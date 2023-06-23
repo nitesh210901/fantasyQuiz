@@ -785,7 +785,7 @@ class overfantasyServices {
 
   async getAllStockWithAllSelector(req) {
     try {
-      const data = await stockModel.find().limit(50)
+      const data = await stockModel.find({isEnable:true}).limit(50)
       if (data.length > 0) {
         return {
           message: 'All Stock With All Selectors Cateories',
@@ -1569,11 +1569,12 @@ class overfantasyServices {
               const startDate = ele.start_date;
               const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
               const dateFormat  = moment().format('YYYY/MM/DD HH:mm');
-              console.log("dateFormat",dateFormat);
-
+              let matchStatus = {};
+              if(ele.start_date >= dateFormat) matchStatus.status = 'started';
               if(ele.EndDate === dateFormat){
-                  await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, {status:'completed', final_status:'completed'});
+                matchStatus.final_status = 'IsReviewed';
               }
+              await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, {final_status:'completed'});
               
               let total = 0;
           
@@ -1773,7 +1774,7 @@ class overfantasyServices {
         const stockData = await stockModel.find({ isEnable: true });
       
         const headers = {
-          "Authorization": "token 74f8oggch3zuubyp:MwZ6cmx0cQxzS6WBile8U7lWHlFlrclI"
+          "Authorization": "token 74f8oggch3zuubyp:kBSpoIJAgnNPmRXahfb8g1OxPuris7nk"
         };
       
         const formattedDate = moment().format('YYYY-MM-DD+HH:mm');
@@ -1932,6 +1933,19 @@ class overfantasyServices {
             'getcurrentrank': 1
           }
         },
+        {
+          '$setWindowFields':{
+              'partitionBy': "",
+              'sortBy': {
+                'points': -1,
+              },
+              'output': {
+                'rank': {
+                  '$rank': {},
+                },
+              },
+          }
+      },
         {
           '$facet': {
             'data': [
