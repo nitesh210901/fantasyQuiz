@@ -124,11 +124,11 @@ class challengersService {
                    }
                     let start_date
                     if (req.body.start_date) {
-                    start_date = moment(req.body.start_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
+                    start_date = moment(req.body.start_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD HH:mm:ss');
                     }
                     let end_date
                     if (req.body.end_date) {
-                     end_date = moment(req.body.end_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
+                     end_date = moment(req.body.end_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD HH:mm:ss');
                     }
                     data.contest_type = req.body.contest_type;
                     data.fantasy_type = req.body.stock_contest_cat;
