@@ -276,8 +276,8 @@ class quizController {
           res.locals.message = req.flash();
           let curTime = moment().format("YYYY-MM-DD HH:mm:ss");
           //   const listmatch = await listMatchModel.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime } ,isQuiz:1}, { name: 1 });  
-            const listmatch = await listMatchModel.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime }}, { name: 1 });  
-            const data = await quizServices.editQuiz(req);
+          const data = await quizServices.editQuiz(req);
+          const listmatch = await listMatchModel.findOne({_id:data.matchkey},{ name: 1 });  
             if (data) {
                 res.render("quiz/editQuiz", { sessiondata: req.session.data, msg: undefined, data ,listmatch});
             }

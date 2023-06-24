@@ -47,9 +47,7 @@
                                                             
                                                             <% if(typeof listmatch !=="undefined" && listmatch){%>
                                                                     <select class="form-control form-control-solid " title="Fantasy Type" id="matchkey_id" data-container="body" name="matchkey_id">
-                                                                        <% for(let match of listmatch){%>
-                                                                        <option value="<%= match._id %>" <%= match._id.toString() === data.matchkey.toString() ? "selected":"" %>><%= match.name%></option>
-                                                                        <%}%>
+                                                                        <option value="<%= listmatch._id %>" <%= listmatch._id.toString() === data.matchkey.toString() ? "selected":"" %>><%= listmatch.name%></option>
                                                                     </select>
                                                             <%}%>
                                                                     
