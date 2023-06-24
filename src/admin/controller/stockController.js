@@ -414,7 +414,7 @@ async showStockResulTable(req, res, next) {
                                   <span class="text-success ml-2">${time}</span>
                               </div>
                               <div class="col-12 my-1">
-                                  <a class="text-decoration-none text-secondary font-weight-600" href="/allcontests/${doc._id}">
+                                  <a class="text-decoration-none text-secondary font-weight-600" href="/total-joined-user/${doc._id}">
                                       Total Joined User ${doc.joinedusers} 
                                       &nbsp; 
                                       <i class="fad fa-caret-right"></i>
