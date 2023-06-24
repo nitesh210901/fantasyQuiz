@@ -163,7 +163,7 @@ class overfantasyServices {
       } else if (stock_contest === "completed") {
         matchpipe.push({
           $match: {
-            $and: [{ status: 'completed' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $gt: EndDate } }],
+            $and: [{ status: 'completed' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } }],
             final_status: "winnerdeclared"
           }
         });
@@ -1572,8 +1572,10 @@ class overfantasyServices {
               const dateFormat  = moment().format('YYYY/MM/DD HH:mm');
               let matchStatus = {};
               if(dateFormat >= ele.start_date) matchStatus['status'] = 'started';
-              if(ele.EndDate <= dateFormat){
+              
+              if(ele.end_date <= dateFormat){
                 matchStatus['final_status'] = 'IsReviewed';
+                matchStatus['status'] = 'completed';
               }
               const chkSave = await stockContestModel.findOneAndUpdate({_id:ele.contestId}, matchStatus , {upsert:true});
               let total = 0;
@@ -1750,6 +1752,16 @@ class overfantasyServices {
             'start_date': {
               '$getField': {
                 'field': 'start_date', 
+                'input': {
+                  '$arrayElemAt': [
+                    '$contestData', 0
+                  ]
+                }
+              }
+            },
+            'end_date': {
+              '$getField': {
+                'field': 'end_date', 
                 'input': {
                   '$arrayElemAt': [
                     '$contestData', 0
