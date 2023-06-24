@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 let stockcategorySchema = new Schema({
     fantasy_type: {
         type: String,
-        default: 'cricket'
     },
     name: {
         type: String,
@@ -17,6 +16,10 @@ let stockcategorySchema = new Schema({
     Order:{
         type: Number,
         default: ''
+    },
+    categoryType:{
+        type: String,
+        default:''
     },
     image: {
         type: String,

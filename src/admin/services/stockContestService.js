@@ -158,6 +158,7 @@ class challengersService {
                         data.winning_percentage = '0';
                     }
 
+
                     const insertChallengers = new stockContestModel(data);
                     const saveInsert = await insertChallengers.save();
                     if (saveInsert) {

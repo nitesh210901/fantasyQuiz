@@ -30,6 +30,9 @@ let JoinStockTeamSchema = new Schema({
         percentage: {
             type: Number,
             default:0
+        },
+        instrument_token:{
+            type:String
         }
     }],
    
