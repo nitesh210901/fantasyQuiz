@@ -151,7 +151,7 @@ class overfantasyServices {
       if (stock_contest === "live") {
         matchpipe.push({
           $match: {
-            $and: [{ status: 'started' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } } ],
+            $and: [{ status: 'started' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } }, { start_date: { $lt: EndDate } } ],
             final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
           }
         });
@@ -624,13 +624,13 @@ class overfantasyServices {
             } else {
               // console.log(`---------------------8TH IF/ELSE--------${chkContest.is_running}---------`);
               const gg = await stockContestModel.findOneAndUpdate({ contestId: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
-                status: 'opened',
+                status: 'notstarted',
                 joinedusers: joinedLeaugesCount,
               }, { new: true });
             }
           } else
             await stockContestModel.findOneAndUpdate({ contestId: stockContestId, _id: mongoose.Types.ObjectId(chkContest._id) }, {
-              status: 'opened',
+              status: 'notstarted',
               joinedusers: joinedLeaugesCount,
             }, { new: true });
           console.log('======================', i, jointeamId.length);
@@ -1538,6 +1538,7 @@ class overfantasyServices {
 
   async updateResultStocks(req) {
     try {
+
       const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
       let newData;
       const listContest = await stockContestModel.find({
@@ -1547,17 +1548,16 @@ class overfantasyServices {
         final_status: { $nin: ['winnerdeclared', 'IsCanceled'] },
         status: { $ne: 'completed' }
       });
-
       if (listContest.length > 0) {
         for (let index of listContest) {
           let matchTimings = index.start_date;
-          const currentDate1 = moment().format('YYYY-MM-DD');
+          const currentDate1 = moment().format('YYYY-MM-DD+HH:mm:ss');
 
           if (currentDate1 >= matchTimings) {
             const result = await this.getSockScoresUpdates(listContest);
           
             const headers = {
-              "Authorization": "token 74f8oggch3zuubyp:MwZ6cmx0cQxzS6WBile8U7lWHlFlrclI"
+              "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
             };
           
             await Promise.all(result.map(async (ele) => {
@@ -1573,12 +1573,11 @@ class overfantasyServices {
               const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
               const dateFormat  = moment().format('YYYY/MM/DD HH:mm');
               let matchStatus = {};
-              if(ele.start_date >= dateFormat) matchStatus.status = 'started';
-              if(ele.EndDate === dateFormat){
-                matchStatus.final_status = 'IsReviewed';
+              if(dateFormat >= ele.start_date) matchStatus['status'] = 'started';
+              if(ele.EndDate <= dateFormat){
+                matchStatus['final_status'] = 'IsReviewed';
               }
-              await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, {final_status:'completed'});
-              
+              const chkSave = await stockContestModel.findOneAndUpdate({_id:ele.contestId}, matchStatus , {upsert:true});
               let total = 0;
           
               await Promise.all(ele.stockTeam.map(async (stock) => {
@@ -1593,6 +1592,7 @@ class overfantasyServices {
                     return acc + (investment * closePrice / openPrice);
                   }, 0);
                 } catch (err) {
+                  console.log(err);
                   console.error(err);
                 }
               }));
@@ -1777,7 +1777,7 @@ class overfantasyServices {
         const stockData = await stockModel.find({ isEnable: true });
       
         const headers = {
-          "Authorization": "token 74f8oggch3zuubyp:kBSpoIJAgnNPmRXahfb8g1OxPuris7nk"
+          "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
         };
       
         const formattedDate = moment().format('YYYY-MM-DD+HH:mm');

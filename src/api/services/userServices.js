@@ -4180,7 +4180,7 @@ class UserServices {
       let mypipline = [];
       mypipline.push({
         $match: {
-          status: 'opened',
+          status: 'notstarted',
           end_date: { $gte: curDate },
           has_leaderboard: 'yes'
         }
