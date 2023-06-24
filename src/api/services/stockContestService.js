@@ -147,7 +147,7 @@ class overfantasyServices {
       if (stock_contest === "live") {
         matchpipe.push({
           $match: {
-            $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } } ],
+            $and: [{ status: 'started' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } } ],
             final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
           }
         });
