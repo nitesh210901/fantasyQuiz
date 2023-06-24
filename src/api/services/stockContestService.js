@@ -169,6 +169,16 @@ class overfantasyServices {
         });
       }
       matchpipe.push({
+        $lookup: {
+          
+            from: "join_stock_leagues",
+            localField: "_id",
+            foreignField: "contestId",
+            as: "joinData"
+          
+        },
+      });
+      matchpipe.push({
         $sort: {
           start_date: 1,
         },
@@ -179,6 +189,7 @@ class overfantasyServices {
           match_order: 1
         }
       });
+
       const result = await stockContestModel.aggregate(matchpipe);
       if (result.length > 0) {
         return {
@@ -1571,12 +1582,12 @@ class overfantasyServices {
               const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
               const dateFormat  = moment().format('YYYY/MM/DD HH:mm');
               let matchStatus = {};
-              if(dateFormat >= ele.start_date) matchStatus['status'] = 'started';
+              if(dateFormat >= ele.start_date){
+                matchStatus['status'] = 'started';
+                matchStatus['final_status'] = 'IsReviewed';
+
+              }
               
-              // if(ele.end_date <= dateFormat){
-              //   matchStatus['final_status'] = 'IsReviewed';
-              //   matchStatus['status'] = 'pending';
-              // }
               const chkSave = await stockContestModel.findOneAndUpdate({_id:ele.contestId}, matchStatus , {upsert:true});
               let total = 0;
           
