@@ -1573,10 +1573,10 @@ class overfantasyServices {
               let matchStatus = {};
               if(dateFormat >= ele.start_date) matchStatus['status'] = 'started';
               
-              if(ele.end_date <= dateFormat){
-                matchStatus['final_status'] = 'IsReviewed';
-                matchStatus['status'] = 'completed';
-              }
+              // if(ele.end_date <= dateFormat){
+              //   matchStatus['final_status'] = 'IsReviewed';
+              //   matchStatus['status'] = 'pending';
+              // }
               const chkSave = await stockContestModel.findOneAndUpdate({_id:ele.contestId}, matchStatus , {upsert:true});
               let total = 0;
           
