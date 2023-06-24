@@ -90,18 +90,17 @@ class stockCategory {
                 let searchName = req.query.searchName;
                 conditions.name = { $regex: new RegExp("^" + searchName.toLowerCase(), "i") }
             }
-            if(req.query.categoryType){
+            if(req.query.categoryType != 'null'){
                 conditions.categoryType = req.query.categoryType;
             }
-
             stockCategoryModel.countDocuments(conditions).exec((err, rows) => {
                 let totalFiltered = rows;
                 let data = [];
                 let count = 1;
                 stockCategoryModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 }).exec(async (err, rows1) => {
+
                     if (err) console.log(err);
                     for (let index of rows1) {
-                        
                         let image, leaderBoard, L_status, l_board;
                         if (index.image) {
                             image = `<img src="${index.image}" class="w-40px view_team_table_images h-40px rounded-pill">`
@@ -112,11 +111,8 @@ class stockCategory {
                         data.push({
                             'count': count,
                             'name': index.name,
-                            'sub_title': index.sub_title,
-                            'image': image,
-                            // 'leaderboard': L_status,
-                            "Order": index.Order,
                             "categoryType":index.categoryType,
+                            'image': image,
                             'action': ` 
                             <a class="btn w-35px h-35px mr-1 btn-orange text-uppercase btn-sm"
                             data-toggle="tooltip" title="Edit"
@@ -206,80 +202,80 @@ class stockCategory {
         }
     }
 
-    async stockCategoryTable(req, res, next) {
-        try {
-            let limit1 = req.query.length;
-            let start = req.query.start;
-            let sortObject = {},
-                dir, join
-            let conditions = {};
-            if (req.query.searchName) {
-                let searchName = req.query.searchName;
-                conditions.name = { $regex: new RegExp("^" + searchName.toLowerCase(), "i") }
-            }
-            stockCategoryModel.countDocuments(conditions).exec((err, rows) => {
-                let totalFiltered = rows;
-                let data = [];
-                let count = 1;
-                stockCategoryModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 }).exec(async (err, rows1) => {
+    // async stockCategoryTable(req, res, next) {
+    //     try {
+    //         let limit1 = req.query.length;
+    //         let start = req.query.start;
+    //         let sortObject = {},
+    //             dir, join
+    //         let conditions = {};
+    //         if (req.query.searchName) {
+    //             let searchName = req.query.searchName;
+    //             conditions.name = { $regex: new RegExp("^" + searchName.toLowerCase(), "i") }
+    //         }
+    //         stockCategoryModel.countDocuments(conditions).exec((err, rows) => {
+    //             let totalFiltered = rows;
+    //             let data = [];
+    //             let count = 1;
+    //             stockCategoryModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 }).exec(async (err, rows1) => {
 
-                    if (err) console.log(err);
-                    for (let index of rows1) {
+    //                 if (err) console.log(err);
+    //                 for (let index of rows1) {
 
-                        let image, leaderBoard, L_status, l_board;
-                        if (index.image) {
-                            image = `<img src="${index.image}" class="w-40px view_team_table_images h-40px rounded-pill">`
-                        } else {
-                            image = `<img src="/uploadImage/defaultImage.jpg" class="w-40px view_team_table_images h-40px rounded-pill">`
-                        }
-                        // if (index.has_leaderBoard == "yes") {
-                        //     L_status = `<span style="color:green;" >${index.has_leaderBoard.toUpperCase()}</span>`
-                        //     leaderBoard = `<span style="color:red;" >I</span>`
-                        //     l_board = 'no'
-                        // } else {
-                        //     leaderBoard = `<span style="color:red;" >A </span>`
-                        //     L_status = `<span style="color:red;" >${index.has_leaderBoard.toUpperCase()}</span>`
-                        //     l_board = 'yes'
-                        // }
-                        data.push({
-                            'count': count,
-                            'name': index.name,
-                            'sub_title': index.sub_title,
-                            'image': image,
-                            // 'leaderboard': L_status,
-                            "Order": index.Order,
-                            'action': ` 
-                            <a class="btn w-35px h-35px mr-1 btn-orange text-uppercase btn-sm"
-                            data-toggle="tooltip" title="Edit"
-                            href="/edit-stock-category?stockCatId=${index._id}"><i class="fas fa-pencil"></i>
-                        </a>
-                        <a class="btn w-35px h-35px mr-1 btn-danger text-uppercase btn-sm"
-                            data-toggle="tooltip" title="Delete"
-                            onclick="delete_sweet_alert('/delete-stock-category?stockCatId=${index._id}', 'Are you sure you want to delete this data?')">
-                            <i class="far fa-trash-alt"></i>
-                        </a>`
-                        });
-                        count++;
+    //                     let image, leaderBoard, L_status, l_board;
+    //                     if (index.image) {
+    //                         image = `<img src="${index.image}" class="w-40px view_team_table_images h-40px rounded-pill">`
+    //                     } else {
+    //                         image = `<img src="/uploadImage/defaultImage.jpg" class="w-40px view_team_table_images h-40px rounded-pill">`
+    //                     }
+    //                     // if (index.has_leaderBoard == "yes") {
+    //                     //     L_status = `<span style="color:green;" >${index.has_leaderBoard.toUpperCase()}</span>`
+    //                     //     leaderBoard = `<span style="color:red;" >I</span>`
+    //                     //     l_board = 'no'
+    //                     // } else {
+    //                     //     leaderBoard = `<span style="color:red;" >A </span>`
+    //                     //     L_status = `<span style="color:red;" >${index.has_leaderBoard.toUpperCase()}</span>`
+    //                     //     l_board = 'yes'
+    //                     // }
+    //                     data.push({
+    //                         'count': count,
+    //                         'name': index.name,
+    //                         'sub_title': index.sub_title,
+    //                         'image': image,
+    //                         // 'leaderboard': L_status,
+    //                         "Order": index.Order,
+    //                         'action': ` 
+    //                         <a class="btn w-35px h-35px mr-1 btn-orange text-uppercase btn-sm"
+    //                         data-toggle="tooltip" title="Edit"
+    //                         href="/edit-stock-category?stockCatId=${index._id}"><i class="fas fa-pencil"></i>
+    //                     </a>
+    //                     <a class="btn w-35px h-35px mr-1 btn-danger text-uppercase btn-sm"
+    //                         data-toggle="tooltip" title="Delete"
+    //                         onclick="delete_sweet_alert('/delete-stock-category?stockCatId=${index._id}', 'Are you sure you want to delete this data?')">
+    //                         <i class="far fa-trash-alt"></i>
+    //                     </a>`
+    //                     });
+    //                     count++;
 
-                        if (count > rows1.length) {
-                            let json_data = JSON.stringify({
-                                "recordsTotal": rows,
-                                "recordsFiltered": totalFiltered,
-                                "data": data
-                            });
-                            res.send(json_data);
+    //                     if (count > rows1.length) {
+    //                         let json_data = JSON.stringify({
+    //                             "recordsTotal": rows,
+    //                             "recordsFiltered": totalFiltered,
+    //                             "data": data
+    //                         });
+    //                         res.send(json_data);
 
-                        }
-                    }
-                });
-            });
+    //                     }
+    //                 }
+    //             });
+    //         });
 
 
 
-        } catch (error) {
-            throw error;
-        }
-    }
+    //     } catch (error) {
+    //         throw error;
+    //     }
+    // }
 
     async editStockCategory(req, res, next) {
         try {

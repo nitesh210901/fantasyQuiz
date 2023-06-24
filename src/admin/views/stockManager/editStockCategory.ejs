@@ -37,7 +37,7 @@
 <div class="card-header">Edit Contest Category</div>
 <!-- accept-charset="UTF-8" id="j-forms" -->
 <form method="POST" action="/edit-stock-category-data/<%=data._id %>"  class="card-body" enctype="multipart/form-data">
-  <input name="typename" type="hidden" value="stockCategory">
+  <!-- <input name="typename" type="hidden" value="stockCategory"> -->
 
 <div class="sbp-preview">
     <div class="sbp-preview-content">
@@ -58,37 +58,41 @@
             </div>
             <% } %>
 
-            <% if(data.sub_title) {%>
+            <% if(data.categoryType) {%>
             <div class="col-6">
                 <div class="form-group my-3">
-                    <label for="Sub Title*" class="control-label text-bold">Sub Title*</label>
-                   <input value="<%=data.sub_title %>" required=""  class="form-control form-control-solid" name="sub_title" type="text">
+                   <label for="Contest Category Name*" class="control-label text-bold">Stock Type*</label>
+                    <select class="form-control" id="categoryType"
+                    data-container="body" data-live-search="true"
+                    title="Select Stock Type" data-hide-disabled="true"
+                    name="categoryType" >
+                    <option disabled selected> Select Stock Type
+                    </option>
+                    <option value="NSE" <%= data.categoryType === "NSE"?'selected':"" %>>NSE</option>
+                    <option value="MCX" <%= data.categoryType === "MCX"?'selected':"" %>>MCX</option>
+                    <option value="COMMODITIES" <%= data.categoryType === "COMMODITIES"?'selected':"" %>>COMMODITIES</option>
+                </select>
                 </div>
             </div>
             <% }else{ %>
             <div class="col-6">
                 <div class="form-group my-3">
-                    <label for="Sub Title*" class="control-label text-bold">Sub Title*</label>
-                   <input required="" placeholder="Enter Sub Title" class="form-control form-control-solid" name="sub_title" type="text">
+                   <label for="Contest Category Name*" class="control-label text-bold">Stock Type*</label>
+                    <select class="form-control" id="category"
+                    data-container="body" data-live-search="true"
+                    title="Select Stock Type" data-hide-disabled="true"
+                    name="category" >
+                    <option disabled selected> Select Stock Type
+                    </option>
+                        <option value="NSE" <%= data.categoryType === "NSE"?'selected':"" %>>NSE</option>
+                        <option value="MCX" <%= data.categoryType === "MCX"?'selected':"" %>>MCX</option>
+                        <option value="COMMODITIES" <%= data.categoryType === "COMMODITIES"?'selected':"" %>>COMMODITIES</option>
+                </select>
                 </div>
             </div>
             <% } %>
 
-            <% if(data.Order) {%>
-                <div class="col-6">
-                    <div class="form-group my-3">
-                        <label for="Order*" class="control-label text-bold">Order*</label>
-                       <input value="<%=data.Order %>" required=""  class="form-control form-control-solid" name="Order" type="number">
-                    </div>
-                </div>
-                <% }else{ %>
-                <div class="col-6">
-                    <div class="form-group my-3">
-                        <label for="Order*" class="control-label text-bold">Order*</label>
-                       <input required="" placeholder="Enter Order" class="form-control form-control-solid" name="Order" type="number">
-                    </div>
-                </div>
-                <% } %>
+           
                 
             <div class="col-6">
                 <div class="avatar-upload col-3 position-relative">

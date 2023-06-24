@@ -65,8 +65,7 @@ class stockCategory {
                     console.log("....stock category.......", req.body, req.file)
                     let insertObj = {
                         name: req.body.name,
-                        sub_title: req.body.sub_title,
-                        Order:req.body.Order,
+                        categoryType: req.body.categoryType,
                     }
                     if (req.file) {
                         insertObj.image = `/${req.body.typename}/${req.file.filename}`

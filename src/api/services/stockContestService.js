@@ -142,7 +142,11 @@ class overfantasyServices {
       let date = moment().format('YYYY-MM-DD HH:mm:ss');
       let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
       matchpipe.push({
-        $match: { fantasy_type: stock_contest_cat }
+        $match: { 
+          fantasy_type: stock_contest_cat ,
+          $and: [{ status: 'notstarted' }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+            final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+        }
       });
       if (stock_contest === "live") {
         matchpipe.push({
