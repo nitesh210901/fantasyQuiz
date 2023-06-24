@@ -29,6 +29,7 @@ class challengersService {
             allRefundAmount: this.allRefundAmount.bind(this),
             refundprocess: this.refundprocess.bind(this),
             distributeWinningAmount: this.distributeWinningAmount.bind(this),
+            stockviewtransactions: this.stockviewtransactions.bind(this),
         }
     }
    
@@ -1524,6 +1525,20 @@ class challengersService {
             }
         }
         return true;
+    }
+
+    async stockviewtransactions(req) {
+        try {
+            const findTransactions = await TransactionModel.findOne({ userid: req.params.id });
+            if (findTransactions) {
+                return {
+                    status: true,
+                    data: findTransactions,
+                }
+            }
+        } catch (error) {
+           throw error;
+        }
     }
 }
 module.exports = new challengersService();
