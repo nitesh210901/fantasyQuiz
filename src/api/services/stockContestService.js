@@ -147,7 +147,7 @@ class overfantasyServices {
       if (stock_contest === "live") {
         matchpipe.push({
           $match: {
-            $and: [{ status: 'started' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } } ],
+            $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } } ],
             final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
           }
         });
@@ -202,7 +202,7 @@ class overfantasyServices {
 
   async stockCreateTeam(req) {
     try {
-      const { stock, teamnumber, contestId } = req.body;
+      const { stock, teamnumber, contestId, stock_type } = req.body;
       let stockArray = stock.map(item => item.stockId);
       const chkStockExist = await stockModel.find({ '_id': { $in: stockArray } });
 
@@ -256,7 +256,8 @@ class overfantasyServices {
       data['contestId'] = contestId;
       data['teamnumber'] = teamnumber;
       data['stock'] = stock;
-      data['type'] = "stock";
+      data['type'] = stock_type;
+      
       const joinTeam = await joinStockTeamModel.findOne({
         contestId: contestId,
         teamnumber: parseInt(teamnumber),

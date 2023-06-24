@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const contestCategoryModel = require("../../models/contestcategoryModel");
 const stockCategoryModel = require("../../models/stockcategoryModel");
 const stockModel = require("../../models/stockModel");
+const stockContestCategory = require('../../models/stockContestCategory');
 
 class stockCategory {
     constructor() {
@@ -83,29 +84,31 @@ class stockCategory {
         try {
             let limit1 = req.query.length;
             let start = req.query.start;
-            let sortObject = {},
-                dir, join
+
             let conditions = {};
             if (req.query.searchName) {
                 let searchName = req.query.searchName;
                 conditions.name = { $regex: new RegExp("^" + searchName.toLowerCase(), "i") }
             }
+            if(req.query.categoryType){
+                conditions.categoryType = req.query.categoryType;
+            }
+
             stockCategoryModel.countDocuments(conditions).exec((err, rows) => {
                 let totalFiltered = rows;
                 let data = [];
                 let count = 1;
                 stockCategoryModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 }).exec(async (err, rows1) => {
-
                     if (err) console.log(err);
                     for (let index of rows1) {
-
+                        
                         let image, leaderBoard, L_status, l_board;
                         if (index.image) {
                             image = `<img src="${index.image}" class="w-40px view_team_table_images h-40px rounded-pill">`
                         } else {
                             image = `<img src="/uploadImage/defaultImage.jpg" class="w-40px view_team_table_images h-40px rounded-pill">`
                         }
-                       
+                        
                         data.push({
                             'count': count,
                             'name': index.name,
@@ -113,6 +116,7 @@ class stockCategory {
                             'image': image,
                             // 'leaderboard': L_status,
                             "Order": index.Order,
+                            "categoryType":index.categoryType,
                             'action': ` 
                             <a class="btn w-35px h-35px mr-1 btn-orange text-uppercase btn-sm"
                             data-toggle="tooltip" title="Edit"
@@ -147,7 +151,9 @@ class stockCategory {
         try {
             res.locals.message = req.flash();
             let name = req.query.name;
-            res.render("stockManager/viewStockCategory", { sessiondata: req.session.data, name });
+            let category  = await stockContestCategory.find({name:{$ne:"CRICKET"}});
+            let catName = req.query.category;
+            res.render("stockManager/viewStockCategory", { sessiondata: req.session.data, name, category, catName  });
 
         } catch (error) {
             req.flash('error', 'Something went wrong please try again');

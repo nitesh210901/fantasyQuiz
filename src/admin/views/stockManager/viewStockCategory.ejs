@@ -47,12 +47,14 @@
                                             <div class="sbp-preview position-relative">
                                                 <div class="form-group mb-0">
                                                     <div class="row mx-0 align-items-end">
+                                                        <div>
 
-                                                        <div class="col-md">
+                                                        </div>
+                                                        <div class="col-md-6">
                                                             <div class="form-group my-3">
                                                                 <label for="Contest Name" class="text-bold">Category
                                                                     Name</label>
-                                                                <% if(name) {%>
+                                                                    <% if(name) {%>
                                                                     <input value="<%=name %>" id="name"
                                                                         class="form-control form-control-solid"
                                                                         name="name" type="text">
@@ -61,7 +63,21 @@
                                                                             id="name"
                                                                             class="form-control form-control-solid"
                                                                             name="name" type="text">
-                                                                        <% }%>
+                                                                    <% }%>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group my-3">
+                                                                  <select class="form-control mt-4" id="category"
+                                                                      data-container="body" data-live-search="true"
+                                                                      title="Select Stock Type" data-hide-disabled="true"
+                                                                      name="category" >
+                                                                      <option disabled selected> Select Stock Type
+                                                                      </option>
+                                                                          <option value="NSE" <%= catName === "NSE"?'selected':"" %>>NSE</option>
+                                                                          <option value="MCX" <%= catName === "MCX"?'selected':"" %>>MCX</option>
+                                                                          <option value="COMMODITIES" <%= catName === "COMMODITIES"?'selected':"" %>>COMMODITIES</option>
+                                                                  </select>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-auto text-right h-100 mb-3">
@@ -69,9 +85,10 @@
                                                                 class="btn btn-success  btn-sm rounded-pill"><i
                                                                     class="far fa-check-circle"></i>&nbsp;
                                                                 Search</button>
-                                                            <a href="/viewStockCategory"
+                                                                <a href="/viewStockCategory"
                                                                 class='btn btn-warning  btn-sm rounded-pill'><i
-                                                                    class="fa fa-undo"></i>&nbsp;Reset</a>
+                                                                    class="fa fa-undo"></i>&nbsp;Reset
+                                                                </a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -89,15 +106,15 @@
 
 
                                 <div class="datatable table-responsive">
-                                    <table class="table table-bordered table-hover text-nowrap"
-                                        id="stockCategoryTable" width="100%" cellspacing="0">
+                                    <table class="table table-bordered table-hover text-nowrap" id="stockCategoryTable"
+                                        width="100%" cellspacing="0">
                                         <thead>
                                             <tr>
                                                 <th>Sno.</th>
                                                 <th>Stock Category Name</th>
                                                 <!-- <th>Sub Title</th> -->
+                                                <th> Category Type</th>
                                                 <th>Image</th>
-                                                <!-- <th>leaderboard</th> -->
                                                 <!-- <th>Order</th> -->
                                                 <th>Action</th>
                                             </tr>
@@ -110,8 +127,8 @@
                                                 <th>Sno.</th>
                                                 <th>Stock Category Name</th>
                                                 <!-- <th>Sub Title</th> -->
+                                                <th> Category Type</th>
                                                 <th>Image</th>
-                                                <!-- <th>leaderboard</th> -->
                                                 <!-- <th>Order</th> -->
                                                 <th>Action</th>
                                             </tr>
@@ -124,6 +141,7 @@
                         <script type="text/javascript">
                             $(document).ready(function () {
                                 let searchName = $("#name").val();
+                                let categoryType = $("#category").val();
                                 $.fn.dataTable.ext.errMode = 'none';
                                 $('#stockCategoryTable').DataTable({
                                     searching: false,
@@ -131,7 +149,7 @@
                                         zeroRecords: "No records to display",
                                     },
                                     ajax: {
-                                        url: `/stock-Category-table?searchName=${searchName}`,
+                                        url: `/stock-Category-table?searchName=${searchName}&categoryType=${categoryType}`,
                                         type: 'post',
                                         dataSrc: 'data',
                                         error: function () {
@@ -149,9 +167,9 @@
                                         {
                                             data: "name"
                                         },
-                                        // {
-                                        //     data: "sub_title"
-                                        // },
+                                        {
+                                            data: "categoryType"
+                                        },
                                         {
                                             data: "image"
                                         },

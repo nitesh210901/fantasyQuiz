@@ -23,6 +23,7 @@ class stockCategory {
       try {
           res.locals.message = req.flash();
           let name = req.query.name;
+          console.log("dedododkodkodkos")
           const categories = await stockCategoryModel.find({}, {name:1});
           res.render("stockManager/addCategoryStockCategory", { sessiondata: req.session.data, name, categories});
 
@@ -404,11 +405,8 @@ async showStockResulTable(req, res, next) {
             count: count,
             contest_name: `<div class="row">
                               <div class="col-12 my-1">
-                                  <a class="text-decoration-none text-secondary font-weight-600 fs-16" href="/match-score/${doc._id}">
-                                      ${doc.contest_name} 
+                                      <span class="text-decoration-none text-secondary font-weight-600 fs-16">${doc.contest_name}</span> 
                                       &nbsp; 
-                                      <i class="fad fa-caret-right"></i>
-                                  </a>
                               </div>
                               <div class="col-12 my-1">
                                   <span class="text-dark">${day},</span>

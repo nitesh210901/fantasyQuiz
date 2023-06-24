@@ -26,6 +26,7 @@ class stockCategory {
             }
             let insertObj = {
                 name: req.body.name,
+                categoryType:req.body?.categoryType,
                 sub_title: req.body.sub_title,
                 Order:req.body.Order,
             }
