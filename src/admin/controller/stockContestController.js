@@ -369,6 +369,7 @@ class stockContestController {
                 {
                   $set: {
                     final_status: req.params.status,
+                    status:"completed"
                   },
                 }
               );
