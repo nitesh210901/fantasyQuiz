@@ -308,7 +308,6 @@ class resultController {
           start_date: -1,
         },
       });
-      console.log(condition,"llll");
       listMatchesModel.countDocuments(condition).exec((err, rows) => {
         let totalFiltered = rows;
         let data = [];
