@@ -187,13 +187,11 @@ class challengersService {
 
     async deleteMultiStockContest(req) {
         try {
-            const deleteChallenger = await stockContestModel.deleteOne({ _id: req.body.deletedId });
-            if (deleteChallenger.deletedCount == 1) {
-                const deletePriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: req.query.globelContestsId });
-                return true;
-            } else {
-                return false;
+            let { deletedId } = req.body
+            for(let i of req.body){
+                const deleteChallenger = await stockContestModel.deleteOne({ _id: i });
             }
+            return true;
 
         } catch (error) {
             throw error;
