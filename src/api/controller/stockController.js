@@ -62,7 +62,11 @@ class stockController {
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
-                return res.status(200).json(Object.assign({ success: true }, data));
+                return res.status(200).json(Object.assign(
+            {   message: 'All Contest Data',
+                status: true,
+                data:data
+            }))
             }
         } catch (error) {
             console.log(error);

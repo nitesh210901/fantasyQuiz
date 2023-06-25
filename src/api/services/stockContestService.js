@@ -38,7 +38,6 @@ class overfantasyServices {
       updateResultStocks: this.updateResultStocks.bind(this),
       updateJoinedusers: this.updateJoinedusers.bind(this),
       getStockUsableBalance: this.getStockUsableBalance.bind(this),
-
       liveStockRanksLeaderboard: this.liveStockRanksLeaderboard.bind(this),
       // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
       // getMyStockTeam: this.getMyStockTeam.bind(this),
@@ -143,41 +142,44 @@ class overfantasyServices {
       let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
       matchpipe.push({
         $match: { 
-          fantasy_type: stock_contest_cat
+          fantasy_type: stock_contest_cat,
         }
       });
 
       
-      if (stock_contest === "live") {
-        matchpipe.push({
-          $match: {
-            $and: [{ status: 'started' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } } ],
-            final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
-          }
-        });
-      } else if (stock_contest === "upcoming") {
-        matchpipe.push({
-          $match: {
-            $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
-            final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
-          }
-        });
-      } else if (stock_contest === "completed") {
-        matchpipe.push({
-          $match: {
-            $and: [{ status: 'completed' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } }],
-            final_status: "winnerdeclared"
-          }
-        });
-      }
+      // if (stock_contest === "live") {
+      //   matchpipe.push({
+      //     $match: {
+      //       $and: [{ status: 'started' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } } ],
+      //       final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+      //     }
+      //   });
+      // } else if (stock_contest === "upcoming") {
+      //   matchpipe.push({
+      //     $match: {
+      //       $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+      //       final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+      //     }
+      //   });
+      // } else if (stock_contest === "completed") {
+      //   matchpipe.push({
+      //     $match: {
+      //       $and: [{ status: 'completed' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } }],
+      //       final_status: "winnerdeclared"
+      //     }
+      //   });
+      // }
 
-      matchpipe.push({
-        $match: {
-            $and: [{ status: 'notstarted' }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
-            final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
-        }
-      });
+      // if(stock_contest !== "completed"){
+      //   matchpipe.push({
+      //     $match: {
+      //         $and: [{ status: 'notstarted' }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+      //         final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+      //     }
+      // });
+      // }
       
+
       matchpipe.push({
         $lookup: {
           
@@ -222,6 +224,10 @@ class overfantasyServices {
       throw error;
     }
   }
+
+
+
+
 
   async stockCreateTeam(req) {
     try {
