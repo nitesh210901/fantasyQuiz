@@ -39,100 +39,102 @@ class overfantasyServices {
       updateJoinedusers: this.updateJoinedusers.bind(this),
       getStockUsableBalance: this.getStockUsableBalance.bind(this),
       liveStockRanksLeaderboard: this.liveStockRanksLeaderboard.bind(this),
-      // getJoinedContestDetails: this.getJoinedContestDetails.bind(this),
-      // getMyStockTeam: this.getMyStockTeam.bind(this),
+      Newjoinedcontest: this.Newjoinedcontest.bind(this),
+      NewjoinedcontestLive: this.NewjoinedcontestLive.bind(this),
+      AllCompletedContest: this.AllCompletedContest.bind(this),
+
     }
   }
 
   async updateJoinedusers(req) {
     try {
-        console.log("--updateJoinedusers----")
-        const query = {};
-        query.matchkey = req.query.stock_contest_cat
-        query.fantasy_type = req.query.stock_contest_cat
-        query.stock_contest_cat = req.query.stock_contest_cat
-        query.contest_type = 'Amount'
-        query.status = 'opened'
-        const contestData = await stockContestModel.find(query);
-        if (contestData.length > 0) {
-            for (let matchchallenge of contestData) {
-                const totalJoinedUserInLeauge = await joinStockLeagueModel.find({ contestId: mongoose.Types.ObjectId(matchchallenge._id) });
-                if (matchchallenge.maximum_user == totalJoinedUserInLeauge.length) {
-                    const update = {
-                        $set: {
-                            'status': 'closed',
-                            'is_duplicated': 1,
-                            'joinedusers': totalJoinedUserInLeauge.length,
-                        },
-                    };
-                    // console.log("--matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1--",matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1)
-                    if (matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1) {
-                        let newmatchchallenge = {};
-                        // delete newmatchchallenge._id;
-                        // delete newmatchchallenge.createdAt;
-                        // delete newmatchchallenge.updatedAt;
-                        newmatchchallenge.joinedusers = 0;
-                        newmatchchallenge.contestId = matchchallenge.contestId
-                        newmatchchallenge.contest_cat = matchchallenge.contest_cat
-                        newmatchchallenge.challenge_id = matchchallenge.challenge_id
-                        newmatchchallenge.matchkey = matchchallenge.matchkey
-                        newmatchchallenge.fantasy_type = matchchallenge.fantasy_type
-                        newmatchchallenge.entryfee = matchchallenge.entryfee
-                        newmatchchallenge.win_amount = matchchallenge.win_amount
-                        newmatchchallenge.multiple_entryfee = matchchallenge.multiple_entryfee
-                        newmatchchallenge.expert_teamid = matchchallenge.expert_teamid
-                        newmatchchallenge.maximum_user = matchchallenge.maximum_user
-                        newmatchchallenge.status = matchchallenge.status
-                        newmatchchallenge.created_by = matchchallenge.created_by
-                        newmatchchallenge.contest_type = matchchallenge.contest_type
-                        newmatchchallenge.expert_name = matchchallenge.expert_name
-                        newmatchchallenge.contest_name = matchchallenge.contest_name || ''
-                        newmatchchallenge.amount_type = matchchallenge.amount_type
-                        newmatchchallenge.mega_status = matchchallenge.mega_status
-                        newmatchchallenge.winning_percentage = matchchallenge.winning_percentage
-                        newmatchchallenge.is_bonus = matchchallenge.is_bonus
-                        newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
-                        newmatchchallenge.pricecard_type = matchchallenge.pricecard_type
-                        newmatchchallenge.minimum_user = matchchallenge.minimum_user
-                        newmatchchallenge.confirmed_challenge = matchchallenge.confirmed_challenge
-                        newmatchchallenge.multi_entry = matchchallenge.multi_entry
-                        newmatchchallenge.team_limit = matchchallenge.team_limit
-                        newmatchchallenge.image = matchchallenge.image
-                        newmatchchallenge.c_type = matchchallenge.c_type
-                        newmatchchallenge.is_private = matchchallenge.is_private
-                        newmatchchallenge.is_running = matchchallenge.is_running
-                        newmatchchallenge.is_expert = matchchallenge.is_expert
-                        newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
-                        newmatchchallenge.matchpricecards = matchchallenge.matchpricecards
-                        newmatchchallenge.is_expert = matchchallenge.is_expert
-                        newmatchchallenge.team1players = matchchallenge.team1players
-                        newmatchchallenge.team2players = matchchallenge.team2players
-                        // console.log("---newmatchchallenge--",newmatchchallenge)
-                        let data = await stockContestModel.findOne({
-                            contestId: matchchallenge.contestId,
-                            fantasy_type: matchchallenge.fantasy_type,
-                            entryfee: matchchallenge.entryfee,
-                            win_amount: matchchallenge.win_amount,
-                            maximum_user: matchchallenge.maximum_user,
-                            joinedusers: 0,
-                            status: matchchallenge.status,
-                            is_duplicated: { $ne: 1 }
-                        });
-                        if (!data) {
-                            let createNewContest = new stockContestModel(newmatchchallenge);
-                            let mynewContest = await createNewContest.save();
-                        }
-                        // console.log("---createNewContest----",mynewContest)
-                    }
-                    await stockContestModel.updateOne({ _id: mongoose.Types.ObjectId(matchchallenge._id) }, update);
-                }
+      console.log("--updateJoinedusers----")
+      const query = {};
+      query.matchkey = req.query.stock_contest_cat
+      query.fantasy_type = req.query.stock_contest_cat
+      query.stock_contest_cat = req.query.stock_contest_cat
+      query.contest_type = 'Amount'
+      query.status = 'opened'
+      const contestData = await stockContestModel.find(query);
+      if (contestData.length > 0) {
+        for (let matchchallenge of contestData) {
+          const totalJoinedUserInLeauge = await joinStockLeagueModel.find({ contestId: mongoose.Types.ObjectId(matchchallenge._id) });
+          if (matchchallenge.maximum_user == totalJoinedUserInLeauge.length) {
+            const update = {
+              $set: {
+                'status': 'closed',
+                'is_duplicated': 1,
+                'joinedusers': totalJoinedUserInLeauge.length,
+              },
+            };
+            // console.log("--matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1--",matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1)
+            if (matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1) {
+              let newmatchchallenge = {};
+              // delete newmatchchallenge._id;
+              // delete newmatchchallenge.createdAt;
+              // delete newmatchchallenge.updatedAt;
+              newmatchchallenge.joinedusers = 0;
+              newmatchchallenge.contestId = matchchallenge.contestId
+              newmatchchallenge.contest_cat = matchchallenge.contest_cat
+              newmatchchallenge.challenge_id = matchchallenge.challenge_id
+              newmatchchallenge.matchkey = matchchallenge.matchkey
+              newmatchchallenge.fantasy_type = matchchallenge.fantasy_type
+              newmatchchallenge.entryfee = matchchallenge.entryfee
+              newmatchchallenge.win_amount = matchchallenge.win_amount
+              newmatchchallenge.multiple_entryfee = matchchallenge.multiple_entryfee
+              newmatchchallenge.expert_teamid = matchchallenge.expert_teamid
+              newmatchchallenge.maximum_user = matchchallenge.maximum_user
+              newmatchchallenge.status = matchchallenge.status
+              newmatchchallenge.created_by = matchchallenge.created_by
+              newmatchchallenge.contest_type = matchchallenge.contest_type
+              newmatchchallenge.expert_name = matchchallenge.expert_name
+              newmatchchallenge.contest_name = matchchallenge.contest_name || ''
+              newmatchchallenge.amount_type = matchchallenge.amount_type
+              newmatchchallenge.mega_status = matchchallenge.mega_status
+              newmatchchallenge.winning_percentage = matchchallenge.winning_percentage
+              newmatchchallenge.is_bonus = matchchallenge.is_bonus
+              newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
+              newmatchchallenge.pricecard_type = matchchallenge.pricecard_type
+              newmatchchallenge.minimum_user = matchchallenge.minimum_user
+              newmatchchallenge.confirmed_challenge = matchchallenge.confirmed_challenge
+              newmatchchallenge.multi_entry = matchchallenge.multi_entry
+              newmatchchallenge.team_limit = matchchallenge.team_limit
+              newmatchchallenge.image = matchchallenge.image
+              newmatchchallenge.c_type = matchchallenge.c_type
+              newmatchchallenge.is_private = matchchallenge.is_private
+              newmatchchallenge.is_running = matchchallenge.is_running
+              newmatchchallenge.is_expert = matchchallenge.is_expert
+              newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
+              newmatchchallenge.matchpricecards = matchchallenge.matchpricecards
+              newmatchchallenge.is_expert = matchchallenge.is_expert
+              newmatchchallenge.team1players = matchchallenge.team1players
+              newmatchchallenge.team2players = matchchallenge.team2players
+              // console.log("---newmatchchallenge--",newmatchchallenge)
+              let data = await stockContestModel.findOne({
+                contestId: matchchallenge.contestId,
+                fantasy_type: matchchallenge.fantasy_type,
+                entryfee: matchchallenge.entryfee,
+                win_amount: matchchallenge.win_amount,
+                maximum_user: matchchallenge.maximum_user,
+                joinedusers: 0,
+                status: matchchallenge.status,
+                is_duplicated: { $ne: 1 }
+              });
+              if (!data) {
+                let createNewContest = new stockContestModel(newmatchchallenge);
+                let mynewContest = await createNewContest.save();
+              }
+              // console.log("---createNewContest----",mynewContest)
             }
+            await stockContestModel.updateOne({ _id: mongoose.Types.ObjectId(matchchallenge._id) }, update);
+          }
         }
+      }
     } catch (error) {
-        throw error;
+      throw error;
     }
 
-};
+  };
   async listStockContest(req) {
     try {
       const { stock_contest_cat, stock_contest } = req.query;
@@ -141,12 +143,12 @@ class overfantasyServices {
       let date = moment().format('YYYY-MM-DD HH:mm:ss');
       let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
       matchpipe.push({
-        $match: { 
+        $match: {
           fantasy_type: stock_contest_cat,
         }
       });
 
-      
+
       // if (stock_contest === "live") {
       //   matchpipe.push({
       //     $match: {
@@ -178,16 +180,16 @@ class overfantasyServices {
       //     }
       // });
       // }
-      
+
 
       matchpipe.push({
         $lookup: {
-          
-            from: "join_stock_leagues",
-            localField: "_id",
-            foreignField: "contestId",
-            as: "joinData"
-          
+
+          from: "join_stock_leagues",
+          localField: "_id",
+          foreignField: "contestId",
+          as: "joinData"
+
         },
       });
       matchpipe.push({
@@ -286,7 +288,7 @@ class overfantasyServices {
       data['teamnumber'] = teamnumber;
       data['stock'] = stock;
       data['type'] = stock_type;
-      
+
       const joinTeam = await joinStockTeamModel.findOne({
         contestId: contestId,
         teamnumber: parseInt(teamnumber),
@@ -813,7 +815,7 @@ class overfantasyServices {
 
   async getAllStockWithAllSelector(req) {
     try {
-      const data = await stockModel.find({isEnable:true}).limit(50)
+      const data = await stockModel.find({ isEnable: true }).limit(50)
       if (data.length > 0) {
         return {
           message: 'All Stock With All Selectors Cateories',
@@ -1580,11 +1582,11 @@ class overfantasyServices {
 
           if (currentDate1 >= matchTimings) {
             const result = await this.getSockScoresUpdates(listContest);
-          
+
             const headers = {
               "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
             };
-          
+
             await Promise.all(result.map(async (ele) => {
               const insertData = {
                 userId: ele.userid,
@@ -1592,23 +1594,23 @@ class overfantasyServices {
                 contestId: ele.contestId,
                 joinId: ele._id,
               };
-              
+
               const investment = +ele.invested;
               const startDate = ele.start_date;
               const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
-              const dateFormat  = moment().format('YYYY/MM/DD HH:mm');
+              const dateFormat = moment().format('YYYY/MM/DD HH:mm');
               let matchStatus = {};
-              if(dateFormat >= ele.start_date){
+              if (dateFormat >= ele.start_date) {
                 matchStatus['status'] = 'started';
                 matchStatus['final_status'] = 'IsReviewed';
 
               }
-              
-              const chkSave = await stockContestModel.findOneAndUpdate({_id:ele.contestId}, matchStatus , {upsert:true});
+
+              const chkSave = await stockContestModel.findOneAndUpdate({ _id: ele.contestId }, matchStatus, { upsert: true });
               let total = 0;
-          
+
               await Promise.all(ele.stockTeam.map(async (stock) => {
-                try {                                                                                             
+                try {
                   const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}&to=${formattedDate}`, {
                     headers: headers
                   });
@@ -1623,10 +1625,10 @@ class overfantasyServices {
                   console.error(err);
                 }
               }));
-          
+
               insertData.finalvalue = total;
-              
-            newData = await stockFinalResult.findOneAndUpdate(
+
+              newData = await stockFinalResult.findOneAndUpdate(
                 { userId: ele.userid, teamid: ele.teamid, contestId: ele.contestId },
                 insertData,
                 { upsert: true }
@@ -1635,7 +1637,7 @@ class overfantasyServices {
 
 
           }
-          
+
         }
 
       }
@@ -1657,24 +1659,24 @@ class overfantasyServices {
       const constedleaugeData = await joinStockLeagueModel.aggregate([
         {
           '$lookup': {
-            'from': 'stock_contests', 
-            'localField': 'contestId', 
-            'foreignField': '_id', 
+            'from': 'stock_contests',
+            'localField': 'contestId',
+            'foreignField': '_id',
             'as': 'contestData'
           }
         }, {
           '$match': {
             'contestData': {
               '$elemMatch': {
-                'launch_status': 'launched', 
+                'launch_status': 'launched',
                 'final_status': {
                   '$nin': [
                     'winnerdeclared', 'IsCanceled'
                   ]
-                }, 
+                },
                 'fantasy_type': {
                   '$ne': 'CRICKET'
-                }, 
+                },
                 'status': {
                   '$ne': 'completed'
                 }, 'start_date': { $gte: currentDate },
@@ -1683,16 +1685,16 @@ class overfantasyServices {
           }
         }, {
           '$lookup': {
-            'from': 'joinstockteams', 
-            'localField': 'teamid', 
-            'foreignField': '_id', 
+            'from': 'joinstockteams',
+            'localField': 'teamid',
+            'foreignField': '_id',
             'as': 'teamData'
           }
         }, {
           '$addFields': {
             'stock': {
               '$getField': {
-                'field': 'stock', 
+                'field': 'stock',
                 'input': {
                   '$arrayElemAt': [
                     '$teamData', 0
@@ -1707,10 +1709,10 @@ class overfantasyServices {
           }
         }, {
           '$lookup': {
-            'from': 'stocks', 
+            'from': 'stocks',
             'let': {
               'id': '$stock.stockId'
-            }, 
+            },
             'pipeline': [
               {
                 '$match': {
@@ -1721,7 +1723,7 @@ class overfantasyServices {
                   }
                 }
               }
-            ], 
+            ],
             'as': 'stockTeam'
           }
         }, {
@@ -1738,28 +1740,28 @@ class overfantasyServices {
           }
         }, {
           '$project': {
-            'stock': 0, 
-            'teamData': 0, 
+            'stock': 0,
+            'teamData': 0,
             'leaugestransaction': 0
           }
         }, {
           '$group': {
-            '_id': '$_id', 
+            '_id': '$_id',
             'transaction_id': {
               '$first': '$transaction_id'
-            }, 
+            },
             'userid': {
               '$first': '$userid'
-            }, 
+            },
             'teamid': {
               '$first': '$teamid'
-            }, 
+            },
             'contestId': {
               '$first': '$contestId'
-            }, 
+            },
             'contestData': {
               '$first': '$contestData'
-            }, 
+            },
             'stockTeam': {
               '$push': '$stockTeam'
             }
@@ -1768,17 +1770,17 @@ class overfantasyServices {
           '$addFields': {
             'invested': {
               '$getField': {
-                'field': 'investment', 
+                'field': 'investment',
                 'input': {
                   '$arrayElemAt': [
                     '$contestData', 0
                   ]
                 }
               }
-            }, 
+            },
             'start_date': {
               '$getField': {
-                'field': 'start_date', 
+                'field': 'start_date',
                 'input': {
                   '$arrayElemAt': [
                     '$contestData', 0
@@ -1788,7 +1790,7 @@ class overfantasyServices {
             },
             'end_date': {
               '$getField': {
-                'field': 'end_date', 
+                'field': 'end_date',
                 'input': {
                   '$arrayElemAt': [
                     '$contestData', 0
@@ -1799,7 +1801,7 @@ class overfantasyServices {
           }
         }
       ]);
-      
+
       return constedleaugeData;
     } catch (error) {
       console.log("error" + error);
@@ -1811,44 +1813,44 @@ class overfantasyServices {
 
   async saveCurrentPriceOfStock(req, res) {
     try {
-        const stockData = await stockModel.find({ isEnable: true });
-      
-        const headers = {
-          "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
-        };
-      
-        const formattedDate = moment().format('YYYY-MM-DD+HH:mm');
-        const requests = stockData.map(async (stock) => {
-          try {
-            const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}:00&to=${formattedDate}:00`, {
-              "headers": headers
-            });
-            const historicalData = resp.data.data.candles;
-            const updates = historicalData.map(async (candle) => {
-              const openPrice = candle[1];
-              const closePrice = candle[4];
-              await stockModel.findOneAndUpdate({ instrument_token: stock.instrument_token }, { "openPrice": openPrice,'closePrice':closePrice}, { upsert: true });
-            });
-            await Promise.all(updates);
-          } catch (err) {
-            throw err; 
-          }
-        });
-        await Promise.all(requests);
-        return {
-          "message": "League Data",
-          data: requests || {}
-        };
-      } catch (error) {
-        throw error;
-      }
-  }    
+      const stockData = await stockModel.find({ isEnable: true });
+
+      const headers = {
+        "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
+      };
+
+      const formattedDate = moment().format('YYYY-MM-DD+HH:mm');
+      const requests = stockData.map(async (stock) => {
+        try {
+          const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}:00&to=${formattedDate}:00`, {
+            "headers": headers
+          });
+          const historicalData = resp.data.data.candles;
+          const updates = historicalData.map(async (candle) => {
+            const openPrice = candle[1];
+            const closePrice = candle[4];
+            await stockModel.findOneAndUpdate({ instrument_token: stock.instrument_token }, { "openPrice": openPrice, 'closePrice': closePrice }, { upsert: true });
+          });
+          await Promise.all(updates);
+        } catch (err) {
+          throw err;
+        }
+      });
+      await Promise.all(requests);
+      return {
+        "message": "League Data",
+        data: requests || {}
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async liveStockRanksLeaderboard(req) {
     try {
       let skip = Number(req.query?.skip ?? 0);
       let limit = Number(req.query?.limit ?? 10);
-      
+
       const finalData = await joinStockLeagueModel.aggregate([
         {
           '$match': {
@@ -1974,18 +1976,18 @@ class overfantasyServices {
           }
         },
         {
-          '$setWindowFields':{
-              'partitionBy': "",
-              'sortBy': {
-                'points': -1,
+          '$setWindowFields': {
+            'partitionBy': "",
+            'sortBy': {
+              'points': -1,
+            },
+            'output': {
+              'rank': {
+                '$rank': {},
               },
-              'output': {
-                'rank': {
-                  '$rank': {},
-                },
-              },
+            },
           }
-      },
+        },
         {
           '$facet': {
             'data': [
@@ -1995,7 +1997,7 @@ class overfantasyServices {
           }
         }
       ]);
-      
+
       if (finalData[0].data.length > 0) {
         return {
           message: "Live score leaderboard of contest",
@@ -2014,51 +2016,688 @@ class overfantasyServices {
           data: {}
         };
       }
-      
+
     }
     catch (error) {
-        throw error;
+      throw error;
     }
   }
 
   async getStockUsableBalance(req) {
     try {
-        const { contestId } = req.query;
-        const contestData = await stockContestModel.findOne({ _id: mongoose.Types.ObjectId(contestId) });
-        await this.updateJoinedusers(req);
-        if (!contestData) {
-            return {
-                message: 'Invalid details',
-                status: false,
-                data: {}
-            }
-        }
-        const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
-        const bonus = parseFloat(user.userbalance.bonus.toFixed(2)) || 0;
-        const balance = parseFloat(user.userbalance.balance.toFixed(2)) || 0;
-        const winning = parseFloat(user.userbalance.winning.toFixed(2)) || 0;
-        const totalBalance = bonus + balance + winning;
-        const findUsableBalance = balance + winning;
-        let findBonusAmount = 0,
-            usedBonus = 0;
-        if (contestData.is_bonus == 1 && contestData.bonus_percentage) findBonusAmount = (contestData.bonus_percentage / 100) * contestData.entryfee;
-        if (bonus >= findBonusAmount) usedBonus = findBonusAmount;
-        else usedBonus = bonus;
+      const { contestId } = req.query;
+      const contestData = await stockContestModel.findOne({ _id: mongoose.Types.ObjectId(contestId) });
+      await this.updateJoinedusers(req);
+      if (!contestData) {
         return {
-            message: 'Get amount to be used',
-            status: true,
-            data: {
-                usablebalance: findUsableBalance.toFixed(2).toString(),
-                usertotalbalance: totalBalance.toFixed(2).toString(),
-                entryfee: contestData.entryfee.toFixed(2).toString(),
-                bonus: usedBonus.toFixed(2).toString(),
+          message: 'Invalid details',
+          status: false,
+          data: {}
+        }
+      }
+      const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
+      const bonus = parseFloat(user.userbalance.bonus.toFixed(2)) || 0;
+      const balance = parseFloat(user.userbalance.balance.toFixed(2)) || 0;
+      const winning = parseFloat(user.userbalance.winning.toFixed(2)) || 0;
+      const totalBalance = bonus + balance + winning;
+      const findUsableBalance = balance + winning;
+      let findBonusAmount = 0,
+        usedBonus = 0;
+      if (contestData.is_bonus == 1 && contestData.bonus_percentage) findBonusAmount = (contestData.bonus_percentage / 100) * contestData.entryfee;
+      if (bonus >= findBonusAmount) usedBonus = findBonusAmount;
+      else usedBonus = bonus;
+      return {
+        message: 'Get amount to be used',
+        status: true,
+        data: {
+          usablebalance: findUsableBalance.toFixed(2).toString(),
+          usertotalbalance: totalBalance.toFixed(2).toString(),
+          entryfee: contestData.entryfee.toFixed(2).toString(),
+          bonus: usedBonus.toFixed(2).toString(),
+        }
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async Newjoinedcontest(req) {
+
+
+    let today = moment().format('YYYY-MM-DD HH:mm:ss')
+    // today.setHours(today.getHours() + 5);
+    // today.setMinutes(today.getMinutes() + 30);
+    // console.log('todat',today)
+    const JoiendMatches = await joinStockLeagueModel.aggregate([
+      {
+        '$match': {
+          'userid': mongoose.Types.ObjectId(req.user._id),
+        }
+      }, {
+        '$group': {
+          '_id': '$contestId',
+          'contestId': {
+            '$first': '$contestId'
+          },
+          'joinedleaugeId': {
+            '$first': '$_id'
+          },
+          'userid': {
+            '$first': '$userid'
+          },
+          'contestId': {
+            '$first': '$contestId'
+          },
+          'jointeamid': {
+            '$first': '$teamid'
+          }
+        }
+      }, {
+        '$lookup': {
+          'from': 'stock_contests',
+          'localField': 'contestId',
+          'foreignField': '_id',
+          'as': 'contestData'
+        }
+      }, {
+        '$unwind': {
+          'path': '$contestData'
+        }
+      }, {
+        '$match': {
+          'contestData.fantasy_type': req.query.stock_contest_cat
+        }
+      }, {
+        '$match': {
+          '$and': [
+            {
+              'contestData.final_status': 'pending'
             }
+          ]
+        }
+      }, {
+        '$lookup': {
+          'from': 'join_stock_leagues',
+          'let': {
+            'contestId': '$contestId',
+            'userid': '$userid'
+          },
+          'pipeline': [
+            {
+              '$match': {
+                '$expr': {
+                  '$and': [
+                    {
+                      '$eq': [
+                        '$contestId', '$$contestId'
+                      ]
+                    }, {
+                      '$eq': [
+                        '$userid', '$$userid'
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          'as': 'joinedleauges'
+        }
+      }, {
+        '$unwind': {
+          'path': '$joinedleauges'
+        }
+      }, {
+        '$group': {
+          '_id': '$joinedleauges.contestId',
+          'joinedleaugeId': {
+            '$first': '$joinedleauges._id'
+          },
+          'contestId': {
+            '$first': '$contestId'
+          },
+          'jointeamid': {
+            '$first': '$jointeamid'
+          },
+          'userid': {
+            '$first': '$userid'
+          },
+          'contestData': {
+            '$first': '$contestData'
+          }
+        }
+      }, {
+        '$addFields': {
+          'date': {
+            '$dateFromString': {
+              'dateString': '$contestData.start_date',
+              'timezone': '-00:00'
+            }
+          },
+          'curDate': today
+        }
+      },
+      {
+        '$match': {
+          '$expr': {
+            '$and': [
+              {
+                '$gte': [
+                  '$date', today
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        '$project': {
+          '_id': 0,
+          'date': 1,
+          'curDate': 1,
+          'matchkey': 1,
+          'contestName': {
+            '$ifNull': [
+              '$contestData.contest_name', ''
+            ]
+          },
+          'start_date': '$contestData.start_date',
+          'start_date': {
+            '$ifNull': [
+              '$contestData.start_date', '0000-00-00 00:00:00'
+            ]
+          },
+          'status': {
+            '$ifNull': [
+              {
+                '$cond': {
+                  'if': {
+                    '$lt': [
+                      '$contestData.start_date', today
+                    ]
+                  },
+                  'then': 'opened',
+                  'else': 'closed'
+                }
+              }, 'opened'
+            ]
+          },
+          'launch_status': {
+            '$ifNull': [
+              '$contestData.launch_status', ''
+            ]
+          },
+          'final_status': {
+            '$ifNull': [
+              '$contestData.final_status', ''
+            ]
+          },
+          'type': {
+            '$ifNull': [
+              '$contestData.fantasy_type',  req.query.stock_contest_cat
+            ]
+          },
+          'available_status': {
+            '$ifNull': [
+              1, 1
+            ]
+          },
+          'joinedcontest': {
+            '$ifNull': [
+              '$count', 0
+            ]
+          }
+        }
+      }
+    ]);
+
+    if (JoiendMatches.length > 0) {
+      return {
+        message: 'User Joiend latest 5 Upcoming and live contest data..',
+        status: true,
+        data: JoiendMatches
+      };
+    } else {
+      return {
+        message: 'No Data Found..',
+        status: false,
+        data: []
+      };
+    }
+  }
+
+
+
+  async NewjoinedcontestLive(req) {
+    let today = moment().format('YYYY-MM-DD HH:mm:ss');
+    console.log(today)
+    const JoiendMatches = await joinStockLeagueModel.aggregate(
+      [
+        {
+          '$match': {
+            'userid': mongoose.Types.ObjectId('649176380b2d6040b6c2a4ee')
+          }
+        }, {
+          '$group': {
+            '_id': '$contestId', 
+            'contestId': {
+              '$first': '$contestId'
+            }, 
+            'joinedleaugeId': {
+              '$first': '$_id'
+            }, 
+            'userid': {
+              '$first': '$userid'
+            }, 
+            'contestId': {
+              '$first': '$contestId'
+            }, 
+            'jointeamid': {
+              '$first': '$teamid'
+            }
+          }
+        }, {
+          '$lookup': {
+            'from': 'stock_contests', 
+            'localField': 'contestId', 
+            'foreignField': '_id', 
+            'as': 'contestData'
+          }
+        }, {
+          '$unwind': {
+            'path': '$contestData'
+          }
+        }, {
+          '$match': {
+            'contestData.fantasy_type': req.query.stock_contest_cat
+          }
+        }, {
+          '$match': {
+            '$or': [
+              {
+                'contestData.final_status': 'pending'
+              }, {
+                'contestData.final_status': 'IsReviewed'
+              }
+            ]
+          }
+        }, {
+          '$lookup': {
+            'from': 'join_stock_leagues', 
+            'let': {
+              'contestId': '$contestId', 
+              'userid': '$userid'
+            }, 
+            'pipeline': [
+              {
+                '$match': {
+                  '$expr': {
+                    '$and': [
+                      {
+                        '$eq': [
+                          '$contestId', '$$contestId'
+                        ]
+                      }, {
+                        '$eq': [
+                          '$userid', '$$userid'
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ], 
+            'as': 'joinedleauges'
+          }
+        }, {
+          '$unwind': {
+            'path': '$joinedleauges'
+          }
+        }, {
+          '$group': {
+            '_id': '$joinedleauges.contestId', 
+            'joinedleaugeId': {
+              '$first': '$joinedleauges._id'
+            }, 
+            'contestId': {
+              '$first': '$contestId'
+            }, 
+            'jointeamid': {
+              '$first': '$jointeamid'
+            }, 
+            'userid': {
+              '$first': '$userid'
+            }, 
+            'contestData': {
+              '$first': '$contestData'
+            }
+          }
+        }, {
+          '$addFields': {
+            'date': {
+              'dateString': '$contestData.start_date'
+            }, 
+            'curDate': today
+          }
+        }, {
+          '$match': {
+            '$expr': {
+              '$and': [
+                {
+                  '$lte': [
+                    '$date.dateString', today
+                  ]
+                }
+              ]
+            }
+          }
+        }, {
+          '$project': {
+            '_id': 0, 
+            'date': 1, 
+            'curDate': 1, 
+            'matchkey': 1, 
+            'contestName': {
+              '$ifNull': [
+                '$contestData.contest_name', ''
+              ]
+            }, 
+            'start_date': '$contestData.start_date', 
+            'start_date': {
+              '$ifNull': [
+                '$contestData.start_date', '0000-00-00 00:00:00'
+              ]
+            }, 
+            'status': {
+              '$ifNull': [
+                {
+                  '$cond': {
+                    'if': {
+                      '$lt': [
+                        '$contestData.start_date', today
+                      ]
+                    }, 
+                    'then': 'closed', 
+                    'else': 'opened'
+                  }
+                }, 'opened'
+              ]
+            }, 
+            'launch_status': {
+              '$ifNull': [
+                '$contestData.launch_status', ''
+              ]
+            }, 
+            'final_status': {
+              '$ifNull': [
+                '$contestData.final_status', ''
+              ]
+            }, 
+            'type': {
+              '$ifNull': [
+                '$contestData.fantasy_type',  req.query.stock_contest_cat
+              ]
+            }, 
+            'available_status': {
+              '$ifNull': [
+                1, 1
+              ]
+            }, 
+            'joinedcontest': {
+              '$ifNull': [
+                '$count', 0
+              ]
+            }
+          }
+        }
+      ]
+    );
+    if (JoiendMatches.length > 0) {
+      return {
+        message: 'User Joiend latest 5  live contest data..',
+        status: true,
+        data: JoiendMatches,
+
+      };
+    } else {
+      return {
+        message: 'No Data Found..',
+        status: false,
+        data: []
+      };
+    }
+  }
+
+  async AllCompletedContest(req) {
+    try {
+      let today = moment().format('YYYY-MM-DD HH:mm:ss')
+      console.log(req.user._id)
+        const JoiendMatches = await joinStockLeagueModel.aggregate([
+          {
+            '$match': {
+              'userid': mongoose.Types.ObjectId(req.user._id)
+            }
+          }, {
+            '$group': {
+              '_id': '$contestId', 
+              'contestId': {
+                '$first': '$contestId'
+              }, 
+              'joinedleaugeId': {
+                '$first': '$_id'
+              }, 
+              'userid': {
+                '$first': '$userid'
+              }, 
+              'matchchallengeid': {
+                '$first': '$challengeid'
+              }, 
+              'jointeamid': {
+                '$first': '$teamid'
+              }
+            }
+          }, {
+            '$lookup': {
+              'from': 'stock_contests', 
+              'localField': 'contestId', 
+              'foreignField': '_id', 
+              'as': 'contestData'
+            }
+          }, {
+            '$unwind': {
+              'path': '$contestData'
+            }
+          }, {
+            '$match': {
+              'contestData.fantasy_type': req.query.stock_contest_cat
+            }
+          }, {
+            '$match': {
+              'contestData.final_status': 'winnerdeclared'
+            }
+          }, {
+            '$lookup': {
+              'from': 'stockfinalresults', 
+              'let': {
+                'contestId': '$contestId'
+              }, 
+              'pipeline': [
+                {
+                  '$match': {
+                    '$expr': {
+                      '$and': [
+                        {
+                          '$eq': [
+                            '$$contestId', '$contestId'
+                          ]
+                        }, {
+                          '$eq': [
+                            '$userId',mongoose.Types.ObjectId(req.user._id)
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }, {
+                  '$group': {
+                    '_id': null, 
+                    'finalvalue': {
+                      '$sum': '$finalvalue'
+                    }
+                  }
+                }
+              ], 
+              'as': 'finalresultsTotalAmount'
+            }
+          }, {
+            '$lookup': {
+              'from': 'join_stock_leagues', 
+              'let': {
+                'contestId': '$contestId', 
+                'userid': '$userid'
+              }, 
+              'pipeline': [
+                {
+                  '$match': {
+                    '$expr': {
+                      '$and': [
+                        {
+                          '$eq': [
+                            '$contestId', '$$contestId'
+                          ]
+                        }, {
+                          '$eq': [
+                            '$userid', '$$userid'
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ], 
+              'as': 'joinedleauges'
+            }
+          }, {
+            '$unwind': {
+              'path': '$joinedleauges'
+            }
+          }, {
+            '$group': {
+              '_id': '$joinedleauges.challengeid', 
+              'joinedleaugeId': {
+                '$first': '$joinedleauges._id'
+              }, 
+              'contestData': {
+                '$first': '$contestData'
+              }, 
+              'jointeamid': {
+                '$first': '$jointeamid'
+              }, 
+              'match': {
+                '$first': '$match'
+              }, 
+              'finalresultsTotalAmount': {
+                '$first': '$finalresultsTotalAmount'
+              }
+            }
+          }, {
+            '$addFields': {
+              'date': {
+                'dateString': '$contestData.start_date'
+              }, 
+              'curDate': today
+            }
+          }, {
+            '$match': {
+              '$expr': {
+                '$and': [
+                  {
+                    '$lte': [
+                      '$date.dateString', today
+                    ]
+                  }
+                ]
+              }
+            }
+          }, {
+            '$project': {
+              '_id': 0, 
+              'date': 1, 
+              'curDate': 1, 
+              'matchkey': 1, 
+              'contestName': {
+                '$ifNull': [
+                  '$contestData.contest_name', ''
+                ]
+              }, 
+              'start_date': '$contestData.start_date', 
+              'start_date': {
+                '$ifNull': [
+                  '$contestData.start_date', '0000-00-00 00:00:00'
+                ]
+              }, 
+              'status': {
+                '$ifNull': [
+                  {
+                    '$cond': {
+                      'if': {
+                        '$lt': [
+                          '$contestData.start_date', today
+                        ]
+                      }, 
+                      'then': 'closed', 
+                      'else': 'opened'
+                    }
+                  }, 'opened'
+                ]
+              }, 
+              'launch_status': {
+                '$ifNull': [
+                  '$contestData.launch_status', ''
+                ]
+              }, 
+              'final_status': {
+                '$ifNull': [
+                  '$contestData.final_status', ''
+                ]
+              }, 
+              'type': {
+                '$ifNull': [
+                  '$contestData.fantasy_type', req.query.stock_contest_cat
+                ]
+              }, 
+              'available_status': {
+                '$ifNull': [
+                  1, 1
+                ]
+              }, 
+              'joinedcontest': {
+                '$ifNull': [
+                  '$count', 0
+                ]
+              }
+            }
+          }
+        ]);
+
+        if (JoiendMatches.length > 0) {
+            return {
+                message: 'User Joiend All Completed Contest Data..',
+                status: true,
+                data: JoiendMatches,
+                
+            };
+        } else {
+            return {
+                message: 'No Data Found..',
+                status: false,
+                data: []
+            };
         }
     } catch (error) {
         throw error;
     }
 }
-
 }
 
 module.exports = new overfantasyServices();
