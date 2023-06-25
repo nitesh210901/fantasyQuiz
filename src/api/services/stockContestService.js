@@ -206,16 +206,11 @@ class overfantasyServices {
 
       const result = await stockContestModel.aggregate(matchpipe);
       if (result.length > 0) {
-        return {
-          status: true,
-          message: "Stock Contest Fatch Successfully",
-          data: result
-        }
+        return  result
       } else {
         return {
           status: false,
           message: "Stock Contest Not Found",
-          data: []
         }
       }
       // result.sort(function (a, b) {
@@ -2697,7 +2692,7 @@ class overfantasyServices {
     } catch (error) {
         throw error;
     }
-}
+  }
 }
 
 module.exports = new overfantasyServices();
