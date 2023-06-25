@@ -137,7 +137,7 @@ class overfantasyServices {
   };
   async listStockContest(req) {
     try {
-      const { stock_contest_cat, stock_contest } = req.query;
+      const { stock_contest_cat } = req.query;
       await this.updateJoinedusers(req)
       let matchpipe = [];
       let date = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -147,7 +147,12 @@ class overfantasyServices {
           fantasy_type: stock_contest_cat,
         }
       });
-
+      matchpipe.push({
+        $match: {
+            $and: [{ status: 'notstarted' }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+            final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+        }
+    });
 
       // if (stock_contest === "live") {
       //   matchpipe.push({
@@ -213,10 +218,6 @@ class overfantasyServices {
           message: "Stock Contest Not Found",
         }
       }
-      // result.sort(function (a, b) {
-      //   return b.match_order
-      // });
-      // if (result.length > 0) return result
     } catch (error) {
       throw error;
     }
@@ -1598,7 +1599,6 @@ class overfantasyServices {
               if (dateFormat >= ele.start_date) {
                 matchStatus['status'] = 'started';
                 matchStatus['final_status'] = 'IsReviewed';
-
               }
 
               const chkSave = await stockContestModel.findOneAndUpdate({ _id: ele.contestId }, matchStatus, { upsert: true });
