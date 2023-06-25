@@ -188,10 +188,10 @@ class challengersService {
     async deleteMultiStockContest(req) {
         try {
             let { deletedId } = req.body
-            for(let i of req.body){
+            for(let i of deletedId){
                 const deleteChallenger = await stockContestModel.deleteOne({ _id: i });
             }
-            return true;
+            return true ;
 
         } catch (error) {
             throw error;
