@@ -146,6 +146,13 @@ class overfantasyServices {
           fantasy_type: stock_contest_cat
         }
       });
+
+      matchpipe.push({
+        $match: {
+            $and: [{ status: 'notstarted' }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
+            final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+        }
+      });
       if (stock_contest === "live") {
         matchpipe.push({
           $match: {
