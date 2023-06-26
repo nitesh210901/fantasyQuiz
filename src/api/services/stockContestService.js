@@ -1992,7 +1992,7 @@ class overfantasyServices {
                 }, 0
               ]
             }, 
-            'getcurrentrank': {
+            'rank': {
               '$ifNull': [
                 {
                   '$arrayElemAt': [
@@ -2001,6 +2001,15 @@ class overfantasyServices {
                 }, 0
               ]
             }, 
+            'finalvalue': {
+              '$ifNull': [
+                {
+                  '$arrayElemAt': [
+                    '$leaderboards.finalvalue', 0
+                  ]
+                }, 0
+              ]
+            },
             'teamname': {
               '$ifNull': [
                 '$team', 0
