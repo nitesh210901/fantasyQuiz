@@ -2196,7 +2196,12 @@ class overfantasyServices {
               '$contestData.contest_name', ''
             ]
           },
+          'win_amount' : '$contestData.win_amount',
+          'winning_percentage' : '$contestData.winning_percentage',
+          'maximum_user' : '$contestData.maximum_user',
+          'joinedusers' : '$contestData.joinedusers',
           'start_date': '$contestData.start_date',
+          'end_date': '$contestData.end_date',
           'start_date': {
             '$ifNull': [
               '$contestData.start_date', '0000-00-00 00:00:00'
@@ -2399,7 +2404,12 @@ class overfantasyServices {
                 '$contestData.contest_name', ''
               ]
             },
-            'start_date': '$contestData.start_date',
+          'win_amount' : '$contestData.win_amount',
+          'winning_percentage' : '$contestData.winning_percentage',
+          'maximum_user' : '$contestData.maximum_user',
+          'joinedusers' : '$contestData.joinedusers',
+          'end_date': '$contestData.end_date',
+          'start_date': '$contestData.start_date',
             'start_date': {
               '$ifNull': [
                 '$contestData.start_date', '0000-00-00 00:00:00'
@@ -2629,6 +2639,12 @@ class overfantasyServices {
                 '$contestData.contest_name', ''
               ]
             },
+            'win_amount' : '$contestData.win_amount',
+            'winning_percentage' : '$contestData.winning_percentage',
+            'maximum_user' : '$contestData.maximum_user',
+            'joinedusers' : '$contestData.joinedusers',
+            'end_date': '$contestData.end_date',
+
             'start_date': '$contestData.start_date',
             'start_date': {
               '$ifNull': [
