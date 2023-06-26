@@ -2288,7 +2288,7 @@ class overfantasyServices {
         }
       },
       {
-        '$match':{"$contestData.start_date":{$gt:today}}
+        '$match':{"contestData.start_date":{$gt:today}}
       },
       {
         '$project': {
