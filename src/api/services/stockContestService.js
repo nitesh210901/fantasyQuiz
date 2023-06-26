@@ -1602,13 +1602,9 @@ class overfantasyServices {
                 matchStatus['status'] = 'started';
                 matchStatus['final_status'] = 'IsReviewed';
               }
-<<<<<<< HEAD
               await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, matchStatus);
-              
-=======
-
+            
               const chkSave = await stockContestModel.findOneAndUpdate({ _id: ele.contestId }, matchStatus, { upsert: true });
->>>>>>> c940e09ce2f18c4c1420d57393f45b8656d22a7b
               let total = 0;
 
               await Promise.all(ele.stockTeam.map(async (stock) => {
