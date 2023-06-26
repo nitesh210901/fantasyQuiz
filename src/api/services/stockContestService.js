@@ -2197,6 +2197,7 @@ class overfantasyServices {
             ]
           },
           'win_amount' : '$contestData.win_amount',
+          '_id' : '$contestData._id',
           'winning_percentage' : '$contestData.winning_percentage',
           'maximum_user' : '$contestData.maximum_user',
           'joinedusers' : '$contestData.joinedusers',
@@ -2406,6 +2407,8 @@ class overfantasyServices {
               ]
             },
           'win_amount' : '$contestData.win_amount',
+          '_id' : '$contestData._id',
+
           'winning_percentage' : '$contestData.winning_percentage',
           'maximum_user' : '$contestData.maximum_user',
           'joinedusers' : '$contestData.joinedusers',
@@ -2642,6 +2645,7 @@ class overfantasyServices {
               ]
             },
             'win_amount' : '$contestData.win_amount',
+            '_id' : '$contestData._id',
             'winning_percentage' : '$contestData.winning_percentage',
             'maximum_user' : '$contestData.maximum_user',
             'joinedusers' : '$contestData.joinedusers',
