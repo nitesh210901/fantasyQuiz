@@ -2184,6 +2184,7 @@ class overfantasyServices {
 
   async Newjoinedcontest(req) {
     let today = moment().format('YYYY-MM-DD HH:mm:ss');
+    console.log(today)
     const JoiendMatches = await joinStockLeagueModel.aggregate([
       {
         '$match': {
@@ -2285,28 +2286,9 @@ class overfantasyServices {
             '$first': '$contestData'
           }
         }
-      }, {
-        '$addFields': {
-          'date': {
-            '$dateFromString': {
-              'dateString': '$contestData.start_date'
-            }
-          },
-          'curDate': today
-        }
       },
       {
-        '$match': {
-          '$expr': {
-            '$and': [
-              {
-                '$gte': [
-                  '$date', today
-                ]
-              }
-            ]
-          }
-        }
+        '$match':{"$contestData.start_date":{$gt:today}}
       },
       {
         '$project': {
