@@ -2061,8 +2061,7 @@ class overfantasyServices {
         '$addFields': {
           'date': {
             '$dateFromString': {
-              'dateString': '$contestData.start_date',
-              'timezone': '-00:00'
+              'dateString': '$contestData.start_date'
             }
           },
           'curDate': today
