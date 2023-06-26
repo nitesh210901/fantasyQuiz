@@ -1285,8 +1285,18 @@ class overfantasyServices {
                 'usernumber': 1, 
                 'finalvalue': '$leaderboards.finalvalue',
                   'rank':"$leaderboards.rank"
+              },
+                '$facet': {
+                  'data': [
+                    {
+                      '$skip': skip
+                    }, {
+                      '$limit': limit
+                    }
+                  ]
+                }
               }
-            });
+            );
             const joinedleauge = await joinStockLeagueModel.aggregate(aggPipe);
             if (joinedleauge[0].length == 0) return { message: 'Contest LeaderBard Not Found', status: false, data: [] };
 
@@ -2481,26 +2491,32 @@ class overfantasyServices {
               '$first': '$contestData'
             }
           }
-        }, {
-          '$addFields': {
-            'date': {
-              'dateString': '$contestData.start_date'
-            },
-            'curDate': today
-          }
-        }, {
-          '$match': {
-            '$expr': {
-              '$and': [
-                {
-                  '$lte': [
-                    '$date.dateString', today
-                  ]
-                }
-              ]
-            }
-          }
-        }, {
+        },
+        //  {
+        //   '$addFields': {
+        //     'date': {
+        //       'dateString': '$contestData.start_date'
+        //     },
+        //     'curDate': today
+        //   }
+        // }, 
+        // {
+        //   '$match': {
+        //     '$expr': {
+        //       '$and': [
+        //         {
+        //           '$lte': [
+        //             '$date.dateString', today
+        //           ]
+        //         }
+        //       ]
+        //     }
+        //   }
+        // },
+        {
+          '$match':{"contestData.start_date":{$lte:today}}
+        },
+         {
           '$project': {
             '_id': 0,
             'date': 1,
