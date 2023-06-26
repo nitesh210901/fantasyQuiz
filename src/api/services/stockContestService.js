@@ -2174,7 +2174,8 @@ class overfantasyServices {
   }
 
   async Newjoinedcontest(req) {
-    let today = moment().format('YYYY-MM-DD HH:mm:ss')
+    // let today = moment().format('YYYY-MM-DD HH:mm:ss');
+    let today = moment({ hour: 5, minute: 30 }).format('YYYY-MM-DD HH:mm:ss');
     console.log(today)
     const JoiendMatches = await joinStockLeagueModel.aggregate([
       {
