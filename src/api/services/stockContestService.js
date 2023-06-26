@@ -1285,7 +1285,8 @@ class overfantasyServices {
                 'usernumber': 1, 
                 'finalvalue': '$leaderboards.finalvalue',
                   'rank':"$leaderboards.rank"
-              },
+              }
+            },{
                 '$facet': {
                   'data': [
                     {
@@ -1295,8 +1296,7 @@ class overfantasyServices {
                     }
                   ]
                 }
-              }
-            );
+              });
             const joinedleauge = await joinStockLeagueModel.aggregate(aggPipe);
             if (joinedleauge[0].length == 0) return { message: 'Contest LeaderBard Not Found', status: false, data: [] };
 
