@@ -2293,7 +2293,7 @@ class overfantasyServices {
           '$expr': {
             '$and': [
               {
-                '$gte': [
+                '$lte': [
                   '$date', today
                 ]
               }
@@ -2393,7 +2393,7 @@ class overfantasyServices {
       [
         {
           '$match': {
-            'userid': mongoose.Types.ObjectId('649176380b2d6040b6c2a4ee')
+            'userid': mongoose.Types.ObjectId(req.user._id)
           }
         }, {
           '$group': {
