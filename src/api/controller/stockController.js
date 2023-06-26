@@ -31,6 +31,7 @@ class stockController {
             Newjoinedcontest: this.Newjoinedcontest.bind(this),
             NewjoinedcontestLive: this.NewjoinedcontestLive.bind(this),
             AllCompletedContest: this.AllCompletedContest.bind(this),
+            getStockContest: this.getStockContest.bind(this),
             rankUpdateInMatch1: this.rankUpdateInMatch1.bind(this),
 
 
@@ -316,6 +317,19 @@ class stockController {
         }
     }
 
+    async getStockContest(req, res, next) {
+        try {
+            const data = await stockContestService.getStockContest(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+       
     async rankUpdateInMatch1(req, res, next) {
         try {
             const data = await stockContestService.rankUpdateInMatch1(req);
