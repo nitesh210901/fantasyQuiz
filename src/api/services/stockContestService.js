@@ -145,6 +145,8 @@ class overfantasyServices {
       matchpipe.push({
         $match: {
           fantasy_type: stock_contest_cat,
+          isEnable: true,
+          isCancelled: false
         }
       });
       matchpipe.push({

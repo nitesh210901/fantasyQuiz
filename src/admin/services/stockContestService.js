@@ -629,6 +629,7 @@ class challengersService {
         try {
             let {_id} = req.query;
             const chkData = await stockContestModel.findOne({_id});
+            console.log(chkData)
             if(chkData.isEnable){
                 chkData.isEnable=false
             }else{
