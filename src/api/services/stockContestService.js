@@ -12,6 +12,7 @@ const userModel = require('../../models/userModel');
 const constant = require('../../config/const_credential');
 const randomstring = require("randomstring");
 const stockLeaderBoardModel = require('../../models/stockLeaderboardModel');
+const JoinStockTeamModel = require('../../models/JoinStockTeamModel');
 const stockModel = require('../../models/stockModel');
 const { test } = require('../../utils/websocketKiteConnect');
 const { pipeline } = require('stream');
@@ -2625,24 +2626,18 @@ class overfantasyServices {
           });
           aggpipe.push({
               $lookup: {
-                  from: 'contestcategories',
-                  localField: 'contest_cat',
-                  foreignField: '_id',
-                  as: 'contestcategories'
+                from: "stockpricecards",
+                localField: "_id",
+                foreignField: "stockcontestId",
+                as: "matchpricecards"
               }
           });
-          // aggpipe.push({
-          //     $match: {
-          //         $expr: {
-          //             $eq: ['$status', 'opened']
-          //         }
-          //     }
-          // });
+         
           aggpipe.push({
               $sort: { 'win_amount': -1 }
           });
-          const matchchallengesData = await matchchallengesModel.aggregate(aggpipe);
-          console.log("matchchallengedata" + JSON.stringify(matchchallengesData[0].joinedusers))
+          const matchchallengesData = await stockContestModel.aggregate(aggpipe);
+
           let i = 0;
           if (matchchallengesData.length == 0) {
               return {
@@ -2651,16 +2646,13 @@ class overfantasyServices {
                   data: {}
               }
           }
-          // if ((matchchallengesData[0].contest_type == 'Amount' && matchchallengesData[0].joinedusers <= matchchallengesData[0].maximum_user) || matchchallengesData[0].contest_type == 'Percentage') {
-          //     // console.log('here')
-          //     if (matchchallengesData[0].maximum_user >= 0 && matchchallengesData[0].is_private != 1 && matchchallengesData[0].status == 'opened') {
+         
           let isselected = false,
               refercode = '',
               winners = 0;
           const price_card = [];
-          const joinedleauge = await JoinLeaugeModel.find({
-              // matchkey: req.query.matchkey,
-              challengeid: req.query.matchchallengeid,
+          const joinedleauge = await joinStockLeagueModel.find({
+              contestId: req.query.matchchallengeid,
               userid: req.user._id,
           }).select('_id refercode');
 
@@ -2721,6 +2713,7 @@ class overfantasyServices {
               });
               winners = 1;
           }
+          
           let gift_image = "";
           let gift_type = "amount";
           let find_gift = matchchallengesData[0].matchpricecards.find(function (x) { return x.gift_type == "gift" });
@@ -2730,17 +2723,17 @@ class overfantasyServices {
           }
 
           console.log("----reqdata---getcontest..",)
-          const total_teams = await JoinTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
-          const total_joinedcontestData = await JoinLeaugeModel.aggregate([
+          const total_teams = await JoinStockTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
+          const total_joinedcontestData = await joinStockLeagueModel.aggregate([
               {
                   $match: {
                       userid: mongoose.Types.ObjectId(req.user._id),
-                      matchkey: mongoose.Types.ObjectId(req.query.matchkey)
+                      contestId: mongoose.Types.ObjectId(req.query.contestId)
                   }
               },
               {
                   $group: {
-                      _id: "$challengeid",
+                      _id: "$contestId",
                   }
               }, {
                   $count: "total_count"
@@ -2748,7 +2741,7 @@ class overfantasyServices {
           ])
           let count_JoinTeam = total_joinedcontestData[0]?.total_count
           finalData = {
-              matchchallengeid: matchchallengesData[0]._id,
+              contestID: matchchallengesData[0]._id,
               winning_percentage: matchchallengesData[0].winning_percentage,
               entryfee: matchchallengesData[0].entryfee,
               win_amount: matchchallengesData[0].win_amount,
@@ -2782,7 +2775,7 @@ class overfantasyServices {
           //     }
           // }
           return {
-              message: "Match Challenge Data ..!",
+              message: "Contest Data ..!",
               status: true,
               data: finalData
           }
