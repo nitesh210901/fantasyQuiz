@@ -236,19 +236,6 @@
                                                     </div>
                                                     
                                                 </div>
-                                                <div class="col-md-3">
-                                                   
-                                                    <div class="form-group my-3">
-                                                        <div
-                                                            class="custom-control custom-checkbox custom-control-inline">
-                                                            <input type="checkbox" class="custom-control-input sel_all"
-                                                                id="select_all" name="multi_entry" value="<%=getstockdata.multi_entry %>" <%=getstockdata.multi_entry == 1 ? 'checked': '' %>>
-                                                            <label class="custom-control-label" for="select_all">Multi
-                                                                Entry</label>
-                                                        </div>
-                                                    </div>
-                                                   
-                                                </div>
 
                                                 <div class="col-md-3" id="cc">
                                                    
@@ -342,18 +329,18 @@
                                         $("#ch1").prop('disabled', false);
                                     }
                                 });
-                                $('input[name=multi_entry]').change(function () {
-                                    if ($('input[name=multi_entry]').prop('checked') == true) {
-                                        // $('input[name=team_limit]').val('');
-                                        $("input[name=team_limit]").prop('disabled', false);
-                                        $("#team_limit").stop().slideDown();
-                                    }
-                                    if ($('input[name=multi_entry]').prop('checked') == false) {
-                                        $("input[name=team_limit]").prop('disabled', true);
-                                        $("#team_limit").stop().slideUp();
-                                    }
+                                // $('input[name=multi_entry]').change(function () {
+                                //     if ($('input[name=multi_entry]').prop('checked') == true) {
+                                //         // $('input[name=team_limit]').val('');
+                                //         $("input[name=team_limit]").prop('disabled', false);
+                                //         $("#team_limit").stop().slideDown();
+                                //     }
+                                //     if ($('input[name=multi_entry]').prop('checked') == false) {
+                                //         $("input[name=team_limit]").prop('disabled', true);
+                                //         $("#team_limit").stop().slideUp();
+                                //     }
 
-                                });
+                                // });
                             </script>
                             <script type="text/javascript">
                                 $("input[name=contest_type]").change(function () {

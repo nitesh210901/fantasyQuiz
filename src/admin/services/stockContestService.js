@@ -68,7 +68,7 @@ class challengersService {
                                 message: `Value of Team limit not equal to 0..or more then ${config.TEAM_LIMIT}.`
                             }
                         } else {
-                            data.multi_entry = 1;
+                            // data.multi_entry = 1;
                         }
                     }
                     if (req.body.maximum_user) {
@@ -128,8 +128,8 @@ class challengersService {
                         data.bonus_percentage = req.body.bonus_percentage;
                     }
                     if (req.body.multi_entry) {
-                        data.multi_entry = 1;
-                        data.multi_entry = req.body.multi_entry;
+                        // data.multi_entry = 1;
+                        // data.multi_entry = req.body.multi_entry;
                         data.team_limit = req.body.team_limit;
                    }
                     let start_date
@@ -721,15 +721,15 @@ class challengersService {
                                 message: `Value of Team limit not equal to 0..or more then ${config.TEAM_LIMIT}.`
                             }
                         } else {
-                            data.multi_entry = 1;
+                            // data.multi_entry = 1;
                         }
                     }
 
-                    if (req.body.multi_entry) {
-                        req.body.multi_entry = 1;
-                    } else {
-                        req.body.multi_entry = 0;
-                    }
+                    // if (req.body.multi_entry) {
+                    //     req.body.multi_entry = 1;
+                    // } else {
+                    //     req.body.multi_entry = 0;
+                    // }
                     // if (req.body.confirmed_challenge) {
                     //     req.body.confirmed_challenge = 1;
                     // } else {
@@ -741,7 +741,6 @@ class challengersService {
                     } else {
                         req.body.is_running = 0;
                     }
-
 
                     if (req.body.maximum_user) {
                         if (req.body.maximum_user < 2) {
@@ -833,11 +832,11 @@ class challengersService {
                         data.bonus_percentage = 0;
                     }
                     if (req.body.multi_entry) {
-                        data.multi_entry = 1;
-                        data.multi_entry = req.body.multi_entry;
+                        // data.multi_entry = 1;
+                        // data.multi_entry = req.body.multi_entry;
                         data.team_limit = req.body.team_limit;
                     } else {
-                        data.multi_entry = 0;
+                        // data.multi_entry = 0;
                     }
                     if (Number(req.body.maximum_user) != Number(stockcontestData.maximum_user)) {
                         const checkPriceCard = await stockPriceCardModel.findOne({ stockcontestId: stockcontestData._id });

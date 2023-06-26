@@ -367,6 +367,7 @@ router.get("live-stock-rank-leaderboard", auth, stockController.liveStockRanksLe
 router.get('/newjoinedcontest', auth, stockController.Newjoinedcontest);
 router.get('/newjoinedcontestlive', auth, stockController.NewjoinedcontestLive);
 router.get('/all-completed-contest', auth, stockController.AllCompletedContest);
+router.get('/getstockContest', auth, stockController.getStockContest);
 
 // -------------------------MCX Manager-------------------------
 router.get('/get-mcx-contest', auth, mcxController.listMCXContest);
