@@ -3312,15 +3312,16 @@ for await (const rankData of rankArray) {
                 }
             }
             const quizData = await quizModel.findOne({ _id: mongoose.Types.ObjectId(quizId) });
-            req.query.matchkey = quizData.matchkey;
-            // await this.updateJoinedusers(req);
             if (!quizData) {
                 return {
-                    message: 'Invalid details',
+                    message: 'Quiz not found',
                     status: false,
                     data: {}
                 }
             }
+            req.query.matchkey = quizData.matchkey;
+            // await this.updateJoinedusers(req);
+           
             const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
             const bonus = parseFloat(user.userbalance.bonus.toFixed(2)) || 0;
             const balance = parseFloat(user.userbalance.balance.toFixed(2)) || 0;
