@@ -130,6 +130,7 @@ class stockContestController {
                             <input type="checkbox" class="custom-control-input checkbox" name="checkCat" id="check${index._id}" value="${index._id}">
                             <label class="custom-control-label" for="check${index._id}"></label></div>`,
                             "count" :count,
+                            "contest_name" :`${index.contest_name}`,
                             "stock_contest_cat":`${index.stock_contest_cat}`,
                             "entryfee":`₹ ${index.entryfee}`,
                              "win_amount":`₹ ${index.win_amount}`,
@@ -375,6 +376,7 @@ class stockContestController {
                 {
                   $set: {
                     final_status: req.params.status,
+                    status:"completed"
                   },
                 }
               );

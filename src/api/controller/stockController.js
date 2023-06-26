@@ -28,6 +28,9 @@ class stockController {
             saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
             liveStockRanksLeaderboard: this.liveStockRanksLeaderboard.bind(this),
             getStockUsableBalance: this.getStockUsableBalance.bind(this),
+            Newjoinedcontest: this.Newjoinedcontest.bind(this),
+            NewjoinedcontestLive: this.NewjoinedcontestLive.bind(this),
+            AllCompletedContest: this.AllCompletedContest.bind(this),
 
         }
     }
@@ -62,7 +65,11 @@ class stockController {
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
-                return res.status(200).json(Object.assign({ success: true }, data));
+                return res.status(200).json(Object.assign(
+            {   message: 'All Contest Data',
+                status: true,
+                data:data
+            }))
             }
         } catch (error) {
             console.log(error);
@@ -272,6 +279,35 @@ class stockController {
         try {
             // console.log(`here`, req.user._id);
             const data = await stockContestService.getStockUsableBalance(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+    async Newjoinedcontest(req, res, next) {
+        try {
+            const data = await stockContestService.Newjoinedcontest(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async NewjoinedcontestLive(req,res,next){
+        try{
+            const data = await stockContestService.NewjoinedcontestLive(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+
+        }catch(error){
+            next(error);
+        }
+    }
+
+    async AllCompletedContest(req, res, next) {
+        try {
+            const data = await stockContestService.AllCompletedContest(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);

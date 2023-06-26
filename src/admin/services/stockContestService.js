@@ -147,7 +147,7 @@ class challengersService {
                     data.contest_name = req.body.contest_name;
                     data.entryfee = req.body.entryfee;
                     data.fantasy_type = req.body.stock_contest_cat;
-                    data.staus = 'notstarted';
+                    data.status = 'notstarted';
                     data.investment = req.body.investment;
                     data.win_amount = req.body.win_amount;
                     // data.amount_type = req.body.amount_type;
@@ -188,13 +188,11 @@ class challengersService {
 
     async deleteMultiStockContest(req) {
         try {
-            const deleteChallenger = await stockContestModel.deleteOne({ _id: req.body.deletedId });
-            if (deleteChallenger.deletedCount == 1) {
-                const deletePriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: req.query.globelContestsId });
-                return true;
-            } else {
-                return false;
+            let { deletedId } = req.body
+            for(let i of deletedId){
+                const deleteChallenger = await stockContestModel.deleteOne({ _id: i });
             }
+            return true ;
 
         } catch (error) {
             throw error;
@@ -632,6 +630,7 @@ class challengersService {
         try {
             let {_id} = req.query;
             const chkData = await stockContestModel.findOne({_id});
+            console.log(chkData)
             if(chkData.isEnable){
                 chkData.isEnable=false
             }else{

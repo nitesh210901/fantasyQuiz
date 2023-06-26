@@ -363,6 +363,9 @@ router.get("/get-stock-usable-balance", auth, stockController.getStockUsableBala
 router.get('/getStockMyTeams', auth, stockController.getStockMyTeams);
 router.get('/point-calculation-stock', auth, stockController.updateResultStocks);
 router.get("live-stock-rank-leaderboard", auth, stockController.liveStockRanksLeaderboard)
+router.get('/newjoinedcontest', auth, stockController.Newjoinedcontest);
+router.get('/newjoinedcontestlive', auth, stockController.NewjoinedcontestLive);
+router.get('/all-completed-contest', auth, stockController.AllCompletedContest);
 
 // -------------------------MCX Manager-------------------------
 router.get('/get-mcx-contest', auth, mcxController.listMCXContest);
