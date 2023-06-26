@@ -1271,6 +1271,45 @@ class overfantasyServices {
             'userid': new mongoose.Types.ObjectId(req.user._id)
           }
         }, {
+          '$unwind': {
+            'path': '$teamData'
+          }
+        }, {
+          '$addFields': {
+            'teamData.stock': {
+              '$map': {
+                'input': '$teamData.stock', 
+                'as': 'stc', 
+                'in': '$$stc.stockId'
+              }
+            }
+          }
+        }, {
+          '$lookup': {
+            'from': 'stocks', 
+            'let': {
+              'id': '$teamData.stock'
+            }, 
+            'pipeline': [
+              {
+                '$match': {
+                  '$expr': {
+                    '$in': [
+                      '$_id', '$$id'
+                    ]
+                  }
+                }
+              }, {
+                '$project': {
+                  'name': 1, 
+                  'tradingsymbol': 1, 
+                  'closePrice': 1
+                }
+              }
+            ], 
+            'as': 'stockTeam'
+          }
+        },{
           '$sort': {
             'usernumber': -1,
             'userid': -1,
@@ -1280,6 +1319,7 @@ class overfantasyServices {
           '$project': {
             'joinstockleaugeid': '$_id',
             '_id': 0,
+            'stockTeam':1,
             'teamnumber': {
               '$ifNull': [
                 '$teamnumber', 0
@@ -1307,7 +1347,7 @@ class overfantasyServices {
             },
             'teamnumber': {
               '$ifNull': [
-                '$jointeamdata.teamnumber', 0
+                '$teamData.teamnumber', 0
               ]
             },
             'usernumber': 1
@@ -1317,21 +1357,21 @@ class overfantasyServices {
       const joinedleaugeB = await joinStockLeagueModel.aggregate([
         {
           '$match': {
-            'contestId': new mongoose.Types.ObjectId(contestId)
+            'contestId': new mongoose.Types.ObjectId(req.query.contestId)
           }
         }, {
           '$lookup': {
-            'from': 'users',
-            'localField': 'userid',
-            'foreignField': '_id',
+            'from': 'users', 
+            'localField': 'userid', 
+            'foreignField': '_id', 
             'as': 'userdata'
           }
         }, {
           '$lookup': {
-            'from': 'joinstockteams',
-            'localField': 'teamid',
-            'foreignField': '_id',
-            'as': 'jointeamdata'
+            'from': 'joinstockteams', 
+            'localField': 'teamid', 
+            'foreignField': '_id', 
+            'as': 'teamData'
           }
         }, {
           '$unwind': {
@@ -1339,7 +1379,7 @@ class overfantasyServices {
           }
         }, {
           '$unwind': {
-            'path': '$jointeamdata',
+            'path': '$jointeamdata', 
             'preserveNullAndEmptyArrays': true
           }
         }, {
@@ -1350,11 +1390,11 @@ class overfantasyServices {
                   '$eq': [
                     '$userid', new mongoose.Types.ObjectId(req.user._id)
                   ]
-                },
-                'then': 1,
+                }, 
+                'then': 1, 
                 'else': 0
               }
-            },
+            }, 
             'image': {
               '$cond': {
                 'if': {
@@ -1369,8 +1409,8 @@ class overfantasyServices {
                       ]
                     }
                   ]
-                },
-                'then': '$userdata.image',
+                }, 
+                'then': '$userdata.image', 
                 'else': 'https://admin.Riskle.com/default_profile.png'
               }
             }
@@ -1383,86 +1423,126 @@ class overfantasyServices {
           }
         }, {
           '$sort': {
-            'usernumber': -1,
-            'userid': -1,
+            'usernumber': -1, 
+            'userid': -1, 
             'teamData.teamnumber': 1
           }
         }, {
           '$project': {
-            'joinstockleaugeid': '$_id',
-            '_id': 0,
+            'joinstockleaugeid': '$_id', 
+            '_id': 0, 
             'teamnumber': {
               '$ifNull': [
                 '$teamnumber', 0
               ]
-            },
+            }, 
             'jointeamid': {
               '$ifNull': [
                 '$teamid', ''
               ]
-            },
+            }, 
             'userid': {
               '$ifNull': [
                 '$userid', ''
               ]
-            },
+            }, 
             'teamData': {
               '$ifNull': [
                 '$teamData', ''
               ]
-            },
+            }, 
             'image': {
               '$ifNull': [
                 '$image', 'https://admin.Riskle.com/user.png'
               ]
-            },
+            }, 
             'teamnumber': {
               '$ifNull': [
                 '$jointeamdata.teamnumber', 0
               ]
-            },
+            }, 
             'usernumber': 1
           }
         }, {
+          '$unwind': {
+            'path': '$teamData'
+          }
+        }, {
+          '$addFields': {
+            'teamData.stock': {
+              '$map': {
+                'input': '$teamData.stock', 
+                'as': 'stc', 
+                'in': '$$stc.stockId'
+              }
+            }
+          }
+        }, {
+          '$lookup': {
+            'from': 'stocks', 
+            'let': {
+              'id': '$teamData.stock'
+            }, 
+            'pipeline': [
+              {
+                '$match': {
+                  '$expr': {
+                    '$in': [
+                      '$_id', '$$id'
+                    ]
+                  }
+                }
+              }, {
+                '$project': {
+                  'name': 1, 
+                  'tradingsymbol': 1, 
+                  'closePrice': 1
+                }
+              }
+            ], 
+            'as': 'stockTeam'
+          }
+        }, {
           '$sort': {
-            'usernumber': -1,
-            'userid': -1,
+            'usernumber': -1, 
+            'userid': -1, 
             'jointeamdata.teamnumber': 1
           }
         }, {
           '$project': {
-            'joinleaugeid': '$_id',
-            '_id': 0,
+            'joinleaugeid': '$_id', 
+            '_id': 0, 
+            'stockTeam':1,
             'joinTeamNumber': {
               '$ifNull': [
                 '$teamnumber', 0
               ]
-            },
+            }, 
             'jointeamid': {
               '$ifNull': [
                 '$teamid', ''
               ]
-            },
+            }, 
             'userid': {
               '$ifNull': [
                 '$userid', ''
               ]
-            },
+            }, 
             'team': {
               '$ifNull': [
                 '$userdata.team', ''
               ]
-            },
+            }, 
             'image': {
               '$ifNull': [
                 '$image', 'https://admin.Riskle.com/user.png'
               ]
-            },
+            }, 
             'teamnumber': {
               '$ifNull': [
                 '$jointeamdata.teamnumber', 0
               ]
-            },
+            }, 
             'usernumber': 1
           }
         }, {
