@@ -1547,12 +1547,10 @@ class overfantasyServices {
         final_status: { $nin: ['winnerdeclared', 'IsCanceled'] },
         status: { $ne: 'completed' }
       });
-
       if (listContest.length > 0) {
         for (let index of listContest) {
           let matchTimings = index.start_date;
-          const currentDate1 = moment().format('YYYY-MM-DD');
-
+          const currentDate1 = moment().format('YYYY-MM-DD+HH:mm:ss');
           if (currentDate1 >= matchTimings) {
             const result = await this.getSockScoresUpdates(listContest);
           
@@ -1577,7 +1575,7 @@ class overfantasyServices {
               if(ele.EndDate === dateFormat){
                 matchStatus.final_status = 'IsReviewed';
               }
-              await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, {final_status:'completed'});
+              await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, matchStatus);
               
               let total = 0;
           

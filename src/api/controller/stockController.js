@@ -252,7 +252,6 @@ class stockController {
 
     async saveCurrentPriceOfStock(req, res, next) {
         try {
-            console.log("ppppppppppppppp")
             const data = await stockContestService.saveCurrentPriceOfStock(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
