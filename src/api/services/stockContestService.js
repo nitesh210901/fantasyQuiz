@@ -44,6 +44,7 @@ class overfantasyServices {
       AllCompletedContest: this.AllCompletedContest.bind(this),
       getStockContest: this.getStockContest.bind(this),
 
+      rankUpdateInMatch1: this.rankUpdateInMatch1.bind(this),
 
     }
   }
@@ -158,38 +159,6 @@ class overfantasyServices {
         }
       });
 
-      // if (stock_contest === "live") {
-      //   matchpipe.push({
-      //     $match: {
-      //       $and: [{ status: 'started' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } } ],
-      //       final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
-      //     }
-      //   });
-      // } else if (stock_contest === "upcoming") {
-      //   matchpipe.push({
-      //     $match: {
-      //       $and: [{ status: 'notstarted' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
-      //       final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
-      //     }
-      //   });
-      // } else if (stock_contest === "completed") {
-      //   matchpipe.push({
-      //     $match: {
-      //       $and: [{ status: 'completed' }, { "stock_contest_cat": stock_contest_cat }, { launch_status: 'launched' }, { start_date: { $lt: date } }],
-      //       final_status: "winnerdeclared"
-      //     }
-      //   });
-      // }
-
-      // if(stock_contest !== "completed"){
-      //   matchpipe.push({
-      //     $match: {
-      //         $and: [{ status: 'notstarted' }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
-      //         final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
-      //     }
-      // });
-      // }
-
 
       matchpipe.push({
         $lookup: {
@@ -214,6 +183,7 @@ class overfantasyServices {
       });
 
       const result = await stockContestModel.aggregate(matchpipe);
+      
       if (result.length > 0) {
         return result
       } else {
@@ -621,6 +591,16 @@ class overfantasyServices {
               winning: resultForWinning.cons_win,
             },
           });
+
+          await stockFinalResult.create({
+            userid: req.user._id,
+            teamid: jointeamId,
+            contestId: stockContestId,
+            finalvalue: 0,
+            joinId:joinLeaugeResult._id
+          });
+
+
           await stockLeaderBoardModel.create({
             userId: req.user._id,
             teamId: jointeamId,
@@ -1197,379 +1177,124 @@ class overfantasyServices {
   async myContestleaderboard(req) {
     try {
       const { contestId } = req.query;
-      console.log(contestId)
-      const joinedleaugeA = await joinStockLeagueModel.aggregate([
-        {
-          '$match': {
-            'contestId': new mongoose.Types.ObjectId(contestId)
-          }
-        }, {
-          '$lookup': {
-            'from': 'users',
-            'let': {
-              'userId': '$userid'
-            },
-            'pipeline': [
-              {
-                '$match': {
-                  '$expr': {
-                    '$eq': [
-                      '$_id', '$$userId'
-                    ]
+            let skip = (req.query?.skip) ? Number(req.query.skip) : 0;
+      let limit = (req.query?.limit) ? Number(req.query.limit) : 10;
+      let userid = req.user._id
+            const aggPipe = [];
+            let sortarray = [];
+            aggPipe.push({
+              '$match': {
+                'contestId': new mongoose.Types.ObjectId(contestId)
+              }
+            }, {
+              '$lookup': {
+                'from': 'users', 
+                'localField': 'userid', 
+                'foreignField': '_id', 
+                'as': 'userdata'
+              }
+            }, {
+              '$unwind': {
+                'path': '$userdata'
+              }
+            }, {
+              '$lookup': {
+                'from': 'stockfinalresults', 
+                'localField': '_id', 
+                'foreignField': 'joinId', 
+                'as': 'leaderboards'
+              }
+            }, {
+              '$unwind': {
+                'path': '$leaderboards'
+              }
+            }, {
+              '$addFields': {
+                'usernumber': {
+                  '$cond': {
+                    'if': {
+                      '$eq': [
+                        '$userid', new mongoose.Types.ObjectId(userid)
+                      ]
+                    }, 
+                    'then': 1, 
+                    'else': 0
+                  }
+                }, 
+                'image': {
+                  '$cond': {
+                    'if': {
+                      '$and': [
+                        {
+                          '$ne': [
+                            '$userdata.image', null
+                          ]
+                        }, {
+                          '$ne': [
+                            '$userdata.image', ''
+                          ]
+                        }
+                      ]
+                    }, 
+                    'then': '$userdata.image', 
+                    'else': 'https://admin.mygames11.com/default_profile.png'
                   }
                 }
               }
-            ],
-            'as': 'userData'
-          }
-        }, {
-          '$lookup': {
-            'from': 'joinstockteams',
-            'localField': 'teamid',
-            'foreignField': '_id',
-            'as': 'teamData'
-          }
-        }, {
-          '$unwind': {
-            'path': '$userData',
-            'path': '$teamData',
-            'preserveNullAndEmptyArrays': true
-          }
-        }, {
-          '$addFields': {
-            'usernumber': {
-              '$cond': {
-                'if': {
-                  '$eq': [
-                    '$userid', new mongoose.Types.ObjectId(req.user._id)
-                  ]
-                },
-                'then': 1,
-                'else': 0
+            }, {
+              '$sort': {
+                'usernumber': -1, 
+                'userid': -1, 
+                'leaderboards.teamnumber': 1
               }
-            },
-            'image': {
-              '$cond': {
-                'if': {
-                  '$and': [
-                    {
-                      '$ne': [
-                        '$userdata.image', null
-                      ]
-                    }, {
-                      '$ne': [
-                        '$userdata.image', ''
-                      ]
-                    }
-                  ]
-                },
-                'then': '$userdata.image',
-                'else': 'https://admin.Riskle.com/default_profile.png'
-              }
-            }
-          }
-        }, {
-          '$match': {
-            'userid': new mongoose.Types.ObjectId(req.user._id)
-          }
-        }, {
-          '$unwind': {
-            'path': '$teamData'
-          }
-        }, {
-          '$addFields': {
-            'teamData.stock': {
-              '$map': {
-                'input': '$teamData.stock', 
-                'as': 'stc', 
-                'in': '$$stc.stockId'
-              }
-            }
-          }
-        }, {
-          '$lookup': {
-            'from': 'stocks', 
-            'let': {
-              'id': '$teamData.stock'
-            }, 
-            'pipeline': [
-              {
-                '$match': {
-                  '$expr': {
-                    '$in': [
-                      '$_id', '$$id'
-                    ]
-                  }
-                }
-              }, {
-                '$project': {
-                  'name': 1, 
-                  'tradingsymbol': 1, 
-                  'closePrice': 1
-                }
-              }
-            ], 
-            'as': 'stockTeam'
-          }
-        },{
-          '$sort': {
-            'usernumber': -1,
-            'userid': -1,
-            'teamData.teamnumber': 1
-          }
-        }, {
-          '$project': {
-            'joinstockleaugeid': '$_id',
-            '_id': 0,
-            'stockTeam':1,
-            'teamnumber': {
-              '$ifNull': [
-                '$teamnumber', 0
-              ]
-            },
-            'jointeamid': {
-              '$ifNull': [
-                '$teamid', ''
-              ]
-            },
-            'userid': {
-              '$ifNull': [
-                '$userid', ''
-              ]
-            },
-            'teamData': {
-              '$ifNull': [
-                '$teamData', ''
-              ]
-            },
-            'image': {
-              '$ifNull': [
-                '$image', 'https://admin.Riskle.com/user.png'
-              ]
-            },
-            'teamnumber': {
-              '$ifNull': [
-                '$teamData.teamnumber', 0
-              ]
-            },
-            'usernumber': 1
-          }
-        }
-      ]);
-      const joinedleaugeB = await joinStockLeagueModel.aggregate([
-        {
-          '$match': {
-            'contestId': new mongoose.Types.ObjectId(req.query.contestId)
-          }
-        }, {
-          '$lookup': {
-            'from': 'users', 
-            'localField': 'userid', 
-            'foreignField': '_id', 
-            'as': 'userdata'
-          }
-        }, {
-          '$lookup': {
-            'from': 'joinstockteams', 
-            'localField': 'teamid', 
-            'foreignField': '_id', 
-            'as': 'teamData'
-          }
-        }, {
-          '$unwind': {
-            'path': '$userdata'
-          }
-        }, {
-          '$unwind': {
-            'path': '$jointeamdata', 
-            'preserveNullAndEmptyArrays': true
-          }
-        }, {
-          '$addFields': {
-            'usernumber': {
-              '$cond': {
-                'if': {
-                  '$eq': [
-                    '$userid', new mongoose.Types.ObjectId(req.user._id)
+            }, {
+              '$project': {
+                'joinleaugeid': '$_id', 
+                '_id': 0, 
+                'joinTeamNumber': {
+                  '$ifNull': [
+                    '$leaderboards.teamnumber', 0
                   ]
                 }, 
-                'then': 1, 
-                'else': 0
-              }
-            }, 
-            'image': {
-              '$cond': {
-                'if': {
-                  '$and': [
-                    {
-                      '$ne': [
-                        '$userdata.image', null
-                      ]
-                    }, {
-                      '$ne': [
-                        '$userdata.image', ''
-                      ]
-                    }
+                'jointeamid': {
+                  '$ifNull': [
+                    '$teamid', ''
                   ]
                 }, 
-                'then': '$userdata.image', 
-                'else': 'https://admin.Riskle.com/default_profile.png'
+                'userid': {
+                  '$ifNull': [
+                    '$userid', ''
+                  ]
+                }, 
+                'team': {
+                  '$ifNull': [
+                    '$userdata.team', ''
+                  ]
+                }, 
+                'image': {
+                  '$ifNull': [
+                    '$image', 'https://admin.mygames11.com/user.png'
+                  ]
+                }, 
+                'teamnumber': {
+                  '$ifNull': [
+                    '$leaderboards.teamnumber', 0
+                  ]
+                }, 
+                'usernumber': 1, 
+                'finalvalue': '$leaderboards.finalvalue',
+                  'rank':"$leaderboards.rank"
               }
-            }
-          }
-        }, {
-          '$match': {
-            'userid': {
-              '$ne': new mongoose.Types.ObjectId(req.user._id)
-            }
-          }
-        }, {
-          '$sort': {
-            'usernumber': -1, 
-            'userid': -1, 
-            'teamData.teamnumber': 1
-          }
-        }, {
-          '$project': {
-            'joinstockleaugeid': '$_id', 
-            '_id': 0, 
-            'teamnumber': {
-              '$ifNull': [
-                '$teamnumber', 0
-              ]
-            }, 
-            'jointeamid': {
-              '$ifNull': [
-                '$teamid', ''
-              ]
-            }, 
-            'userid': {
-              '$ifNull': [
-                '$userid', ''
-              ]
-            }, 
-            'teamData': {
-              '$ifNull': [
-                '$teamData', ''
-              ]
-            }, 
-            'image': {
-              '$ifNull': [
-                '$image', 'https://admin.Riskle.com/user.png'
-              ]
-            }, 
-            'teamnumber': {
-              '$ifNull': [
-                '$jointeamdata.teamnumber', 0
-              ]
-            }, 
-            'usernumber': 1
-          }
-        }, {
-          '$unwind': {
-            'path': '$teamData'
-          }
-        }, {
-          '$addFields': {
-            'teamData.stock': {
-              '$map': {
-                'input': '$teamData.stock', 
-                'as': 'stc', 
-                'in': '$$stc.stockId'
-              }
-            }
-          }
-        }, {
-          '$lookup': {
-            'from': 'stocks', 
-            'let': {
-              'id': '$teamData.stock'
-            }, 
-            'pipeline': [
-              {
-                '$match': {
-                  '$expr': {
-                    '$in': [
-                      '$_id', '$$id'
-                    ]
-                  }
-                }
-              }, {
-                '$project': {
-                  'name': 1, 
-                  'tradingsymbol': 1, 
-                  'closePrice': 1
-                }
-              }
-            ], 
-            'as': 'stockTeam'
-          }
-        }, {
-          '$sort': {
-            'usernumber': -1, 
-            'userid': -1, 
-            'jointeamdata.teamnumber': 1
-          }
-        }, {
-          '$project': {
-            'joinleaugeid': '$_id', 
-            '_id': 0, 
-            'stockTeam':1,
-            'joinTeamNumber': {
-              '$ifNull': [
-                '$teamnumber', 0
-              ]
-            }, 
-            'jointeamid': {
-              '$ifNull': [
-                '$teamid', ''
-              ]
-            }, 
-            'userid': {
-              '$ifNull': [
-                '$userid', ''
-              ]
-            }, 
-            'team': {
-              '$ifNull': [
-                '$userdata.team', ''
-              ]
-            }, 
-            'image': {
-              '$ifNull': [
-                '$image', 'https://admin.Riskle.com/user.png'
-              ]
-            }, 
-            'teamnumber': {
-              '$ifNull': [
-                '$jointeamdata.teamnumber', 0
-              ]
-            }, 
-            'usernumber': 1
-          }
-        }, {
-          '$limit': 200
-        }
-      ]);
-      const joinedleauge = joinedleaugeA.concat(joinedleaugeB);
-      if (joinedleauge.length > 0) {
-        for (let joinUser of joinedleauge) {
-          if (joinUser.teamnumber == 0) {
-            joinUser.teamnumber = joinUser.joinTeamNumber;
+            });
+            const joinedleauge = await joinStockLeagueModel.aggregate(aggPipe);
+            if (joinedleauge[0].length == 0) return { message: 'Contest LeaderBard Not Found', status: false, data: [] };
+
+            return {
+                message: "Contest LeaderBard",
+                status: true,
+                data: joinedleauge[0],
 
           }
-        }
-      } else {
-        return { message: 'Contest LeaderBard Not Found', status: false, data: [] };
-      }
-      if (joinedleauge.length == 0) return { message: 'Contest LeaderBard Not Found', status: false, data: [] };
-
-      return {
-        message: "Contest LeaderBard",
-        status: true,
-        data: joinedleauge,
-
-      }
     } catch (error) {
       throw error;
     }
@@ -1645,7 +1370,7 @@ class overfantasyServices {
 
   async updateResultStocks(req) {
     try {
-
+      console.log('______+++++++++');
       const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
       let newData;
       const listContest = await stockContestModel.find({
@@ -1707,6 +1432,7 @@ class overfantasyServices {
               }));
 
               insertData.finalvalue = total;
+              await this.rankUpdateInMatch1(ele.contestId);  
 
               newData = await stockFinalResult.findOneAndUpdate(
                 { userId: ele.userid, teamid: ele.teamid, contestId: ele.contestId },
@@ -1730,6 +1456,91 @@ class overfantasyServices {
     } catch (error) {
       console.log(error);
       throw error;
+    }
+  }
+
+  async rankUpdateInMatch1(contestId){
+    try {
+        let agePipe = [];
+        agePipe.push({
+            $match: {
+                _id:mongoose.Types.ObjectId(contestId)
+            }
+        });
+      
+        agePipe.push({
+            $lookup: {
+                from: "stockfinalresults",
+                let: {
+                  contestId: "$_id",
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $eq: ["$contestId", "$$contestId"],
+                          },
+                        ],
+                      },
+                    },
+                  },
+                  {
+                    $setWindowFields: {
+                      partitionBy: "",
+                      sortBy: {
+                        finalvalue: -1,
+                      },
+                      output: {
+                        rank: {
+                          $rank: {},
+                        },
+                      },
+                    },
+                  },
+                  {
+                    $project: {
+                      _id: 1,
+                      rank: 1,
+                      finalvalue: 1,
+                    },
+                  },
+                ],
+                as: "leaderboards",
+            }
+        });
+        agePipe.push({
+            $project: {
+                _id: 1,
+                status: 1,
+                leaderboards: 1,
+                start_date: 1
+            }
+        })
+        let getLiveMatches = await stockContestModel.aggregate(agePipe);
+
+      
+      if (getLiveMatches.length > 0) {
+        if (getLiveMatches[0].leaderboards.length > 0) {
+                const bulkUpdateOperations = [];
+                  for (let leaderboard of getLiveMatches[0].leaderboards) {
+                        bulkUpdateOperations.push({
+                            updateMany: {
+                                filter: { _id: leaderboard._id },
+                                update: { $set: { rank: leaderboard.rank } }
+                            }
+                        });
+          }
+                    if (bulkUpdateOperations.length > 0) {
+                        await stockFinalResult.bulkWrite(bulkUpdateOperations);
+                    }
+                }
+            }
+        return { message: "Done", status: 200, data: [] };
+    }
+    catch (error) {
+        console.log("error", error)
     }
   }
 
