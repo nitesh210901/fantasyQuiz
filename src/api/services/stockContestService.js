@@ -42,6 +42,8 @@ class overfantasyServices {
       Newjoinedcontest: this.Newjoinedcontest.bind(this),
       NewjoinedcontestLive: this.NewjoinedcontestLive.bind(this),
       AllCompletedContest: this.AllCompletedContest.bind(this),
+      getStockContest: this.getStockContest.bind(this),
+
 
     }
   }
@@ -2141,6 +2143,7 @@ class overfantasyServices {
 
   async Newjoinedcontest(req) {
     let today = moment().format('YYYY-MM-DD HH:mm:ss')
+    console.log(today)
     const JoiendMatches = await joinStockLeagueModel.aggregate([
       {
         '$match': {
@@ -2800,6 +2803,181 @@ class overfantasyServices {
     } catch (error) {
       throw error;
     }
+  }
+
+  async getStockContest(req) {
+      try {
+          let finalData = {},
+              aggpipe = [];
+          aggpipe.push({
+              $match: { _id: mongoose.Types.ObjectId(req.query.contestId) }
+          });
+          aggpipe.push({
+              $lookup: {
+                  from: 'contestcategories',
+                  localField: 'contest_cat',
+                  foreignField: '_id',
+                  as: 'contestcategories'
+              }
+          });
+          // aggpipe.push({
+          //     $match: {
+          //         $expr: {
+          //             $eq: ['$status', 'opened']
+          //         }
+          //     }
+          // });
+          aggpipe.push({
+              $sort: { 'win_amount': -1 }
+          });
+          const matchchallengesData = await matchchallengesModel.aggregate(aggpipe);
+          console.log("matchchallengedata" + JSON.stringify(matchchallengesData[0].joinedusers))
+          let i = 0;
+          if (matchchallengesData.length == 0) {
+              return {
+                  message: "No Challenge Available ..!",
+                  status: true,
+                  data: {}
+              }
+          }
+          // if ((matchchallengesData[0].contest_type == 'Amount' && matchchallengesData[0].joinedusers <= matchchallengesData[0].maximum_user) || matchchallengesData[0].contest_type == 'Percentage') {
+          //     // console.log('here')
+          //     if (matchchallengesData[0].maximum_user >= 0 && matchchallengesData[0].is_private != 1 && matchchallengesData[0].status == 'opened') {
+          let isselected = false,
+              refercode = '',
+              winners = 0;
+          const price_card = [];
+          const joinedleauge = await JoinLeaugeModel.find({
+              // matchkey: req.query.matchkey,
+              challengeid: req.query.matchchallengeid,
+              userid: req.user._id,
+          }).select('_id refercode');
+
+          if (joinedleauge.length > 0) {
+              refercode = joinedleauge[0].refercode;
+              if (matchchallengesData[0].multi_entry == 1 && joinedleauge.length < 11) {
+                  if (matchchallengesData[0].contest_type == 'Amount') {
+                      if (joinedleauge.length == 11 || matchchallengesData[0].joinedusers == matchchallengesData[0].maximum_user)
+                          isselected = true;
+                  } else if (matchchallengesData[0].contest_type == 'Percentage') {
+                      if (joinedleauge.length == 11) isselected = true;
+                  } else isselected = false;
+              } else isselected = true;
+          }
+          if (matchchallengesData[0].matchpricecards && matchchallengesData[0].matchpricecards.length > 0) {
+              for await (const priceCard of matchchallengesData[0].matchpricecards) {
+                  winners += Number(priceCard.winners);
+                  const tmpObj = {
+                      id: priceCard._id,
+                      winners: priceCard.winners,
+                      total: priceCard.total,
+                  };
+                  if ((priceCard.price && Number(priceCard.price) == 0) || priceCard.type == 'Percentage') {
+                      tmpObj['price'] = (Number(priceCard.total) / Number(priceCard.winners)).toFixed(2);
+                      tmpObj['price_percent'] = `${priceCard.price_percent}%`;
+                  } else {
+                      if (matchchallengesData[0].amount_type == "prize") {
+                          tmpObj['price'] = priceCard.prize_name;
+                          if (priceCard.image != "") {
+                              tmpObj['image'] = `${constant.BASE_URL}${priceCard.image}`,
+                                  tmpObj['gift_type'] = "gift"
+                          } else {
+                              tmpObj['price'] = Number(priceCard.price);
+                              tmpObj['gift_type'] = "amount"
+                              tmpObj['image'] = ""
+                          }
+                      } else {
+                          tmpObj['price'] = Number(priceCard.price);
+                          tmpObj['gift_type'] = "amount"
+                          tmpObj['image'] = ""
+                      }
+                  }
+                  if (priceCard.min_position + 1 != priceCard.max_position) tmpObj['start_position'] = `${Number(priceCard.min_position) + 1}-${priceCard.max_position}`;
+                  else tmpObj['start_position'] = `${priceCard.max_position}`;
+
+                  tmpObj.amount_type = matchchallengesData[0].amount_type
+                  price_card.push(tmpObj);
+              }
+          } else {
+              price_card.push({
+                  id: 0,
+                  winners: 1,
+                  price: matchchallengesData[0].win_amount,
+                  total: matchchallengesData[0].win_amount,
+                  start_position: 1,
+                  amount_type: matchchallengesData[0].amount_type,
+
+              });
+              winners = 1;
+          }
+          let gift_image = "";
+          let gift_type = "amount";
+          let find_gift = matchchallengesData[0].matchpricecards.find(function (x) { return x.gift_type == "gift" });
+          if (find_gift) {
+              gift_image = `${constant.BASE_URL}${find_gift.image}`;
+              gift_type = find_gift.gift_type;
+          }
+
+          console.log("----reqdata---getcontest..",)
+          const total_teams = await JoinTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
+          const total_joinedcontestData = await JoinLeaugeModel.aggregate([
+              {
+                  $match: {
+                      userid: mongoose.Types.ObjectId(req.user._id),
+                      matchkey: mongoose.Types.ObjectId(req.query.matchkey)
+                  }
+              },
+              {
+                  $group: {
+                      _id: "$challengeid",
+                  }
+              }, {
+                  $count: "total_count"
+              }
+          ])
+          let count_JoinTeam = total_joinedcontestData[0]?.total_count
+          finalData = {
+              matchchallengeid: matchchallengesData[0]._id,
+              winning_percentage: matchchallengesData[0].winning_percentage,
+              entryfee: matchchallengesData[0].entryfee,
+              win_amount: matchchallengesData[0].win_amount,
+              contest_type: matchchallengesData[0].contest_type,
+              maximum_user: matchchallengesData[0].contest_type == 'Amount' ? matchchallengesData[0].maximum_user : 0,
+              joinedusers: matchchallengesData[0].joinedusers,
+              // is_expert:matchchallengesData[0].is_expert,
+              // expert_name:matchchallengesData[0].expert_name,
+              multi_entry: matchchallengesData[0].multi_entry,
+              confirmed_challenge: matchchallengesData[0].confirmed_challenge,
+              is_running: matchchallengesData[0].is_running,
+              amount_type: matchchallengesData[0].amount_type,
+              is_bonus: matchchallengesData[0].is_bonus,
+              team_limit: matchchallengesData[0].team_limit,
+              joinedleauge: joinedleauge,  //matchchallengesData[0].joinedusers,     //matchchallengesData[0].team_limit,
+              joinedleauges: joinedleauge.length,
+              total_joinedcontest: 0,
+              total_teams: total_teams, //0,
+              bonus_percentage: matchchallengesData[0].bonus_percentage || 0,
+              pricecard_type: matchchallengesData[0].pricecard_type,
+              isselected: isselected,
+              bonus_date: '',
+              isselectedid: '',
+              refercode: refercode,
+              totalwinners: winners,
+              price_card: price_card,
+              status: 1,
+              gift_type: gift_type,
+              gift_image: gift_image
+          }
+          //     }
+          // }
+          return {
+              message: "Match Challenge Data ..!",
+              status: true,
+              data: finalData
+          }
+      } catch (error) {
+          throw error;
+      }
   }
 }
 
