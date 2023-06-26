@@ -2305,8 +2305,8 @@ class overfantasyServices {
         }, {
           '$match': {
             'contestData.fantasy_type': req.query.stock_contest_cat,
-            'contestData.isEnable': 'true',
-            'contestData.isCancelled': 'false'
+            'contestData.isEnable': true,
+            'contestData.isCancelled': false
           }
         }, {
           '$match': {
@@ -2507,8 +2507,8 @@ class overfantasyServices {
         }, {
           '$match': {
             'contestData.fantasy_type': req.query.stock_contest_cat,
-            'contestData.isEnable': 'true',
-            'contestData.isCancelled': 'false'
+            'contestData.isEnable': true,
+            'contestData.isCancelled': false
           }
         }, {
           '$match': {
