@@ -359,9 +359,10 @@ router.get('/completed-contest', auth, stockController.completeContest);
 router.get('/my-contest-leaderboard', auth, stockController.myContestleaderboard);
 router.get("/save-current-stock-price", auth, stockController.saveCurrentPriceOfStock);
 router.get("/get-stock-usable-balance", auth, stockController.getStockUsableBalance);
+router.get("/rankupdate", auth, stockController.rankUpdateInMatch1);
 
 router.get('/getStockMyTeams', auth, stockController.getStockMyTeams);
-router.get('/point-calculation-stock', auth, stockController.updateResultStocks);
+router.get('/point-calculation-stock', stockController.updateResultStocks);
 router.get("live-stock-rank-leaderboard", auth, stockController.liveStockRanksLeaderboard)
 router.get('/newjoinedcontest', auth, stockController.Newjoinedcontest);
 router.get('/newjoinedcontestlive', auth, stockController.NewjoinedcontestLive);
