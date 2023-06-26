@@ -2293,7 +2293,7 @@ class overfantasyServices {
           '$expr': {
             '$and': [
               {
-                '$lte': [
+                '$gte': [
                   '$date', today
                 ]
               }
