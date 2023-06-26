@@ -1735,182 +1735,402 @@ class overfantasyServices {
     }
   }
 
+  // async liveStockRanksLeaderboard(req) {
+  //   try {
+  //     let skip = Number(req.query?.skip ?? 0);
+  //     let limit = Number(req.query?.limit ?? 10);
+
+  //     const finalData = await joinStockLeagueModel.aggregate([
+  //       {
+  //         '$match': {
+  //           'contestId': mongoose.Types.ObjectId(req.query.contestId)
+  //         }
+  //       },
+  //       {
+  //         '$lookup': {
+  //           'from': 'users',
+  //           'localField': 'userid',
+  //           'foreignField': '_id',
+  //           'as': 'user'
+  //         }
+  //       },
+  //       {
+  //         '$addFields': {
+  //           'team': {
+  //             '$ifNull': [
+  //               { '$arrayElemAt': ['$user.team', 0] },
+  //               ''
+  //             ]
+  //           },
+  //           'userno': {
+  //             '$cond': {
+  //               'if': {
+  //                 '$and': [
+  //                   { '$eq': ['$userid', mongoose.Types.ObjectId(req.user._id)] }
+  //                 ]
+  //               },
+  //               'then': '-1',
+  //               'else': '0'
+  //             }
+  //           }
+  //         }
+  //       },
+  //       {
+  //         '$lookup': {
+  //           'from': 'stockleaderboards',
+  //           'let': { 'joinId': '$_id' },
+  //           'pipeline': [
+  //             { '$match': { '$expr': { '$eq': ['$joinId', '$$joinId'] } } }
+  //           ],
+  //           'as': 'leaderboards'
+  //         }
+  //       },
+  //       {
+  //         '$lookup': {
+  //           'from': 'stockfinalresults',
+  //           'let': { 'joinId': '$_id' },
+  //           'pipeline': [
+  //             { '$match': { '$expr': { '$eq': ['$joinId', '$$joinId'] } } }
+  //           ],
+  //           'as': 'finalResult'
+  //         }
+  //       },
+  //       {
+  //         '$project': {
+  //           '_id': 0,
+  //           'userjoinid': '$_id',
+  //           'userid': '$userid',
+  //           'jointeamid': '$teamid',
+  //           'teamnumber': 1,
+  //           'contestId': 1,
+  //           'userno': 1,
+  //           'points': {
+  //             '$ifNull': [
+  //               { '$arrayElemAt': ['$leaderboards.points', 0] },
+  //               0
+  //             ]
+  //           },
+  //           'getcurrentrank': {
+  //             '$ifNull': [
+  //               { '$arrayElemAt': ['$leaderboards.rank', 0] },
+  //               0
+  //             ]
+  //           },
+  //           'teamname': {
+  //             '$ifNull': ['$team', 0]
+  //           },
+  //           'image': {
+  //             '$cond': {
+  //               'if': {
+  //                 '$eq': [
+  //                   { '$getField': { 'field': 'image', 'input': { '$arrayElemAt': ['$user', 0] } } },
+  //                   ''
+  //                 ]
+  //               },
+  //               'then': 'https://admin.mygames11.com/avtar1.png',
+  //               'else': { '$getField': { 'field': 'image', 'input': { '$arrayElemAt': ['$user', 0] } } }
+  //             }
+  //           },
+  //           'winingamount': {
+  //             '$cond': {
+  //               'if': { '$ne': [{ '$arrayElemAt': ['$finalResult.amount', 0] }, 0] },
+  //               'then': { '$arrayElemAt': ['$finalResult.amount', 0] },
+  //               'else': { '$arrayElemAt': ['$finalResult.prize', 0] }
+  //             }
+  //           }
+  //         }
+  //       },
+  //       {
+  //         '$lookup': {
+  //           'from': 'stock_contests',
+  //           'localField': 'contestId',
+  //           'foreignField': '_id',
+  //           'as': 'challengeData'
+  //         }
+  //       },
+  //       {
+  //         '$addFields': {
+  //           'contest_winning_type': {
+  //             '$ifNull': [
+  //               { '$arrayElemAt': ['$challengeData.amount_type', 0] },
+  //               0
+  //             ]
+  //           }
+  //         }
+  //       },
+  //       {
+  //         '$sort': {
+  //           'userno': 1,
+  //           'getcurrentrank': 1
+  //         }
+  //       },
+  //       {
+  //         '$setWindowFields': {
+  //           'partitionBy': "",
+  //           'sortBy': {
+  //             'points': -1,
+  //           },
+  //           'output': {
+  //             'rank': {
+  //               '$rank': {},
+  //             },
+  //           },
+  //         }
+  //       },
+  //       {
+  //         '$facet': {
+  //           'data': [
+  //             { '$skip': skip },
+  //             { '$limit': limit }
+  //           ]
+  //         }
+  //       }
+  //     ]);
+
+  //     if (finalData[0].data.length > 0) {
+  //       return {
+  //         message: "Live score leaderboard of contest",
+  //         status: true,
+  //         data: {
+  //           team_number_get: finalData[0].data[0].teamnumber,
+  //           userrank: finalData[0].data[0].getcurrentrank,
+  //           pdfname: '',
+  //           jointeams: finalData[0].data || []
+  //         }
+  //       };
+  //     } else {
+  //       return {
+  //         message: 'Live score leaderboard of contest Not Found',
+  //         status: false,
+  //         data: {}
+  //       };
+  //     }
+
+  //   }
+  //   catch (error) {
+  //     throw error;
+  //   }
+  // }
+  
   async liveStockRanksLeaderboard(req) {
     try {
-      let skip = Number(req.query?.skip ?? 0);
-      let limit = Number(req.query?.limit ?? 10);
-
-      const finalData = await joinStockLeagueModel.aggregate([
-        {
+      let { contestId } = req.query
+      let userId = req.user._id
+        let skip = (req.query?.skip) ? Number(req.query.skip) : 0;
+        let limit = (req.query?.limit) ? Number(req.query.limit) : 10;
+        let aggPipe = [];
+        aggPipe.push({
           '$match': {
-            'contestId': mongoose.Types.ObjectId(req.query.contestId)
+            'contestId': new mongoose.Types.ObjectId(contestId)
           }
-        },
-        {
+        }, {
           '$lookup': {
-            'from': 'users',
-            'localField': 'userid',
-            'foreignField': '_id',
+            'from': 'users', 
+            'localField': 'userid', 
+            'foreignField': '_id', 
             'as': 'user'
           }
-        },
-        {
+        }, {
           '$addFields': {
             'team': {
               '$ifNull': [
-                { '$arrayElemAt': ['$user.team', 0] },
-                ''
+                {
+                  '$arrayElemAt': [
+                    '$user.team', 0
+                  ]
+                }, ''
               ]
-            },
+            }, 
             'userno': {
               '$cond': {
                 'if': {
                   '$and': [
-                    { '$eq': ['$userid', mongoose.Types.ObjectId(req.user._id)] }
+                    {
+                      '$eq': [
+                        '$userid', new mongoose.Types.ObjectId(userId)
+                      ]
+                    }
                   ]
-                },
-                'then': '-1',
+                }, 
+                'then': '-1', 
                 'else': '0'
               }
             }
           }
-        },
-        {
+        }, {
           '$lookup': {
-            'from': 'stockleaderboards',
-            'let': { 'joinId': '$_id' },
-            'pipeline': [
-              { '$match': { '$expr': { '$eq': ['$joinId', '$$joinId'] } } }
-            ],
+            'from': 'stockleaderboards', 
+            'localField': '_id', 
+            'foreignField': 'joinId', 
             'as': 'leaderboards'
           }
-        },
-        {
+        }, {
           '$lookup': {
-            'from': 'stockfinalresults',
-            'let': { 'joinId': '$_id' },
-            'pipeline': [
-              { '$match': { '$expr': { '$eq': ['$joinId', '$$joinId'] } } }
-            ],
+            'from': 'stockfinalresults', 
+            'localField': '_id', 
+            'foreignField': 'joinId', 
             'as': 'finalResult'
           }
-        },
-        {
+        }, {
           '$project': {
-            '_id': 0,
-            'userjoinid': '$_id',
-            'userid': '$userid',
-            'jointeamid': '$teamid',
-            'teamnumber': 1,
-            'contestId': 1,
-            'userno': 1,
+            '_id': 0, 
+            'userjoinid': '$_id', 
+            'userid': '$userid', 
+            'jointeamid': '$teamid', 
+            'teamnumber': 1, 
+            'contestId': 1, 
+            'userno': 1, 
             'points': {
               '$ifNull': [
-                { '$arrayElemAt': ['$leaderboards.points', 0] },
-                0
+                {
+                  '$arrayElemAt': [
+                    '$leaderboards.points', 0
+                  ]
+                }, 0
               ]
-            },
+            }, 
             'getcurrentrank': {
               '$ifNull': [
-                { '$arrayElemAt': ['$leaderboards.rank', 0] },
-                0
+                {
+                  '$arrayElemAt': [
+                    '$leaderboards.rank', 0
+                  ]
+                }, 0
               ]
-            },
+            }, 
             'teamname': {
-              '$ifNull': ['$team', 0]
-            },
+              '$ifNull': [
+                '$team', 0
+              ]
+            }, 
             'image': {
               '$cond': {
                 'if': {
                   '$eq': [
-                    { '$getField': { 'field': 'image', 'input': { '$arrayElemAt': ['$user', 0] } } },
-                    ''
+                    {
+                      '$getField': {
+                        'field': 'image', 
+                        'input': {
+                          '$arrayElemAt': [
+                            '$user', 0
+                          ]
+                        }
+                      }
+                    }, ''
                   ]
-                },
-                'then': 'https://admin.mygames11.com/avtar1.png',
-                'else': { '$getField': { 'field': 'image', 'input': { '$arrayElemAt': ['$user', 0] } } }
+                }, 
+                'then': 'https://admin.mygames11.com/avtar1.png', 
+                'else': {
+                  '$getField': {
+                    'field': 'image', 
+                    'input': {
+                      '$arrayElemAt': [
+                        '$user', 0
+                      ]
+                    }
+                  }
+                }
               }
-            },
+            }, 
+            'player_type': 'classic', 
             'winingamount': {
               '$cond': {
-                'if': { '$ne': [{ '$arrayElemAt': ['$finalResult.amount', 0] }, 0] },
-                'then': { '$arrayElemAt': ['$finalResult.amount', 0] },
-                'else': { '$arrayElemAt': ['$finalResult.prize', 0] }
+                'if': {
+                  '$ne': [
+                    {
+                      '$arrayElemAt': [
+                        '$finalResult.amount', 0
+                      ]
+                    }, 0
+                  ]
+                }, 
+                'then': {
+                  '$toString': {
+                    '$ifNull': [
+                      {
+                        '$arrayElemAt': [
+                          '$finalResult.amount', 0
+                        ]
+                      }, ''
+                    ]
+                  }
+                }, 
+                'else': {
+                  '$toString': {
+                    '$ifNull': [
+                      {
+                        '$arrayElemAt': [
+                          '$finalResult.prize', 0
+                        ]
+                      }, ''
+                    ]
+                  }
+                }
               }
             }
           }
-        },
-        {
+        }, {
           '$lookup': {
-            'from': 'stock_contests',
-            'localField': 'contestId',
-            'foreignField': '_id',
-            'as': 'challengeData'
+            'from': 'stock_contests', 
+            'localField': 'contestId', 
+            'foreignField': '_id', 
+            'as': 'stockContestData'
           }
-        },
-        {
+        }, {
           '$addFields': {
             'contest_winning_type': {
               '$ifNull': [
-                { '$arrayElemAt': ['$challengeData.amount_type', 0] },
-                0
+                {
+                  '$arrayElemAt': [
+                    '$stockContestData.amount_type', 0
+                  ]
+                }, '0'
               ]
-            }
+            }, 
+            'stockContestData': ''
           }
-        },
-        {
+        }, {
           '$sort': {
-            'userno': 1,
+            'userno': 1, 
             'getcurrentrank': 1
           }
-        },
-        {
-          '$setWindowFields': {
-            'partitionBy': "",
-            'sortBy': {
-              'points': -1,
-            },
-            'output': {
-              'rank': {
-                '$rank': {},
-              },
-            },
-          }
-        },
-        {
+        }, {
           '$facet': {
             'data': [
-              { '$skip': skip },
-              { '$limit': limit }
+              {
+                '$skip': skip
+              }, {
+                '$limit': limit
+              }
             ]
           }
+        })
+        const finalData = await joinStockLeagueModel.aggregate(aggPipe);
+        if (finalData[0].data.length > 0) {
+            return {
+                message: "Live score lederbord of match",
+                status: true,
+                data: {
+                    team_number_get: finalData[0].data[0].teamnumber,
+                    userrank: finalData[0].data[0].getcurrentrank,
+                    pdfname: '',
+                    jointeams: finalData[0].data ? finalData[0].data : [],
+
+                }
+            }
+        } else {
+            return {
+                message: 'Live score lederbord of match Not Found',
+                status: false,
+                data: {},
+
+            }
         }
-      ]);
-
-      if (finalData[0].data.length > 0) {
-        return {
-          message: "Live score leaderboard of contest",
-          status: true,
-          data: {
-            team_number_get: finalData[0].data[0].teamnumber,
-            userrank: finalData[0].data[0].getcurrentrank,
-            pdfname: '',
-            jointeams: finalData[0].data || []
-          }
-        };
-      } else {
-        return {
-          message: 'Live score leaderboard of contest Not Found',
-          status: false,
-          data: {}
-        };
-      }
-
     }
     catch (error) {
-      throw error;
+        throw error;
     }
-  }
+}
 
   async getStockUsableBalance(req) {
     try {
