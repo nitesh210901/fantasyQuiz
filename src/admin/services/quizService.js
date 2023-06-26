@@ -1676,7 +1676,8 @@ class quizServices {
                 }
                 const getMatchContestData1 = await quizModel.updateOne({ _id: req.params.quizId }, {
                     $set: {
-                        quiz_status: constant.MATCH_CHALLENGE_STATUS.CANCELED
+                        // quiz_status: constant.MATCH_CHALLENGE_STATUS.CANCELED
+                        quiz_status: req.query.status
                     }
                 });
                

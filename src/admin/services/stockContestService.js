@@ -30,6 +30,7 @@ class challengersService {
             refundprocess: this.refundprocess.bind(this),
             distributeWinningAmount: this.distributeWinningAmount.bind(this),
             stockviewtransactions: this.stockviewtransactions.bind(this),
+            cancelContestStock: this.cancelContestStock.bind(this),
         }
     }
    
@@ -110,13 +111,13 @@ class challengersService {
                         data.winning_percentage = req.body.winning_percentage;
                     }
 
-                    if (req.body.confirmed_challenge) {
-                        data.confirmed_challenge = 1;
-                    } else {
-                        if (req.body.contest_type == 'Amount' && req.body.pricecard_type == 'Percentage') {
-                            data.confirmed_challenge = 1;
-                        }
-                    }
+                    // if (req.body.confirmed_challenge) {
+                    //     data.confirmed_challenge = 1;
+                    // } else {
+                    //     if (req.body.contest_type == 'Amount' && req.body.pricecard_type == 'Percentage') {
+                    //         data.confirmed_challenge = 1;
+                    //     }
+                    // }
 
                     if (req.body.is_running) {
                         // console.log("...is_running'.. found");
@@ -149,7 +150,7 @@ class challengersService {
                     data.status = 'notstarted';
                     data.investment = req.body.investment;
                     data.win_amount = req.body.win_amount;
-                    data.amount_type = req.body.amount_type;
+                    // data.amount_type = req.body.amount_type;
                     data.select_team = req.body.select_team;
                     data.start_date = start_date;
                     data.end_date = end_date;
@@ -215,7 +216,7 @@ class challengersService {
                             challenger_Details,
                             position,
                             totalAmountForPercentage,
-                            amount_type: challenger_Details.amount_type
+                            // amount_type: challenger_Details.amount_type
                         }
                     } else {
 
@@ -234,7 +235,7 @@ class challengersService {
                             position,
                             check_PriceCard,
                             totalAmountForPercentage,
-                            amount_type: challenger_Details.amount_type
+                            // amount_type: challenger_Details.amount_type
                         }
                     }
                 } else {
@@ -729,11 +730,11 @@ class challengersService {
                     } else {
                         req.body.multi_entry = 0;
                     }
-                    if (req.body.confirmed_challenge) {
-                        req.body.confirmed_challenge = 1;
-                    } else {
-                        req.body.confirmed_challenge = 0;
-                    }
+                    // if (req.body.confirmed_challenge) {
+                    //     req.body.confirmed_challenge = 1;
+                    // } else {
+                    //     req.body.confirmed_challenge = 0;
+                    // }
 
                     if (req.body.is_running) {
                         req.body.is_running = 1;
@@ -810,12 +811,12 @@ class challengersService {
                         data.winning_percentage = req.body.winning_percentage;
                     }
 
-                    if (req.body.confirmed_challenge) {
-                        // console.log("..confirmed_challenge.. found");
-                        data.confirmed_challenge = 1;
-                    } else {
-                        data.confirmed_challenge = 0;
-                    }
+                    // if (req.body.confirmed_challenge) {
+                    //     console.log("..confirmed_challenge.. found");
+                    //     data.confirmed_challenge = 1;
+                    // } else {
+                    //     data.confirmed_challenge = 0;
+                    // }
 
                     if (req.body.is_running) {
                         // console.log("...is_running'.. found");
@@ -857,7 +858,7 @@ class challengersService {
                     data.entryfee = req.body.entryfee;
                     data.win_amount = req.body.win_amount;
                     data.fantasy_type = req.body.fantasy_type;
-                    data.amount_type = req.body.amount_type;
+                    // data.amount_type = req.body.amount_type;
                     data.select_team = req.body.select_team;
                     data.start_date = req.body.start_date;
                     data.end_date = req.body.end_date;
@@ -976,6 +977,7 @@ class challengersService {
                 }
                 const getMatchContestData1 = await stockContestModel.updateOne({ _id: req.params.stockContestId }, {
                     $set: {
+                        isCancelled:true,
                         status: constant.MATCH_CHALLENGE_STATUS.CANCELED
                     }
                 });

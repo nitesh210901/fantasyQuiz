@@ -394,6 +394,12 @@ router.get("/cancelMatch/:id",auth,resultController.cancelMatch);
 router.get("/cancelQuiz/:id",auth,QuizController.cancelQuiz);
 router.get("/allquiz/:id", auth,  getUrl, QuizController.matchAllquiz);
 router.post("/allquiz-table/:id", auth, QuizController.matchAllquizData);
+router.get('/quiz-user-details/:matchkey', auth, getUrl, QuizController.quizUserDetails);
+router.post('/quiz-user-details-table/:matchkey', auth, QuizController.quizUserDetailsData);
+router.get('/quizviewtransactions/:id', auth, getUrl, QuizController.quizviewtransactions);
+router.post('/quizviewTransactions-Data-Table/:id', auth, QuizController.quizviewTransactionsDataTable);
+router.get("/quizcancel/:QuidId",auth,QuizController.quizCancel);
+
 // -----------------------edit user teams by admin  ----------------------
 router.get("/edit-user-teams",auth,resultController.editUserTeams)
 router.post("/edit-user-teams-tabled",auth,resultController.editUserTeamsTable)
@@ -535,7 +541,7 @@ router.get("/cancel-stock-contest/:id", auth, getUrl, stockContestController.can
 router.get("/edit-stock-contest/:id", auth, getUrl, stockContestController.editStockContestPage);
 router.post("/edit-stock-contest-data", auth, stockContestController.editStockContestData);
 router.get("/launch-contest/:id", auth, stockContestController.launchStockContest);
-router.get("/cancelStockContest/:id",auth,stockContestController.cancelContestStock);
+router.get("/cancelStockContest",auth,stockContestController.cancelContestStock);
 router.post("/updateStockFinalStatus/:id/:status", auth, stockContestController.updateStockFinalStatus);  
 router.get('/total-joined-user/:contestId', auth, getUrl, stockContestController.totalJoinedUsers);
 router.post('/total-user-details-table/:contestId', auth, stockContestController.totalUserDetailsData);

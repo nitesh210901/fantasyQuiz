@@ -874,6 +874,7 @@ class quizController {
       console.log(error);
     }
   }
+  
   async quizUserDetails(req, res, next) {
     try {
       res.locals.message = req.flash();
@@ -1031,7 +1032,7 @@ class quizController {
               user_answer:doc.answer,
               transactionId: doc.transaction_id,
               points: points,
-              amount: winnerAmt,
+              // amount: winnerAmt,
               action: `<a target="blank" class="btn btn-sm btn-info w-35px h-35px" data-toggle="tooltip" title="View Transaction" href="/quizviewtransactions/${doc.userdata._id}?quizId=${doc.quizId}"><i class="fas fa-eye"></i></a>`,
             });
             count++;
@@ -1182,17 +1183,18 @@ class quizController {
       let limit1 = req.query.length;
       let start = req.query.start;
       let sortObject = {},
-        dir,
-        join,
-        conditions = { userid: req.params.id };
+      dir,
+      join,
+      conditions = { userid: req.params.id };
       let name;
+      console.log("helllo",conditions)
       if (req.query.start_date) {
         conditions.createdAt = { $gte: new Date(req.query.start_date) };
       }
       if (req.query.end_date) {
         conditions.createdAt = { $lt: new Date(req.query.end_date) };
       }
-
+      
       if (req.query.start_date && req.query.end_date) {
         conditions.createdAt = {
           $gte: new Date(req.query.start_date),
@@ -1203,7 +1205,7 @@ class quizController {
       if (req.query.quizId) {
         conditions.quizId = mongoose.Types.ObjectId(req.query.quizId);
       }
-
+      console.log(conditions,"llllllllll")
       let arr_cr = [
         "Bank verification bank bonus",
         "Email Bonus",
