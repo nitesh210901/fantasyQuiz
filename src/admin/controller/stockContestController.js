@@ -117,7 +117,7 @@ class stockContestController {
                         if (index.isCancelled) {
                             cancelstock = `<a href="" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank" style="pointer-events: none">Cancelled</a>`
                         } else {
-                            cancelstock = `<a href="/cancel-stock-contest/${index._id}" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank">Cancel Stock</a>`
+                            cancelstock = `<a href="/cancelStockContest?contestId=${index._id}" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank">Cancel Stock</a>`
                             }
                         let launch_contest;
                         if (index.launch_status ==="launched") {
@@ -349,12 +349,13 @@ class stockContestController {
           // res.send(dataResponse)
           if (dataResponse.status == true) {
             req.flash("success", dataResponse.message);
-            res.redirect(`/match-details/${req.params.id}`);
+            res.redirect(`/viewStockContest`);
           } else if (dataResponse.status == false) {
             req.flash("error", dataResponse.message);
-            res.redirect(`/match-details/${req.params.id}`);
+            res.redirect(`/viewStockContest`);
           }
         } catch (error) {
+          console.log(error);
           req.flash('error', 'something is wrong please try again letter');
           res.redirect('/');
         }

@@ -13,10 +13,10 @@ include("../../partials/sideNav") %>
                 <div class="page-header-icon">
                   <i class="fad fa-at text-white"></i>
                 </div>
-                <span class="text-capitalize"> User Manager </span>
+                <span class="text-capitalize"> Quiz User Manager </span>
               </h1>
               <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
-                User Transactions
+                Quiz User Transactions
               </div>
             </div>
           </div>
@@ -31,7 +31,7 @@ include("../../partials/sideNav") %>
             <div class="card-heading p-3">
               <form
                 method="GET"
-                action="/viewtransactions/<%=findTransactionsId %>"
+                action="/quizviewtransactions/<%=findTransactionsId %>"
               >
                 <div class="sbp-preview position-relative">
                   <div class="form-group">
@@ -97,7 +97,7 @@ include("../../partials/sideNav") %>
                           <i class="far fa-check-circle"></i>&nbsp;Submit
                         </button>
                         <a
-                          href="/viewtransactions/<%=findTransactionsId %>"
+                          href="/quizviewtransactions/<%=findTransactionsId %>"
                           class="btn btn-sm btn-warning text-uppercase"
                           ><i class="far fa-undo"></i>&nbsp; Reset</a
                         >
@@ -112,7 +112,7 @@ include("../../partials/sideNav") %>
       </div>
 
       <div class="card mb-4">
-        <div class="card-header">View User Transactions</div>
+        <div class="card-header">View Quiz User Transactions</div>
         <div class="card-body">
           <div class="datatable table-responsive">
             <div class="row w-100 align-items-center mx-0">
