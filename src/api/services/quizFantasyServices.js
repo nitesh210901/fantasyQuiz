@@ -3467,7 +3467,13 @@ for await (const rankData of rankArray) {
                 // const quizAnswerData = await quizUserAnswer.findOne({ _id: quizanswerId })
                
                 // i++;
-                const result = await this.quizfindJoinLeaugeExist(listmatchId, req.user._id, quizAnswer, quiz);
+            const result = await this.quizfindJoinLeaugeExist(listmatchId, req.user._id, quizAnswer, quiz);
+            let usebalance = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 })
+            if (usebalance.userbalance) {
+                if (usebalance.userbalance?.balance<quiz.entryfee) {
+                    return { message: 'Insufficient balance', status: false, data: {} }
+                }
+            }
                 if (result != 1 ) {
                     const userObj = {
                         'userbalance.balance': balance - mainbal,
@@ -3622,13 +3628,6 @@ for await (const rankData of rankArray) {
                         joinedSeries = await QuizJoinLeaugeModel.find({ seriesid: seriesId, userid: req.user._id }).limit(1).count();
                     }
                }
-                   let usebalance = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 })
-                    if (usebalance) {
-                        if (usebalance.balance<quiz.entryfee) {
-                            return { message: 'Insufficient balance', status: false, data: {} }
-                        }
-                    }
-
                 const quizjoinedLeauges = await QuizJoinLeaugeModel.find({ quizId: quizDataId }).count();
                 const joinUserCount = quizjoinedLeauges + 1;
                 // if (matchchallenge.contest_type == 'Amount' && joinUserCount > matchchallenge.maximum_user) {
