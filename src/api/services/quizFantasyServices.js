@@ -120,32 +120,37 @@ class quizfantasyServices {
                   'matchkey': new mongoose.Types.ObjectId(matchkey)
                 }
               }, {
-                '$lookup': {
-                  'from': 'quizjoinedleauges', 
-                  'let': {
-                    'matchkey': '$matchkey', 
-                    'quizId': '$_id', 
-                    'userid': new mongoose.Types.ObjectId(userId)
-                  }, 
-                  'pipeline': [
+                $lookup: {
+                  from: "quizjoinedleauges",
+                  let: {
+                    matchkey: "$matchkey",
+                    quizId: "$_id",
+                    userid: new mongoose.Types.ObjectId(userId)
+                  },
+                  pipeline: [
                     {
-                      '$match': {
-                        '$expr': {
-                          '$eq': [
-                            '$matchkey', '$$matchkey'
-                          ], 
-                          '$eq': [
-                            '$quizId', '$$quizId'
-                          ], 
-                          '$eq': [
-                            '$userid', '$$userid'
-                          ]
-                        }
-                      }
-                    }
-                  ], 
-                  'as': 'quizjoin'
-                }
+                      $match: {
+                        $expr: {
+                          $and: [
+                            {
+                              $eq: [
+                                "$matchkey",
+                                "$$matchkey",
+                              ],
+                            },
+                            {
+                              $eq: ["$quizId", "$$quizId"],
+                            },
+                            {
+                              $eq: ["$userid", "$$userid"],
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  ],
+                  as: "quizjoin",
+                },
               }, {
                 '$addFields': {
                   'is_selected': {
@@ -3611,12 +3616,19 @@ for await (const rankData of rankArray) {
                 tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
                 let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
                 if (result == 1) {
-
+                   console.log("oooo")
                     let joinedQuiz = await QuizJoinLeaugeModel.find({ matchkey: listmatchId, userid: req.user._id }).limit(1).count();
                     if (joinedQuiz == 0) {
                         joinedSeries = await QuizJoinLeaugeModel.find({ seriesid: seriesId, userid: req.user._id }).limit(1).count();
                     }
-                }
+               }
+                   let usebalance = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 })
+                    if (usebalance) {
+                        if (usebalance.balance<quiz.entryfee) {
+                            return { message: 'Insufficient balance', status: false, data: {} }
+                        }
+                    }
+
                 const quizjoinedLeauges = await QuizJoinLeaugeModel.find({ quizId: quizDataId }).count();
                 const joinUserCount = quizjoinedLeauges + 1;
                 // if (matchchallenge.contest_type == 'Amount' && joinUserCount > matchchallenge.maximum_user) {
@@ -3660,6 +3672,8 @@ for await (const rankData of rankArray) {
                 //     }
                 //     return { message: 'League is Closed', status: false, data: {} };
                 // }
+            
+               
                 const quizjoinLeaugeResult = await QuizJoinLeaugeModel.create({
                     userid: req.user._id,
                     quizId: quizDataId,
