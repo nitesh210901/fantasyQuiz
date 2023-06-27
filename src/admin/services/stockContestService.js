@@ -1104,101 +1104,102 @@ class challengersService {
         let contest = await stockContestModel.aggregate(pipeline);
         if (contest.length > 0) {
             for (let challenge of contest) {
-                let pipeline1 = [];
-                pipeline1.push({
-                    $match: {
-                        contestId: mongoose.Types.ObjectId(contest._id),
-                    }
-                });
-                pipeline1.push({
-                    $lookup: {
-                        from: 'joinstockteams',
-                        localField: 'teamid',
-                        foreignField: '_id',
-                        as: 'joinTeamData'
-                    }
-                });
-
-                pipeline1.push({
-                    $lookup: {
-                        from: 'joinstockteams',
-                        localField: 'teamid',
-                        foreignField: '_id',
-                        as: 'joinTeamData'
-                    }
-                });
-
-                pipeline1.push({
-                    $unwind:{
-                        path: "$stockfinalresults",
-                    }
-                });
-
-                pipeline1.push({
-                    $unwind:{
-                        path: "$stockfinalresults",
-                    }
-                });
-
-                pipeline1.push({
-                    $project: {
-                        _id: 1,
-                        "points": "$stockfinalresults.finalvalue",
-                        userid: 1
+                let joinedusers = await joinStockLeagueModel.aggregate([
+                    {
+                      '$match': {
+                        'contestId': mongoose.Types.ObjectId(challenge._id),
+                      }
+                    }, {
+                      '$lookup': {
+                        'from': 'joinstockteams', 
+                        'localField': 'teamid', 
+                        'foreignField': '_id', 
+                        'as': 'joinTeamData'
+                      }
+                    }, {
+                      '$addFields': {
+                        'stockContedId': {
+                          '$map': {
+                            'input': '$joinTeamData', 
+                            'as': 'item', 
+                            'in': '$$item.contestId'
+                          }
                         }
-                });
-                
-                let joinedusers = await joinStockLeagueModel.aggregate(pipeline1);
-                console.log("-------joinedusers-------->--", joinedusers.length)
+                      }
+                    }, {
+                      '$lookup': {
+                        'from': 'stockpricecards', 
+                        'let': {
+                          'id': '$stockContedId'
+                        }, 
+                        'pipeline': [
+                          {
+                            '$match': {
+                              '$expr': {
+                                '$in': [
+                                  '$stockcontestId', '$$id'
+                                ]
+                              }
+                            }
+                          }
+                        ], 
+                        'as': 'matchpricecards'
+                      }
+                    }, {
+                      '$unwind': {
+                        'path': '$matchpricecards'
+                      }
+                    }, {
+                      '$lookup': {
+                        'from': 'stockfinalresults', 
+                        'localField': 'teamid', 
+                        'foreignField': 'teamid', 
+                        'as': 'stockfinalresults'
+                      }
+                    }, {
+                      '$unwind': {
+                        'path': '$joinTeamData'
+                      }
+                    }, {
+                      '$unwind': {
+                        'path': '$stockfinalresults'
+                      }
+                    }, {
+                      '$project': {
+                        '_id': 1, 
+                        'points': '$stockfinalresults.finalvalue', 
+                        'userid': 1, 
+                        'matchpricecards': 1
+                      }
+                    }
+                  ]);
+                // console.log("-------joinedusers-------->--", joinedusers)
                 if (joinedusers.length > 0) {
+
                     let prc_arr = [];
                     if (challenge.contest_type == 'Amount') {
-                        if (challenge.pricecard_type == 'Amount') {
-                            // console.log('challenge.matchpricecards',challenge.matchpricecards)
-                            if (challenge.amount_type == 'prize') {
-                                if (challenge.matchpricecards.length > 0) {
-                                    for await(let prccrd of challenge.matchpricecards) {
-                                        let min_position = prccrd.min_position;
-                                        let max_position = prccrd.max_position;
-                                        for (let i = min_position; i < max_position; i++) {
-                                            let Obj = {};
-                                            Obj['gift_type'] = prccrd.gift_type ? prccrd.gift_type : "amount"
-                                            if(Obj['gift_type'] == "gift"){
-                                                Obj['price'] = prccrd.prize_name;
-                                            }else{
-                                                Obj['price'] = prccrd.price;
-                                            }
-                                            prc_arr.push(Obj)
-                                        }
-                                    }
-                                } else {
-                                    let Obj = {};
-                                    Obj['price'] = challenge.win_amount;
-                                    Obj['gift_type'] = "amount";
-                                    prc_arr.push(Obj)
-                                }
-                               
-                            } else {
-                                if (challenge.matchpricecards.length > 0) {
-                                    for await(let prccrd of challenge.matchpricecards) {
-                                        let min_position = prccrd.min_position;
-                                        let max_position = prccrd.max_position;
-                                        for (let i = min_position; i < max_position; i++) {
-                                            let Obj = {};
-                                            Obj['price'] = prccrd.price;
-                                            Obj['gift_type'] = "amount";
-                                            prc_arr.push(Obj)
-                                        }
-                                    }
-                                } else {
-                                    let Obj = {};
-                                    Obj['price'] = challenge.win_amount;
-                                    Obj['gift_type'] = "amount";
-                                    prc_arr.push(Obj)
-                                }
-                            }
-                        } else {
+                        if (challenge.type == 'Amount') {
                             if (challenge.matchpricecards.length > 0) {
+                                for await(let prccrd of challenge.matchpricecards) {
+                                    let min_position = prccrd.min_position;
+                                    let max_position = prccrd.max_position;
+                                    for (let i = min_position; i < max_position; i++) {
+                                        let Obj = {};
+                                        Obj['price'] = prccrd.price;
+                                        Obj['gift_type'] = "amount";
+                                        prc_arr.push(Obj)
+                                    }
+                                }
+                            } else {
+                                let Obj = {};
+                                Obj['price'] = challenge.win_amount;
+                                Obj['gift_type'] = "amount";
+                                prc_arr.push(Obj)
+                            }
+                            
+                        } else {
+
+                            if (challenge.matchpricecards) {
                                 for await(let prccrd of challenge.matchpricecards) {
                                     let min_position = prccrd.min_position;
                                     let max_position = prccrd.max_position;
@@ -1287,7 +1288,6 @@ class challengersService {
                         }
                     }
 
-
                     poin_user.sort((a, b) => {
                         return  b.points - a.points ;
                     });
@@ -1310,7 +1310,6 @@ class challengersService {
                             break;
                         }
                     }
-                //    console.log("---prc_arr------->>>",prc_arr);
                     let final_poin_user = [];
                     for (let [ks, ps] of win_usr.entries()) {
                         let num=ps['min']-1;
@@ -1363,7 +1362,8 @@ class challengersService {
                             let fpuskjoinid = Object.keys(finalPoints)[0];
                             let fpusk = fpusv['userid'];
                             let checkWinning = await stockFinalResult.findOne({ joinId: mongoose.Types.ObjectId(fpuskjoinid) });
-                            if (!checkWinning) {
+                            
+                            if (!checkWinning.amount) {
                                 let randomStr = randomstring.generate({
                                     length: 4,
                                     charset: 'alphabetic',
@@ -1399,14 +1399,14 @@ class challengersService {
                                         joinId: fpuskjoinid
                                     };
                                 }
-                                
+
                                 let checkWinningUser = await stockFinalResult.findOne({
                                     joinId: mongoose.Types.ObjectId(fpuskjoinid),
                                     userid: mongoose.Types.ObjectId(fpusk)
                                 });
-                                // console.log("---checkWinningUser---",checkWinningUser)
-                                if (!checkWinningUser) {
-                                    await stockFinalResult.create(finalResultArr);
+                                // console.log(checkWinningUser,"checking")
+                                if (!checkWinningUser.amount) {
+                                    let dataa = await stockFinalResult.findOneAndUpdate({joinId:joinedusers._id, userId:joinedusers.userid, contestId:joinedusers.matchpricecards.stockcontestId}, finalResultArr, {upsert:true});
                                     const user = await userModel.findOne({ _id: fpusk }, { userbalance: 1, totalwinning: 1 });
                                  
                                     if (user) {
@@ -1437,7 +1437,7 @@ class challengersService {
                                                 amount: amount,
                                                 total_available_amt: totalBalance + amount,
                                                 transaction_by: constant.APP_SHORT_NAME,
-                                                challengeid: challenge._id,
+                                                stockContestId: challenge._id,
                                                 userid: fpusk,
                                                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                                                 bal_bonus_amt: bonus,
@@ -1446,7 +1446,6 @@ class challengersService {
                                                 win_amt: amount,
                                                 transaction_id: transactionidsave
                                             };
-                                            
                                             await Promise.all([
                                                 userModel.findOneAndUpdate({ _id: fpusk }, userObj, { new: true }),
                                                 tdsDetailModel.create(tdsData),
@@ -1487,7 +1486,7 @@ class challengersService {
                                                     prize:amount,
                                                     total_available_amt:total_available_amt,
                                                     transaction_by: constant.APP_SHORT_NAME,
-                                                    challengeid: challenge._id,
+                                                    stockContestId: challenge._id,
                                                     userid: fpusk,
                                                     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                                                     bal_bonus_amt: bonus,
@@ -1513,7 +1512,7 @@ class challengersService {
                                                     amount: amount,
                                                     total_available_amt:total_available_amt,
                                                     transaction_by: constant.APP_SHORT_NAME,
-                                                    challengeid: challenge._id,
+                                                    stockContestId: challenge._id,
                                                     userid: fpusk,
                                                     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                                                     bal_bonus_amt: bonus,
@@ -1546,7 +1545,7 @@ class challengersService {
 
     async stockviewtransactions(req) {
         try {
-            const findTransactions = await TransactionModel.findOne({ userid: req.params.id });
+            const findTransactions = await TransactionModel.findOne({ userid: req.query.userid, stockContestId:req.query.contestId });
             if (findTransactions) {
                 return {
                     status: true,
@@ -1554,6 +1553,7 @@ class challengersService {
                 }
             }
         } catch (error) {
+            console.log(error);
            throw error;
         }
     }
