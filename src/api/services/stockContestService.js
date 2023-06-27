@@ -1288,7 +1288,7 @@ class overfantasyServices {
               }
             },{
                 '$facet': {
-                  'data': [
+                  'jointeams': [
                     {
                       '$skip': skip
                     }, {
@@ -1298,6 +1298,7 @@ class overfantasyServices {
                 }
               });
             const joinedleauge = await joinStockLeagueModel.aggregate(aggPipe);
+            console.log(joinedleauge)
             if (joinedleauge[0].length == 0) return { message: 'Contest LeaderBard Not Found', status: false, data: [] };
 
             return {
@@ -1381,7 +1382,7 @@ class overfantasyServices {
 
   async updateResultStocks(req) {
     try {
-      console.log('______+++++++++');
+      console.log('nitesh______+++++++++');
       const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
       let newData;
       const listContest = await stockContestModel.find({
