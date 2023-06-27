@@ -689,7 +689,6 @@ class quizController {
           req.body.masterpassword &&
           req.body.masterpassword == req.session.data.masterpassword
         ) {
-          console.log("aaaya")
           const getResult = await quizServices.quizdistributeWinningAmountWithAnswerMatch(req);//need to check becouse crown is remove
 
           let updatestatus = await listMatchModel.updateOne(
@@ -789,8 +788,6 @@ class quizController {
             let showopt = ""
             let answer = ""
             for (let item in doc.options[0]) {
-              console.log(doc._id)
-              console.log(doc.options[0][item],"ppppooooo")
               showopt += `<option value="${item}">${doc.options[0][item]}</option>`
               if (doc.answer === item) {
                 answer+= doc.options[0][item]
@@ -804,7 +801,7 @@ class quizController {
               actions +=  'No Users | '
             }
             
-              if(doc.status != 'canceled'){
+              if(doc.quiz_status != 'canceled'){
                 actions += `<a href="/quizcancel/${doc._id}?matchkey=${doc.matchkey}" class="btn btn-sm btn-secondary w-35px h-35px" data-toggle="tooltip" title="Cancel Quiz" data-original-title="Cancel Contest" aria-describedby="tooltip768867"><i class="fas fa-window-close"></i></a></div>`
               }else{
                 actions += " | <tagname style='color:red;'>Canceled"
