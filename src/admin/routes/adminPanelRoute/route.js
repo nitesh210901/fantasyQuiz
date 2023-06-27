@@ -544,8 +544,8 @@ router.get("/launch-contest/:id", auth, stockContestController.launchStockContes
 router.get("/cancelStockContest",auth,stockContestController.cancelContestStock);
 router.post("/updateStockFinalStatus/:id/:status", auth, stockContestController.updateStockFinalStatus);  
 router.get('/total-joined-user/:contestId', auth, getUrl, stockContestController.totalJoinedUsers);
-router.post('/total-user-details-table/:contestId', auth, stockContestController.totalUserDetailsData);
-router.get('/stockviewtransactions/:id', auth, getUrl, stockContestController.stockviewtransactions);
+router.post('/total-user-details-table', auth, stockContestController.totalUserDetailsData);
+router.get('/stockviewtransactions', auth, stockContestController.stockviewtransactions);
 router.post('/stockviewTransactionsData-Table/:id', auth, stockContestController.stockviewTransactionsDataTable);
 
 // ---------------------------------Stocks---------------------------------------------------------

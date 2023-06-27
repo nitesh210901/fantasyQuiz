@@ -443,7 +443,7 @@ class stockContestController {
           let condition = [];
           condition.push({
             $match: {
-                contestId: mongoose.Types.ObjectId("64953c2c9c29860570e95edf"),
+                contestId: mongoose.Types.ObjectId(req.query.contestId),
             },
           });
     
@@ -536,7 +536,6 @@ class stockContestController {
             $unwind: { path: "$finalResultData",preserveNullAndEmptyArrays:true },
             
           })
-        console.log(condition,"ppppppppp")
           joinStockLeagueModel.countDocuments(condition).exec((err, rows) => {
             let totalFiltered = rows;
             let data = [];
@@ -567,7 +566,7 @@ class stockContestController {
                   points: points,
                   amount: winnerAmt,
                   action: `<a class="btn btn-sm btn-success w-35px h-35px" data-toggle="tooltip" title="View Team" href="/user-teams?teamid=${doc.teamid}" style=""><i class="fas fa-users"></i></a>
-                                    <a target="blank" class="btn btn-sm btn-info w-35px h-35px" data-toggle="tooltip" title="View Transaction" href="/stockviewtransactions/${doc.userdata._id}?contestId=${doc.contestId}"><i class="fas fa-eye"></i></a>`,
+                                    <a target="blank" class="btn btn-sm btn-info w-35px h-35px" data-toggle="tooltip" title="View Transaction" href="/stockviewtransactions?userid=${doc.userdata._id}&contestId=${doc.contestId}"><i class="fas fa-eye"></i></a>`,
                 });
                 count++;
                 if (count > rows1.length) {
@@ -596,6 +595,8 @@ class stockContestController {
             }); 
           }
         } catch (error) {
+          console.log(error);
+
             console
           req.flash("warning", "No transaction to show");
           res.redirect("/");
@@ -610,6 +611,7 @@ class stockContestController {
             dir,
             join,
             conditions = { userid: req.params.id };
+            console.log(conditions)
           let name;
           if (req.query.start_date) {
             conditions.createdAt = { $gte: new Date(req.query.start_date) };

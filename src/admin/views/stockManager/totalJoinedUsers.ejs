@@ -36,7 +36,7 @@
         <div class="card mb-3">
             <div class="card-heading p-3">
                 <form method="get" action="/total-joined-user/<%= contestId %>" autocomplete="off">
-                <input type="hidden" name="contestId" value="<%=contestId%>">
+                <input type="hidden" name="contestId" id="contestid" value="<%=contestId%>">
                     <div class="sbp-preview position-relative">
                         <div class="form-group">
                             <div class="row mx-0">
@@ -142,18 +142,15 @@
             <script type="text/javascript">
                 $(document).ready(function () {
                     $.fn.dataTable.ext.errMode = 'none';
-                    // let matchKey = $('#matchkey').val();
-                    let contestId = $('#contestId').val();
-                    console.log(contestId,"pppppppp")
+                    let contestId = $('#contestid').val();
                     $('#contest_user_details_table').DataTable({
-                        // searching: false,
-                        // responsive: true,
+                       
                         language: {
                             zeroRecords: "No records to display"
                         },
                         ajax: {
                             //url: `/contest-user-details-table/${matchKey}?challengeid=${cid}`,
-                            url: `/total-user-details-table/${contestId}?teamName=<%-teamName%>&Email=<%-Email%>&Mobile=<%-Mobile%>`,
+                            url: `/total-user-details-table?contestId=${contestId}&teamName=<%-teamName%>&Email=<%-Email%>&Mobile=<%-Mobile%>`,
                             type: 'POST'
                         },
                         lengthMenu: [
