@@ -429,7 +429,25 @@ class quizServices {
                                             win_amt: quiz_data.winning_amount,
                                             transaction_id: transactionidsave
                                         }
-                                
+                                          
+                                        let finalResult = {
+                                            userid: join_data.userid,
+                                            amount: quiz_data.winning_amount,
+                                            matchkey: join_data.matchkey,
+                                            quizId: join_data.quizId,
+                                            seriesid: join_data.seriesid,
+                                            transaction_id: transactionidsave,
+                                            joinedid: join_data._id
+                                        };
+
+                                        let checkWinningUser = await finalQuizResultModel.findOne({
+                                            joinedid: mongoose.Types.ObjectId(join_data._id),
+                                            userid: mongoose.Types.ObjectId(join_data.userid,)
+                                        });
+
+                                        if (!checkWinningUser) {
+                                            await finalQuizResultModel.create(finalResult);
+                                        }
                                         await Promise.all([
                                             userModel.findOneAndUpdate({ _id: join_data.userid }, userObj, { new: true }),
                                             TransactionModel.create(transactiondata),
