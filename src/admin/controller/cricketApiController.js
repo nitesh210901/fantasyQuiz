@@ -182,7 +182,7 @@ class cricketApiController {
                         temaData1 = await teamModel.findOneAndUpdate({ team_key:mymatch.teama.team_id }, {
                             $set: {
                                 teamName:mymatch.teama.name,
-                                //short_name:mymatch.teama.short_name,
+                                short_name:mymatch.teama.short_name,
                                
                             }
                         }, { new: true });
@@ -191,7 +191,7 @@ class cricketApiController {
                             fantasy_type: 'Cricket',
                             teamName:mymatch.teama.name,
                             team_key:mymatch.teama.team_id,
-                            //short_name:mymatch.teama.short_name,
+                            short_name:mymatch.teama.short_name,
                            
                         });
                         temaData1 = await insertTeam1.save();
@@ -201,7 +201,7 @@ class cricketApiController {
                         temaData2 = await teamModel.findOneAndUpdate({ team_key:mymatch.teamb.team_id }, {
                             $set: {
                                 teamName:mymatch.teamb.name,
-                                //short_name:mymatch.teamb.short_name,
+                                short_name:mymatch.teamb.short_name,
                                
                             }
                         }, { new: true });
@@ -210,7 +210,7 @@ class cricketApiController {
                             fantasy_type: 'Cricket',
                             teamName:mymatch.teamb.name,
                             team_key:mymatch.teamb.team_id,
-                            //short_name:mymatch.teamb.short_name,
+                            short_name:mymatch.teamb.short_name,
                            
                         });
                         temaData2 = await insertTeam2.save();
@@ -240,7 +240,7 @@ class cricketApiController {
                         temaData1 = await teamModel.findOneAndUpdate({ team_key:mymatch.teama.team_id }, {
                             $set: {
                                 teamName:mymatch.teama.name,
-                                //short_name:mymatch.teama.short_name,
+                                short_name:mymatch.teama.short_name,
                                
                             }
                         }, { new: true });
@@ -249,7 +249,7 @@ class cricketApiController {
                             fantasy_type: 'Cricket',
                             teamName:mymatch.teama.name,
                             team_key:mymatch.teama.team_id,
-                           // short_name:mymatch.teama.short_name,
+                           short_name:mymatch.teama.short_name,
                            
                         });
                         temaData1 = await insertTeam1.save();
@@ -259,7 +259,7 @@ class cricketApiController {
                         temaData2 = await teamModel.findOneAndUpdate({ team_key:mymatch.teamb.team_id }, {
                             $set: {
                                 teamName:mymatch.teamb.name,
-                                //short_name:mymatch.teamb.short_name,
+                                short_name:mymatch.teamb.short_name,
                                
                             }
                         }, { new: true });
@@ -268,7 +268,7 @@ class cricketApiController {
                             fantasy_type: 'Cricket',
                             teamName:mymatch.teamb.name,
                             team_key:mymatch.teamb.team_id,
-                           // short_name:mymatch.teamb.short_name,
+                           short_name:mymatch.teamb.short_name,
                            
                         });
                         temaData2 = await insertTeam2.save();
@@ -276,7 +276,7 @@ class cricketApiController {
                     const updateListMatch = await listMatchModel.findOneAndUpdate({ real_matchkey:mymatch.match_id }, {
                         $set: {
                             name:mymatch.title,
-                            //short_name:mymatch.short_title,
+                            short_name:mymatch.short_title,
                             team1Id: temaData1._id,
                             team2Id: temaData2._id,
                             real_matchkey:mymatch.match_id,
