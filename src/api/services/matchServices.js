@@ -2428,6 +2428,7 @@ let sk=0;
                 { path: 'team2Id', select: 'short_name', options: { lean: true } }
             ])
             .lean();
+            
             if (!team1Id) {
                 return {
                     status: false,
@@ -2620,7 +2621,7 @@ let sk=0;
                     allCount = 0;
                 // const players = [];
                 let totalPoints = 0;
-                
+                // console.log('++++++++++++++++++++++',team1Id)
                 tempObj['captin_name'] = element.captain._id ? element.captain.player_name : '',
                 tempObj["viceCaptain_name"] = element.vicecaptain._id ? element.vicecaptain.player_name : '',
                     tempObj['team1count'] = team1count;
