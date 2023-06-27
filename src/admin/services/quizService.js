@@ -396,7 +396,7 @@ class quizServices {
                             for (let res of keys) {
                                 if (res === quiz_data.answer) {
                                     if (quiz_data.options[0][res] === join_data.answer) {
-                                        const user = await userModel.findOne({ _id:join_data.userid  }, { userbalance: 1, totalwinning: 1 });
+                                        const user = await userModel.findOne({ _id: join_data.userid }, { userbalance: 1, totalwinning: 1 });
                                         data = await QuizJoinLeaugeModel.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId ,userid:join_data.userid}, { winamount: quiz_data.winning_amount }, { new: true })
                                         const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
                                         const balance = parseFloat(user.userbalance.balance.toFixed(2));
@@ -1680,7 +1680,6 @@ class quizServices {
                         quiz_status: req.query.status
                     }
                 });
-               
                 
               } 
              }

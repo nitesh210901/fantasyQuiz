@@ -11,9 +11,9 @@ let finalQuizResultSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'
     },
-    challengeid: {
+    quizId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'matchchallenge',
+        ref: 'quizzes',
         index:true
     },
     joinedid: {
@@ -27,17 +27,7 @@ let finalQuizResultSchema = new Schema({
     transaction_id: {
         type: String
     },
-    points: {
-        type: Number
-    },
     amount: {
-        type: Number
-    },
-    prize:{
-        type:String,
-        default:""
-    },
-    rank: {
         type: Number
     },
     status: {
