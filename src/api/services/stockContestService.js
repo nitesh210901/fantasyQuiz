@@ -166,8 +166,8 @@ class overfantasyServices {
         {
             from: "join_stock_leagues",
             let :{
-              userId : ObjectId('649176380b2d6040b6c2a4ee'),
-              contestId : ObjectId('6499220c3a8488591709e5ba')
+              userId : mongoose.Types.ObjectId(req.user._id),
+              contestId : "$_id"
             },
           pipeline:[{
             $match:{
