@@ -91,6 +91,7 @@ class quizfantasyServices {
     async getQuiz(req) {
         try {
             let { matchkey } = req.query;
+            let userId = req.user._id
             let pipeline = []
             pipeline.push({
                 '$addFields': {
@@ -116,7 +117,55 @@ class quizfantasyServices {
                 }
               }, {
                 '$match': {
-                  'matchkey': mongoose.Types.ObjectId(matchkey)
+                  'matchkey': new mongoose.Types.ObjectId(matchkey)
+                }
+              }, {
+                '$lookup': {
+                  'from': 'quizjoinedleauges', 
+                  'let': {
+                    'matchkey': '$matchkey', 
+                    'quizId': '$_id', 
+                    'userid': new mongoose.Types.ObjectId(userId)
+                  }, 
+                  'pipeline': [
+                    {
+                      '$match': {
+                        '$expr': {
+                          '$eq': [
+                            '$matchkey', '$$matchkey'
+                          ], 
+                          '$eq': [
+                            '$quizId', '$$quizId'
+                          ], 
+                          '$eq': [
+                            '$userid', '$$userid'
+                          ]
+                        }
+                      }
+                    }
+                  ], 
+                  'as': 'quizjoin'
+                }
+              }, {
+                '$addFields': {
+                  'is_selected': {
+                    '$cond': {
+                      'if': {
+                        '$eq': [
+                          {
+                            '$size': '$quizjoin'
+                          }, 1
+                        ]
+                      }, 
+                      'then': true, 
+                      'else': false
+                    }
+                  }, 
+                  'image': {
+                    '$concat': [
+                      `${process.env.BASE_URL}`, '$image'
+                    ]
+                  }
                 }
               }, {
                 '$lookup': {
@@ -180,8 +229,9 @@ class quizfantasyServices {
                   'userIdArray': 0, 
                   'answer': 0, 
                   'bonus_percentage': 0, 
-                    'is_bonus': 0,
-                    'quiz_status': 0
+                  'is_bonus': 0, 
+                  'quiz_status': 0, 
+                  'quizjoin': 0
                 }
               })
             let data = await quizModel.aggregate(pipeline)
@@ -3655,7 +3705,6 @@ for await (const rankData of rankArray) {
                 }
                 // else
             await quizModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(quizId) }, {
-                        is_seleted:true,
                         joinedusers: joinedLeaugesCount,
                     }, { new: true });
                 // if (i == quizanswers.length) {

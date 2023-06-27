@@ -42,7 +42,7 @@ let quizSchema = new Schema({
         type: Number,
         default: 0
     },
-    is_seleted: {
+    is_selected: {
         type: Boolean,
         default: false
     }
