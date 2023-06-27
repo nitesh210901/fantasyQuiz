@@ -1235,7 +1235,7 @@ class challengersService {
                             user_points[lp] = {};
                             user_points[lp]['id'] = jntm.userid.toString();
                             user_points[lp]['points'] = jntm.points;
-                            user_points[lp]['joinedid'] = jntm._id.toString();
+                            user_points[lp]['joinId'] = jntm._id.toString();
                             lp++;
                         }
                     }
@@ -1253,34 +1253,34 @@ class challengersService {
                             poin_user.push({
                                 id: [usr.id],
                                 points: usr.points,
-                                joinedid: [usr.joinedid]
+                                joinId: [usr.joinId]
                             });
                         } else {
                             let ids_arr = [];
                             let userids_arr = [];
-                            let getdatatype = Array.isArray(poin_user[indexings].joinedid);
+                            let getdatatype = Array.isArray(poin_user[indexings].joinId);
                             if (getdatatype) {
                                 ids_arr = [];
                                 userids_arr = [];
-                                ids_str = poin_user[indexings].joinedid.join(',');
-                                ids_str = ids_str + ',' + usr.joinedid;
+                                ids_str = poin_user[indexings].joinId.join(',');
+                                ids_str = ids_str + ',' + usr.joinId;
                                 ids_arr = ids_str.split(',');
                                 userids_str = poin_user[indexings].id.join(',');
                                 userids_str = userids_str + ',' + usr.id;
                                 userids_arr = userids_str.split(',');
-                                poin_user[indexings].joinedid = ids_arr;
+                                poin_user[indexings].joinId = ids_arr;
                                 poin_user[indexings].id = userids_arr;
                                 poin_user[indexings].points = usr.points;
                             } else {
                                 ids_arr = [];
                                 userids_arr = [];
-                                ids_str = poin_user[indexings].joinedid;
-                                ids_str = ids_str + ',' + usr.joinedid;
+                                ids_str = poin_user[indexings].joinId;
+                                ids_str = ids_str + ',' + usr.joinId;
                                 ids_arr = ids_str.split(',');
                                 userids_str = poin_user[indexings].id;
                                 userids_str = userids_str + ',' + usr.id;
                                 userids_arr = userids_str.split(',');
-                                poin_user[indexings].joinedid = ids_arr;
+                                poin_user[indexings].joinId = ids_arr;
                                 poin_user[indexings].id = userids_arr;
                                 poin_user[indexings].points = usr.points;
                             }
@@ -1300,10 +1300,10 @@ class challengersService {
                             // let obj1 = {};
                             win_usr[k] = {};
                             win_usr[k]['min'] = win_cnt + 1;
-                            win_cnt = win_cnt + pu['joinedid'].length;
+                            win_cnt = win_cnt + pu['joinId'].length;
                             win_usr[k]['max'] = win_cnt;
-                            win_usr[k]['count'] = pu['joinedid'].length;
-                            win_usr[k]['joinedid'] = pu['joinedid'];
+                            win_usr[k]['count'] = pu['joinId'].length;
+                            win_usr[k]['joinId'] = pu['joinId'];
                             win_usr[k]['id'] = pu['id'];
                             win_usr[k]['points'] = pu['points'];
                         } else {
@@ -1319,12 +1319,12 @@ class challengersService {
                             if (ps['count'] == 1) {
                                 let obj2 = {};
                                 
-                                obj2[ps['joinedid'][0]] = {};
-                                obj2[ps['joinedid'][0]]['points'] = ps['points'];
-                                obj2[ps['joinedid'][0]]['amount'] = prc_arr[num]['price'];
-                                obj2[ps['joinedid'][0]]['gift_type'] = prc_arr[num]['gift_type'];
-                                obj2[ps['joinedid'][0]]['rank'] = num+1;
-                                obj2[ps['joinedid'][0]]['userid'] = ps['id'][0];
+                                obj2[ps['joinId'][0]] = {};
+                                obj2[ps['joinId'][0]]['points'] = ps['points'];
+                                obj2[ps['joinId'][0]]['amount'] = prc_arr[num]['price'];
+                                obj2[ps['joinId'][0]]['gift_type'] = prc_arr[num]['gift_type'];
+                                obj2[ps['joinId'][0]]['rank'] = num+1;
+                                obj2[ps['joinId'][0]]['userid'] = ps['id'][0];
                                 final_poin_user.push(obj2);
                                 // console.log('win_usr final_poin_user' , final_poin_user);
                             } else {
@@ -1341,7 +1341,7 @@ class challengersService {
                                 }
                                 avg_ttl =  ttl / ps['count'];
 
-                                for (let [keyuser, fnl] of ps['joinedid'].entries()) {
+                                for (let [keyuser, fnl] of ps['joinId'].entries()) {
                                     let obj3 = {};
 
                                     obj3[fnl] = {};
@@ -1362,7 +1362,7 @@ class challengersService {
                             let fpusv = Object.values(finalPoints)[0];
                             let fpuskjoinid = Object.keys(finalPoints)[0];
                             let fpusk = fpusv['userid'];
-                            let checkWinning = await stockFinalResult.findOne({ joinedid: mongoose.Types.ObjectId(fpuskjoinid) });
+                            let checkWinning = await stockFinalResult.findOne({ joinId: mongoose.Types.ObjectId(fpuskjoinid) });
                             if (!checkWinning) {
                                 let randomStr = randomstring.generate({
                                     length: 4,
@@ -1376,7 +1376,7 @@ class challengersService {
                                 if(fpusv['gift_type'] == "gift"){
                                     finalResultArr = {
                                         userid: fpusk,
-                                        points: fpusv['points'],
+                                        finalvalue: fpusv['points'],
                                         amount: 0,
                                         prize:fpusv['amount'],
                                         rank: fpusv['rank'],
@@ -1384,24 +1384,24 @@ class challengersService {
                                         challengeid: challenge._id,
                                         seriesid: contest[0].series,
                                         transaction_id: transactionidsave,
-                                        joinedid: fpuskjoinid
+                                        joinId: fpuskjoinid
                                     };
                                 }else{
                                     finalResultArr = {
                                         userid: fpusk,
-                                        points: fpusv['points'],
+                                        finalvalue: fpusv['points'],
                                         amount: fpusv['amount'],
                                         rank: fpusv['rank'],
                                         contestId: contestId,
                                         challengeid: challenge._id,
                                         seriesid: contest[0].series,
                                         transaction_id: transactionidsave,
-                                        joinedid: fpuskjoinid
+                                        joinId: fpuskjoinid
                                     };
                                 }
                                 
                                 let checkWinningUser = await stockFinalResult.findOne({
-                                    joinedid: mongoose.Types.ObjectId(fpuskjoinid),
+                                    joinId: mongoose.Types.ObjectId(fpuskjoinid),
                                     userid: mongoose.Types.ObjectId(fpusk)
                                 });
                                 // console.log("---checkWinningUser---",checkWinningUser)
@@ -1433,7 +1433,7 @@ class challengersService {
                                                 'totalwinning': totalwinning + amount
                                             };
                                             const transactiondata = {
-                                                type: 'Challenge Winning Amount',
+                                                type: 'Contest Winning Amount',
                                                 amount: amount,
                                                 total_available_amt: totalBalance + amount,
                                                 transaction_by: constant.APP_SHORT_NAME,
@@ -1471,7 +1471,7 @@ class challengersService {
                                             let transactiondata ;
                                             // console.log("--------fpusv['gift_type']----///----",fpusv)
                                             if(fpusv['gift_type'] == "gift"){
-                                                type = "Challenge Winning Gift"
+                                                type = "Contest Winning Gift"
                                                 total_available_amt = totalBalance
                                                 bal_win_amt = totalwinning
                                                  userObj = {
