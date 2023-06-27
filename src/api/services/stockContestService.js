@@ -2302,7 +2302,7 @@ class overfantasyServices {
       },
       {
         '$project': {
-          '_id': 0,
+          'jointeamid': 1,
           'joinTeamId': '$joinedleauges.teamid',
           'date': 1,
           'curDate': 1,
@@ -2519,7 +2519,7 @@ class overfantasyServices {
         },
          {
           '$project': {
-            '_id': 0,
+            'jointeamid': 1,
             'joinTeamId': '$joinedleauges.teamid',
             'date': 1,
             'curDate': 1,
@@ -2758,7 +2758,7 @@ class overfantasyServices {
           }
         }, {
           '$project': {
-            '_id': 0,
+            'jointeamid': 1,
             'joinTeamId': '$joinedleauges.teamid',
             'date': 1,
             'curDate': 1,
