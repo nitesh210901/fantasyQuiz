@@ -449,6 +449,7 @@ class quizServices {
                                             await finalQuizResultModel.create(finalResult);
                                         }
                                         await Promise.all([
+                                            quizModel.findOneAndUpdate({ _id:join_data.quizId},{quiz_status:status},{new:true}),
                                             userModel.findOneAndUpdate({ _id: join_data.userid }, userObj, { new: true }),
                                             TransactionModel.create(transactiondata),
                                         ])
