@@ -162,15 +162,45 @@ class overfantasyServices {
 
 
       matchpipe.push({
-        $lookup: {
-
-          from: "join_stock_leagues",
-          localField: "_id",
-          foreignField: "contestId",
-          as: "joinData"
-
+        $lookup: 
+        {
+            from: "join_stock_leagues",
+            let :{
+              userId : mongoose.Types.ObjectId(req.user._id),
+              contestId : "$_id"
+            },
+          pipeline:[{
+            $match:{
+              $expr:{
+                $and:[
+                  {
+                    $eq:["$userid","$$userId"]
+                  },{
+                    $eq:["$contestId","$$contestId"]
+                  }
+                ]
+              }
+            }
+          }],
+            as: "joinData"
         },
       });
+
+      matchpipe.push({
+        $addFields: {
+          is_selected:{
+            $cond:{
+                if:{
+                $eq:[{
+                  $size:"$joinData"
+                },1]
+              },then:true,
+              else:false
+            }
+          }
+         },
+      });
+
       matchpipe.push({
         $sort: {
           start_date: 1,
