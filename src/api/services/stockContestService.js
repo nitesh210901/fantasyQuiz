@@ -162,15 +162,45 @@ class overfantasyServices {
 
 
       matchpipe.push({
-        $lookup: {
-
-          from: "join_stock_leagues",
-          localField: "_id",
-          foreignField: "contestId",
-          as: "joinData"
-
+        $lookup: 
+        {
+            from: "join_stock_leagues",
+            let :{
+              userId : ObjectId('649176380b2d6040b6c2a4ee'),
+              contestId : ObjectId('6499220c3a8488591709e5ba')
+            },
+          pipeline:[{
+            $match:{
+              $expr:{
+                $and:[
+                  {
+                    $eq:["$userid","$$userId"]
+                  },{
+                    $eq:["$contestId","$$contestId"]
+                  }
+                ]
+              }
+            }
+          }],
+            as: "joinData"
         },
       });
+
+      matchpipe.push({
+        $addFields: {
+          is_selected:{
+            $cond:{
+                if:{
+                $eq:[{
+                  $size:"$joinData"
+                },1]
+              },then:true,
+              else:false
+            }
+          }
+         },
+      });
+
       matchpipe.push({
         $sort: {
           start_date: 1,

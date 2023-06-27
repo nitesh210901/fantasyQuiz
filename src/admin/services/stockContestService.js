@@ -6,6 +6,7 @@ const stockContestModel = require('../../models/stockContestModel');
 const joinStockLeagueModel = require('../../models/joinStockLeagueModel');
 const stockPriceCardModel = require('../../models/stockPriceCardModel');
 const contestCategoryModel = require('../../models/contestcategoryModel');
+const stockFinalResult = require('../../models/stockFinalResult');
 const userModel = require('../../models/userModel');
 const refundMatchModel = require('../../models/refundModel');
 const TransactionModel = require('../../models/transactionModel');
@@ -1101,36 +1102,52 @@ class challengersService {
         });
         
         let contest = await stockContestModel.aggregate(pipeline);
-        console.log(contest);
         if (contest.length > 0) {
             for (let challenge of contest) {
                 let pipeline1 = [];
                 pipeline1.push({
                     $match: {
-                        contestId: mongoose.Types.ObjectId(contest[0]._id),
-                        challengeid: mongoose.Types.ObjectId(challenge._id)
+                        contestId: mongoose.Types.ObjectId(contest._id),
                     }
                 });
                 pipeline1.push({
                     $lookup: {
-                        from: 'jointeams',
+                        from: 'joinstockteams',
                         localField: 'teamid',
                         foreignField: '_id',
                         as: 'joinTeamData'
                     }
                 });
+
                 pipeline1.push({
-                    $unwind: {
-                        path: "$joinTeamData"
+                    $lookup: {
+                        from: 'joinstockteams',
+                        localField: 'teamid',
+                        foreignField: '_id',
+                        as: 'joinTeamData'
                     }
                 });
+
+                pipeline1.push({
+                    $unwind:{
+                        path: "$stockfinalresults",
+                    }
+                });
+
+                pipeline1.push({
+                    $unwind:{
+                        path: "$stockfinalresults",
+                    }
+                });
+
                 pipeline1.push({
                     $project: {
                         _id: 1,
-                        "points": "$joinTeamData.points",
+                        "points": "$stockfinalresults.finalvalue",
                         userid: 1
-                    }
+                        }
                 });
+                
                 let joinedusers = await joinStockLeagueModel.aggregate(pipeline1);
                 console.log("-------joinedusers-------->--", joinedusers.length)
                 if (joinedusers.length > 0) {
