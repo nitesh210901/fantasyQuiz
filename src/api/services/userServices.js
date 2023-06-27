@@ -257,7 +257,8 @@ class UserServices {
             password: req.body.password,
             username: req.body.fullname || "",
             refer_id: referId,
-            code: sms.otp || "1234",
+            // code: sms.otp || "1234",
+            code:"1234",
           },
           {
             new: true,
@@ -278,7 +279,8 @@ class UserServices {
           password: req.body.password,
           username: req.body.fullname || "",
           refer_id: referId,
-          code: sms.otp,
+          // code: sms.otp,
+          code:"1234",
         });
         const insertTempuser = await addTempuserData.save();
         if (insertTempuser) {
@@ -559,7 +561,8 @@ class UserServices {
         `Dear Customer ${sms.otp} Riskle OTP.`
       );
       console.log("--otpsent---", otpsent);
-      await userModel.updateOne({ mobile: req.body.mobile }, { code: sms.otp });
+      // await userModel.updateOne({ mobile: req.body.mobile }, { code: sms.otp });
+      await userModel.updateOne({ mobile: req.body.mobile }, { code:"1234" });
 
       return {
         message: "OTP sent on your mobile number",
@@ -1232,7 +1235,8 @@ class UserServices {
     }
     if (query.mobile) {
       const sms = new SMS(req.body.mobile);
-      await userModel.updateOne({ _id: hasuser._id }, { code: sms.otp });
+      // await userModel.updateOne({ _id: hasuser._id }, { code: sms.otp });
+      await userModel.updateOne({ _id: hasuser._id }, { code:"1234" });
       await sms.sendSMS(
         sms.mobile,
         `Dear Customer ${sms.otp} Riskle OTP.`
@@ -1247,7 +1251,8 @@ class UserServices {
     if (query.email) {
       const mail = new Mail(req.body.email);
       // console.log(`mail.otp`, mail.otp);
-      await userModel.updateOne({ _id: hasuser._id }, { code: mail.otp });
+      // await userModel.updateOne({ _id: hasuser._id }, { code: mail.otp });
+      await userModel.updateOne({ _id: hasuser._id }, { code:"1234" });
       await mail.sendMail(
         mail.email,
         `Dear Customer ${mail.otp} Riskle OTP.`,
@@ -1538,7 +1543,8 @@ class UserServices {
         };
       }
       const sms = new SMS(user[0].mobile);
-      await userModel.updateOne({ _id: user[0]._id }, { code: sms.otp });
+      // await userModel.updateOne({ _id: user[0]._id }, { code: sms.otp });
+      await userModel.updateOne({ _id: user[0]._id }, { code:"1234" });
       await sms.sendSMS(sms.mobile, `Dear Customer ${sms.otp} Riskle OTP.`);
       /*await sms.sendSMS(
         sms.mobile,
@@ -1564,7 +1570,8 @@ class UserServices {
       }
       const mail = new Mail(user[0].email);
       console.log(`mail.otp`, mail.otp);
-      await userModel.updateOne({ _id: user[0]._id }, { code: mail.otp });
+      // await userModel.updateOne({ _id: user[0]._id }, { code: mail.otp });
+      await userModel.updateOne({ _id: user[0]._id }, { code:"1234" });
       await mail.sendMail(
         mail.email,
         `Dear Customer ${mail.otp} Riskle OTP.`,
@@ -1610,7 +1617,8 @@ class UserServices {
       };
     }
     const sms = new SMS(req.body.mobile);
-    await userModel.updateOne({ _id: req.user._id }, { code: sms.otp });
+    // await userModel.updateOne({ _id: req.user._id }, { code: sms.otp });
+    await userModel.updateOne({ _id: req.user._id }, { code:"1234" });
     await sms.sendSMS(sms.mobile, `Dear Customer ${sms.otp} Riskle OTP.`);
     /*  await sms.sendSMS(
         sms.mobile,
@@ -1658,7 +1666,8 @@ class UserServices {
     }
     const mail = new Mail(req.body.email);
     console.log(`mail.otp--`, mail);
-    await userModel.updateOne({ _id: req.user._id }, { code: mail.otp });
+    // await userModel.updateOne({ _id: req.user._id }, { code: mail.otp });
+    await userModel.updateOne({ _id: req.user._id }, { code:"1234" });
     await mail.sendMail(
       mail.email,
       `Dear Customer ${mail.otp} Riskle OTP.`,
