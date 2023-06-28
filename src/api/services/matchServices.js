@@ -223,19 +223,19 @@ class matchServices {
                         $ifNull: [{
                             $cond: {
                                 if: { $or: [{ $eq: [{ $substr: [{ $arrayElemAt: ['$team1.logo', 0] }, 0, 1] }, '/'] }, { $eq: [{ $substr: [{ $arrayElemAt: ['$team1.logo', 0] }, 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', { $arrayElemAt: ['$team1.logo', 0] }] },
+                                then: { $concat: [`${constant.BASE_URL}/`, '', { $arrayElemAt: ['$team1.logo', 0] }] },
                                 else: { $arrayElemAt: ['$team1.logo', 0] },
                             }
-                        }, `${constant.BASE_URL}team_image.png`]
+                        }, `${constant.BASE_URL}/team_image.png`]
                     },
                     team2logo: {
                         $ifNull: [{
                             $cond: {
                                 if: { $or: [{ $eq: [{ $substr: [{ $arrayElemAt: ['$team2.logo', 0] }, 0, 1] }, '/'] }, { $eq: [{ $substr: [{ $arrayElemAt: ['$team2.logo', 0] }, 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', { $arrayElemAt: ['$team2.logo', 0] }] },
+                                then: { $concat: [`${constant.BASE_URL}/`, '', { $arrayElemAt: ['$team2.logo', 0] }] },
                                 else: { $arrayElemAt: ['$team2.logo', 0] },
                             }
-                        }, `${constant.BASE_URL}team_image.png`]
+                        }, `${constant.BASE_URL}/team_image.png`]
                     },
                     matchopenstatus: {
                         $cond: {
@@ -485,19 +485,19 @@ class matchServices {
                     $ifNull: [{
                         $cond: {
                             if: { $or: [{ $eq: [{ $substr: ['$team1.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team1.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team1.logo'] },
+                            then: { $concat: [`${constant.BASE_URL}/`, '', '$team1.logo'] },
                             else: '$team1.logo',
                         }
-                    }, `${constant.BASE_URL}team_image.png`]
+                    }, `${constant.BASE_URL}/team_image.png`]
                 },
                 team2logo: {
                     $ifNull: [{
                         $cond: {
                             if: { $or: [{ $eq: [{ $substr: ['$team2.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team2.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team2.logo'] },
+                            then: { $concat: [`${constant.BASE_URL}/`, '', '$team2.logo'] },
                             else: '$team2.logo',
                         }
-                    }, `${constant.BASE_URL}team_image.png`]
+                    }, `${constant.BASE_URL}/team_image.png`]
                 },
                 start_date: { $ifNull: ['$match.start_date', '0000-00-00 00:00:00'] },
                 status: {
