@@ -34,8 +34,9 @@
                         <div class="container-fluid mt-n10">
                             <div class="card">
                                 <div class="card-header">Global Contest</div>
-                                <form method="POST" action="/edit-stock-contest-data" class="card-body">
+                                <form method="POST" action="/edit-stock-contest-data" class="card-body" enctype="multipart/form-data">
                                     <input type="hidden" name="stockContestsId" value="<%=getstockdata._id %>">
+                                    <input type="hidden" name="typename" value="stockContest">
                                     <div class="sbp-preview">
                                         <div class="sbp-preview-content py-2">
                                             <div class="row mx-0">
@@ -195,7 +196,7 @@
                                                     </div>
                                                  
                                                 </div> -->
-                                                <% console.log(getstockdata.start_date,"hello") %>
+    
                                                 <div class="col-md-6 col-12">
                                                     <div class="form-group my-3">
                                                         <label for="example-datetime-local-input">Start Date*</label>
@@ -286,6 +287,40 @@
                                                             placeholder="Enter Bonus Percentage" required="">
                                                     </div>
                                                    
+                                                </div>
+
+                                                <div class="col-12">
+                                                    <div class="form-group">
+                                                        <div class="row justify-content-center py-0">
+                                                            <h1 class="fs-14 font-weight-bold text-center mt-3 col-12">
+                                                                Image</h1>
+                                                            <div class="avatar-upload col-auto position-relative">
+                                                                <div
+                                                                    class="avatar-edit position-absolute right-0px z-index-1 top-2px">
+                                                                    <input type='file' name="image" id="image"
+                                                                        accept=".png" class="imageUpload d-none" />
+                                                                    <label
+                                                                        class="d-grid w-40px h-40px mb-0 rounded-pill bg-white text-success fs-20 shadow pointer font-weight-normal align-items-center justify-content-center"
+                                                                        for="image"><i
+                                                                            class="fad fa-pencil"></i></label>
+                                                                </div>
+                                                                <div
+                                                                    class="avatar-preview w-100px h-100px position-relative rounded-pill shadow">
+                                                                    <% if(getstockdata.image) {%>
+                                                                        <div class="w-100 h-100 rounded-pill"
+                                                                            id="image-imagePreview"
+                                                                            style="background-image: url('<%=getstockdata.image %>');">
+                                                                        </div>
+                                                                        <%}else{ %>
+                                                                            <div class="w-100 h-100 rounded-pill"
+                                                                                id="image-imagePreview"
+                                                                                style="background-image: url(/uploadImage/defaultImage.jpg);">
+                                                                            </div>
+                                                                            <% }%>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div class="col-12 text-right mt-md-4 mb-md-2">
                                                     <button type="reset" class="btn btn-sm text-uppercase btn-warning"
@@ -432,6 +467,22 @@
 
                     </script>
 
+                    <script>
+                        function readURL(input) {
+                            if (input.files && input.files[0]) {
+                                var reader = new FileReader();
+                                reader.onload = function (e) {
+                                    $('#' + input.id + '-imagePreview').css('background-image', 'url(' + e.target.result + ')');
+                                    $('#' + input.id + '-imagePreview').hide();
+                                    $('#' + input.id + '-imagePreview').fadeIn(650);
+                                }
+                                reader.readAsDataURL(input.files[0]);
+                            }
+                        }
+                        $(".imageUpload").change(function () {
+                            readURL(this);
+                        });
+                    </script>
 
                     <script>
                         function isNumberKey(evt) {

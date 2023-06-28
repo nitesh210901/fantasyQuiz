@@ -529,7 +529,7 @@ router.post("/quizupdateMatchFinalStatus/:id/:status", auth, QuizController.quiz
 // ---------------------------------Stock Contest manager----------------
 router.get("/viewStockContest", auth, stockContestController.viewStockContestPage);
 router.get("/add-stock-contest-page", auth, stockContestController.viewAddStockContestPage);
-router.post("/add-stock-contest", auth, stockContestController.addStockContest);
+router.post("/add-stock-contest", auth, upload.single("image"),stockContestController.addStockContest);
 router.post("/view-stock-contest-datatable", auth, stockContestController.stockContestDatatable);
 router.post("/delete-multi-stock-contest", auth, stockContestController.deleteMultiStockContest);
 router.get("/addStockpricecard/:id", auth, getUrl, stockContestController.addpricecard_page);
@@ -539,7 +539,7 @@ router.get("/deletepricecardstock/:id", auth, getUrl, stockContestController.del
 router.get("/enable-disable-contest", auth, getUrl, stockContestController.enableDisableContest);
 router.get("/cancel-stock-contest/:id", auth, getUrl, stockContestController.cancelStockContest);
 router.get("/edit-stock-contest/:id", auth, getUrl, stockContestController.editStockContestPage);
-router.post("/edit-stock-contest-data", auth, stockContestController.editStockContestData);
+router.post("/edit-stock-contest-data", auth, upload.single("image"), stockContestController.editStockContestData);
 router.get("/launch-contest/:id", auth, stockContestController.launchStockContest);
 router.get("/cancelStockContest",auth,stockContestController.cancelContestStock);
 router.post("/updateStockFinalStatus/:id/:status", auth, stockContestController.updateStockFinalStatus);  
