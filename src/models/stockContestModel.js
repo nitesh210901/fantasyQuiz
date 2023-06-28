@@ -51,18 +51,18 @@ let stockContestModel = new Schema({
         default:''
     },
     stock_categoryId:[mongoose.Types.ObjectId],
-    multi_entry: {
-        type: Number,
-        default: 0
-    },
+    // multi_entry: {
+    //     type: Number,
+    //     default: 0
+    // },
     team_limit: {
         type: Number,
         default: 0
     },
-    confirmed_challenge: {
-        type: Number,
-        default: 0
-    },
+    // confirmed_challenge: {
+    //     type: Number,
+    //     default: 0
+    // },
     is_bonus: {
         type: Number,
         default: 0

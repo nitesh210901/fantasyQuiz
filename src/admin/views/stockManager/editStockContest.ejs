@@ -120,9 +120,8 @@
                                                     </div>
                                                     
                                                 </div>
-                                                <div class="col-md-6">
-                                                    
-                                                    <!-- <div class="form-group my-3">
+                                                <!-- <div class="col-md-6"> 
+                                                    <div class="form-group my-3">
                                                         <label class="label-control text-bold fs-13">Amount
                                                             Type*</label><br>
                                                         <div class="custom-control custom-radio custom-control-inline">
@@ -139,11 +138,9 @@
                                                             <label class="custom-control-label fs-15"
                                                                 for="customRadio2_amount_type">Prize</label>
                                                         </div>
-                                                    </div> -->
-                                                   
-                                                </div>
+                                                    </div>
+                                                </div> -->
                                                 <div class="col-md-6">
-                                                  
                                                     <div class="form-group my-3">
                                                         <label class="label-control text-bold">Entry Fee*</label>
                                                         <input type="number" onkeypress="return isNumberKey(event)" value='<%=getstockdata.entryfee %>'
@@ -152,30 +149,18 @@
                                                             placeholder="Enter Entry Fee" name="entryfee" value=""
                                                             required="" autocomplete="off">
                                                     </div>
-                                                   
                                                 </div>
                                                 <div class="col-md-6">
-                                                    
                                                     <div class="form-group my-3">
                                                         <label class="label-control text-bold">Winning Amount*</label>
                                                         <input type="number" onkeypress="return isNumberKey(event)" value='<%=getstockdata.win_amount %>'
                                                             min="0" class="form-control form-control-solid"
                                                             placeholder="Enter Winning Amount" name="win_amount"
                                                             required="" value="" autocomplete="off">
-                                                    </div>
-                                                    
+                                                    </div> 
                                                 </div>
-                                                <div class="col-md-6">
-                                                   
-                                                    <div class="form-group my-3">
-                                                        <label class="label-control text-bold">Select Teams*</label>
-                                                        <input type="number" onkeypress="return isNumberKey(event)"
-                                                            min="0" class="form-control form-control-solid"
-                                                            placeholder="Select No Of Team" name="select_team" value='<%=getstockdata.select_team %>'
-                                                            required="" value="" autocomplete="off">
-                                                    </div>
-                                                    
-                                                </div>
+
+                                                
                                                 <div class="col-md-12">
                                                     
                                                     <div class="form-group my-3" id="max_user">
@@ -188,7 +173,7 @@
                                                     </div>
                                                     
                                                 </div>
-                                                <div class="col-md-6">
+                                                <!-- <div class="col-md-6">
                                                   
                                                     <div class="form-group my-3">
                                                         <label class="label-control text-bold">start date*</label>
@@ -209,6 +194,19 @@
                                                             name="end_date"  value='<%=getstockdata.end_date %>' autocomplete="off">
                                                     </div>
                                                  
+                                                </div> -->
+                                                <% console.log(getstockdata.start_date,"hello") %>
+                                                <div class="col-md-6 col-12">
+                                                    <div class="form-group my-3">
+                                                        <label for="example-datetime-local-input">Start Date*</label>
+                                                        <input class="form-control form-control-solid" type="text" placeholder="Enter Start Date" id="example-datetime-local-input" autocomplete="off"  name="start_date" value='<%=getstockdata.start_date %>' required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 col-12">
+                                                    <div class="form-group my-3">
+                                                        <label for="example-datetime-local-input2">End Date*</label>
+                                                        <input class="form-control form-control-solid" type="text" placeholder="Enter End Date"  name="end_date" autocomplete="off" id="example-datetime-local-input2" value='<%=getstockdata.end_date %>' required>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-12">
                                                   
