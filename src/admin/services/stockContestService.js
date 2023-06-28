@@ -152,7 +152,7 @@ class challengersService {
                     data.investment = req.body.investment;
                     data.win_amount = req.body.win_amount;
                     // data.amount_type = req.body.amount_type;
-                    data.select_team = req.body.select_team;
+                    // data.select_team = req.body.select_team;
                     data.start_date = start_date;
                     data.end_date = end_date;
                     data.stock_contest_cat = req.body.stock_contest_cat;
@@ -859,7 +859,7 @@ class challengersService {
                     data.win_amount = req.body.win_amount;
                     data.fantasy_type = req.body.fantasy_type;
                     // data.amount_type = req.body.amount_type;
-                    data.select_team = req.body.select_team;
+                    // data.select_team = req.body.select_team;
                     data.start_date = req.body.start_date;
                     data.end_date = req.body.end_date;
                     data.stock_contest_cat = req.body.stock_contest_cat;

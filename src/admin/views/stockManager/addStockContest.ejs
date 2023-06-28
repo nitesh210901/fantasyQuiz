@@ -173,15 +173,6 @@
                                                             required="" value="" autocomplete="off">
                                                     </div>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group my-3">
-                                                        <label class="label-control text-bold">Select Teams*</label>
-                                                        <input type="number" onkeypress="return isNumberKey(event)"
-                                                            min="0" class="form-control form-control-solid"
-                                                            placeholder="Select No Of Team" name="select_team"
-                                                            required="" value="" autocomplete="off">
-                                                    </div>
-                                                </div>
                                                 <div class="col-md-12">
                                                     <div class="form-group my-3" id="max_user">
                                                         <label class="label-control text-bold">Maximum number of
@@ -350,18 +341,18 @@
                                         $("#ch1").prop('disabled', false);
                                     }
                                 });
-                                $('input[name=multi_entry]').change(function () {
-                                    if ($('input[name=multi_entry]').prop('checked') == true) {
-                                        // $('input[name=team_limit]').val('');
-                                        $("input[name=team_limit]").prop('disabled', false);
-                                        $("#team_limit").stop().slideDown();
-                                    }
-                                    if ($('input[name=multi_entry]').prop('checked') == false) {
-                                        $("input[name=team_limit]").prop('disabled', true);
-                                        $("#team_limit").stop().slideUp();
-                                    }
+                                // $('input[name=multi_entry]').change(function () {
+                                //     if ($('input[name=multi_entry]').prop('checked') == true) {
+                                //         // $('input[name=team_limit]').val('');
+                                //         $("input[name=team_limit]").prop('disabled', false);
+                                //         $("#team_limit").stop().slideDown();
+                                //     }
+                                //     if ($('input[name=multi_entry]').prop('checked') == false) {
+                                //         $("input[name=team_limit]").prop('disabled', true);
+                                //         $("#team_limit").stop().slideUp();
+                                //     }
 
-                                });
+                                // });
                             </script>
                             <script type="text/javascript">
                                 $("input[name=contest_type]").change(function () {

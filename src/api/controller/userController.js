@@ -112,6 +112,7 @@ class userController {
             const data = await userServices.getmainbanner(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
+            console.log(error);
             next(error);
         }
     }
