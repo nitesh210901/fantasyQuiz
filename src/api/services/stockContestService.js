@@ -202,6 +202,16 @@ class overfantasyServices {
       });
 
       matchpipe.push({
+        '$addFields': {
+          'image': {
+            '$concat': [
+              `${process.env.BASE_URL}`, '$image'
+            ]
+          }
+        }
+      })
+
+      matchpipe.push({
         $sort: {
           start_date: 1,
         },

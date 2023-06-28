@@ -58,6 +58,13 @@ class challengersService {
 
     async addStockContestData(req) {
         try {
+            if(req.fileValidationError){
+                return{
+                    status:false,
+                    message:req.fileValidationError
+                }
+
+            }
             if (req.body.entryfee || req.body.entryfee == '0' && req.body.win_amount || req.body.win_amount == '0' && req.body.contest_type && req.body.contest_cat && req.body.start_date &&  req.body.start_date) {
                
                 let data = {}
@@ -140,6 +147,10 @@ class challengersService {
                     let end_date
                     if (req.body.end_date) {
                      end_date = moment(req.body.end_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD HH:mm:ss');
+                }
+                
+                    if (req.file) {
+                        data.image = `/${req.body.typename}/${req.file.filename}`;
                     }
                     data.contest_type = req.body.contest_type;
                     data.fantasy_type = req.body.stock_contest_cat;
@@ -687,6 +698,13 @@ class challengersService {
 
     async editStockContestData(req) {
         try {
+            if(req.fileValidationError){
+                return{
+                    status:false,
+                    message:req.fileValidationError
+                }
+
+            }
             if (req.body.entryfee && req.body.win_amount && req.body.contest_type) {
                 // const checkContestName=await challengersModel.findOne({_id:{$ne: req.body.globelContestsId},contest_name:req.body.contest_name});
                 // if(checkContestName){
@@ -850,6 +868,10 @@ class challengersService {
                         if (checkPriceCard) {
                             const deletepriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: stockcontestData._id });
                         }
+                    }
+                    let image = `/${req.body.typename}/${req.file?.filename}` || "";
+                    if (req.file) {
+                        data.image = image;
                     }
                     data.contest_type = req.body.contest_type;
                     data.pricecard_type = req.body.pricecard_type;

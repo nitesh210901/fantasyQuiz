@@ -116,6 +116,7 @@ let stockContestModel = new Schema({
     },
     image:{
         type: String,
+        default:""
     },
     select_team:{
         type: Number,

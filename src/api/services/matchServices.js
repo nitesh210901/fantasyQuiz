@@ -2745,7 +2745,6 @@ let sk=0;
                 }
             ]);
 
-            console.log(createTeam + "create team")
             if (!createTeam) {
                 return {
                     message: 'Team Not Available',
@@ -2775,9 +2774,9 @@ let sk=0;
                 } else {
                     // Pimage = `${constant.BASE_URL}avtar1.png`
                     if ((listmatchData.team1Id._id.toString() == playerData.team.toString())) {
-                        Pimage = `${constant.BASE_URL}white_team1.png`;
+                        Pimage = `${constant.BASE_URL}/white_team1.png`;
                     } else {
-                        Pimage = `${constant.BASE_URL}black_team1.png`;
+                        Pimage = `${constant.BASE_URL}/black_team1.png`;
                     }
                 }
                 console.log("toyal points" + parseFloat(filterData.points.toFixed(2)))
