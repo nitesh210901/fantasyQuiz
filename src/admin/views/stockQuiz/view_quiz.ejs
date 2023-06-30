@@ -40,35 +40,9 @@
           <div class="card mb-3">
             <div class="card-heading p-3">
               <form method="get" action="/stock/view_quiz">
-                                      <div class="sbp-preview position-relative">
+                        <div class="sbp-preview position-relative">
                         <div class="form-group">
                             <div class="row mx-0 align-items-end">
-                              <div class="col-md-6">
-                                <%if(contest){%>
-                                <div class="form-group my-3">
-                                    <label for="Match" class="control-label text-bold ">Match</label>
-                                      <select class="form-control form-control-solid input-sm p-1 selectpicker show-tick" data-container="body" data-live-search="true" title="Select Match" data-hide-disabled="true" name="contestId" id="matchName" tabindex="-98">
-                                        <% if(typeof listmatch !=="undefined" && listmatch) {%>
-                                          <%for(let match of listmatch[0]) {%>
-                                          <option value=""><%= match.contestname%></option>
-                                          <%}%>
-                                          <%}%>
-                                    </select>                       
-                                </div>
-                                <% }else{
-                                  %>
-                                  <div class="form-group my-3">
-                                    <label for="Match" class="control-label text-bold ">Match</label>
-                                      <select class="form-control form-control-solid input-sm p-1 selectpicker show-tick" data-container="body" data-live-search="true" title="Select Match" data-hide-disabled="true" name="contestId" tabindex="-98">
-                                        <% if(typeof listmatch !=="undefined" && listmatch) {%>
-                                          <%for(let match of listmatch) {%>
-                                          <option value="<%=match._id%>"><%= match.matchname%></option>
-                                          <%}%>
-                                          <%}%>
-                                    </select>                       
-                                </div>
-                                  <%}%>
-                            </div>
                                 <div class="col-md">
                                     <div class="form-group my-3">
                                       <label for="Question" class="control-label text-bold">Question</label>
@@ -106,9 +80,10 @@
     <tr>
 
       <th class="myclass">Sno.</th>
-      <th class="myclass5">Contest Name</th>
       <th class="myclass1">Question</th>
-      <th class="myclass3">Options</th>
+      <th class="myclass3">Option 1</th>
+      <th class="myclass3">Option 2</th>
+      <th class="myclass3">Option 3</th>
       <th class="myclass2">Answer</th>
       <th class="myclass4">Action</th>
     </tr>
@@ -118,9 +93,10 @@
   <tfoot>
       <tr>
           <th>Sno.</th>
-          <th>Contest Name</th>
           <th>Question</th>
-          <th>Options</th>
+          <th>Option 1</th>
+          <th>Option 2</th>
+          <th>Option 3</th>
           <th>Answer</th>
           <th>Action</th>
       </tr>
@@ -156,11 +132,15 @@ $(document).ready(function() {
             data: "count"
         },
         {
-            data: "Match Name"
-        }, {
             data: "question"
         },{
-            data: "options"
+            data: "option 1"
+        },
+        {
+            data: "option 2"
+        },
+        {
+            data: "option 3"
         },
         {
           data:"answer"

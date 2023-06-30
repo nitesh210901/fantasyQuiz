@@ -567,12 +567,12 @@ router.get("/delete-stock-category", auth, getUrl, stockCategoryController.delet
 
 // ---------------------------------Stock Quiz Manager-----------------------------------------
 router.get("/stock/add_quiz", auth, getUrl,stockQuizController.AddQuizPage);
-router.post("/stock/add_quiz", auth,upload.single("image"), getUrl,stockQuizController.AddQuiz);
+router.post("/stock/add_quiz", auth, getUrl,stockQuizController.AddQuiz);
 router.get("/stock/view_quiz", auth, getUrl, stockQuizController.ViewQuiz);
 router.post("/stock/quiz-Data-Table", auth, stockQuizController.QuizDataTable);
 router.post("/stock/quiz_give_answer/:id", auth, stockQuizController.QuizGIveAnswer);
 router.get("/stock/edit-quiz/:id", auth, getUrl, stockQuizController.editQuiz);
-router.post("/stock/edit-quiz-data/:id", auth, upload.single("image"),stockQuizController.editQuizData);
+router.post("/stock/edit-quiz-data/:id", auth,stockQuizController.editQuizData);
 router.get("/stock/deletequiz", auth, stockQuizController.deletequiz);
 router.get("/stock/view-all-global-questions", auth, stockQuizController.ViewallGlobalQuestions_page);
 router.post("/stock/global-questions-datatable", auth, stockQuizController.globalQuestionsDatatable);

@@ -170,57 +170,20 @@ class quizController {
             stockQuizModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').exec((err, rows1) => {
                 // console.log('--------rows1-------------', rows1);
                 if (err) console.log(err);
-              rows1.forEach(async(index) => {
-                let pipeline = []
-                pipeline.push({
-                  '$match': {
-                    '_id': new mongoose.Types.ObjectId(index._id)
+              rows1.forEach(async (index) => {
+                let answer = ""
+                for (let obj in index) {
+                  if (obj === index.answer) {
+                    answer+= index[obj]
                   }
-                }, {
-                  '$lookup': {
-                    'from': 'stock_contests', 
-                    'localField': 'contestId', 
-                    'foreignField': '_id', 
-                    'as': 'stockContest'
-                  }
-                }, {
-                  '$addFields': {
-                    'stock_name': {
-                      '$arrayElemAt': [
-                        '$stockContest', 0
-                      ]
-                    }
-                  }
-                }, {
-                  '$addFields': {
-                    'stock_name': '$stock_name.contest_name'
-                  }
-                }, {
-                  '$project': {
-                    '_id': 0, 
-                    'stock_name': 1
-                  }
-                })
-                let matchName = await stockQuizModel.aggregate(pipeline)
-                let option = '<ol>'
-                let answer = ''
-                let showopt = ''
-                let k=1
-                for (let item in index.options[0]) {
-                  showopt += `<option value="${item}">Option ${k}</option>`;
-                  if (item === index.answer) {
-                    answer += index.options[0][`${item}`]
-                  }
-                  option += `<li>${index.options[0][`${item}`]}</li>`
-                  k++
                 }
-                option += "</ol>"
                     data.push({
-                      "count": count,
-                      "Match Name":matchName[0].stock_name,
+                        "count": count,
                         "question": index.question,
-                        "options": `${option}`,
-                      "answer": `${answer}` || `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key${count}"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${index.answer}</span></a>
+                        "option 1": index.option_1,
+                        "option 2": index.option_2,
+                        "option 3": index.option_3,
+                        "answer": `${answer}` || `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key${count}"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${index.answer}</span></a>
                       <div class="modal fade" id="key${count}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                       <div class="modal-dialog col-6">
                       <div class="modal-content">
@@ -249,8 +212,8 @@ class quizController {
                       </div>
                       </div>
                 </div>`,
-                        "Action": `<a href="/edit-quiz/${index._id}" class="btn btn-sm btn-orange w-35px h-35px text-uppercase text-nowrap" data-toggle="tooltip" title="Edit"><i class="fad fa-pencil"></i></a>
-                        <a  onclick="delete_sweet_alert('/deletequiz?quizId=${index._id}', 'Are you sure you want to delete this data?')" class="btn btn-sm btn-danger w-35px h-35px text-uppercase"><i class='fas fa-trash-alt'></i></a>`
+                        "Action": `<a href="/stock/edit-quiz/${index._id}" class="btn btn-sm btn-orange w-35px h-35px text-uppercase text-nowrap" data-toggle="tooltip" title="Edit"><i class="fad fa-pencil"></i></a>
+                        <a  onclick="delete_sweet_alert('/stock/deletequiz?quizId=${index._id}', 'Are you sure you want to delete this data?')" class="btn btn-sm btn-danger w-35px h-35px text-uppercase"><i class='fas fa-trash-alt'></i></a>`
                     });
                     count++;
                     if (count > rows1.length) {
@@ -273,33 +236,30 @@ class quizController {
     async editQuiz(req, res, next) {
         try {
           res.locals.message = req.flash();
-          let curTime = moment().format("YYYY-MM-DD HH:mm:ss");
-          //   const listmatch = await listMatchModel.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime } ,isQuiz:1}, { name: 1 });  
-          const data = await stockQuizService.editQuiz(req);
-          const listmatch = await listMatchModel.findOne({_id:data.matchkey},{ name: 1 });  
-            if (data) {
-                res.render("stockQuiz/editQuiz", { sessiondata: req.session.data, msg: undefined, data ,listmatch});
-            }
-        } catch (error) {
-            console.log(error)
+          let data = await stockQuizService.editQuiz(req);
+          console.log("jjjj",data)
+          if (data) {
+             res.render("stockQuiz/editQuiz", { sessiondata: req.session.data, msg: undefined, data})
+          }
+        } catch(error) {
             req.flash('error','something is wrong please try again later');
             res.redirect("/view-teams");
         }
-    }
-
+  }
+  
     async editQuizData(req, res, next) {
         try {
             const data = await stockQuizService.editQuizData(req);
-          
             if (data.status == true) {
                 req.flash("success",data.message )
                 res.redirect("/view_quiz");
-            }
+            } 
             if (data.status == false) {
                 req.flash("error",data.message );
                 return res.redirect(`/edit-quiz/${req.params.id}`);
             }
         } catch (error) {
+          console.log(error);
             // next(error);
             req.flash('error','something is wrong please try again later');
             res.redirect("/view_quiz");

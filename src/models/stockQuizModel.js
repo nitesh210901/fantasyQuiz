@@ -2,14 +2,22 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 let quizSchema = new Schema({
-    contestId: {
-        type : mongoose.Types.ObjectId
-    },
     question: {
         type: String,
         default:""
     },
-    options: [],
+    option_1: {
+        type: String,
+        default:" "
+    },
+    option_2: {
+        type: String,
+        default:" "
+    },
+    option_3: {
+        type: String,
+        default:" "
+    },
     answer: {
         type: String,
         default:"Please Give Answer"
@@ -18,34 +26,14 @@ let quizSchema = new Schema({
         type: Number,
         default: 0
     },
-    winning_amount : {
-        type: Number,
-        default: 0
-    },
-    is_bonus: {
-        type: Number,
-        default: 0
-    },
-    bonus_percentage: {
-        type: Number,
-        default: 0
-    },
-    image: {
+    start_date: {
         type: String,
-        default:""
+        default: " "
     },
-    quiz_status: {
+    end_date: {
         type: String,
-        default:"pending"
+        default: " "
     },
-    joinedusers: {
-        type: Number,
-        default: 0
-    },
-    is_selected: {
-        type: Boolean,
-        default: false
-    }
 }, {
     timestamps: true,
     versionKey: false
