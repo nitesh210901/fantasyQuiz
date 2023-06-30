@@ -1,0 +1,317 @@
+<%- include("../../partials/head") %>
+
+    <%- include("../../partials/bodyStartWithNavBar/") %>
+        <%- include("../../partials/sideNav") %>
+            <div id="layoutSidenav_content">
+                <main>
+                    <div class="page-header pb-10 page-header-dark bg-info">
+                        <div class="container-fluid">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="page-header-content">
+                                        <h1 class="page-header-title fs-md-35 fs-20">
+
+                                            <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
+                                            <span class=" text-capitalize">
+                                        Quiz Manager
+                                </span>
+                                        </h1>
+                                        <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                                            Create New Quiz
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto mb-md-0 mb-3">
+                                    <a href="/stock/view_quiz" class="btn btn-sm  btn-sm rounded-pill btn-light font-weight-bold text-primary float-right"><i class="fad fa-eye"></i>&nbsp; View All Quiz</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-fluid mt-n10">
+
+
+                        <div class="card">
+                            <div class="card-header">Create Quiz</div>
+                            <form method="post" action="/stock/edit-quiz-data/<%=data._id %>" accept-charset="UTF-8" id="j-forms" class="card-body" enctype="multipart/form-data">
+                                <input type="hidden" name="typename" value="quiz">
+                                <% if(msg){%>
+                                    <span style="color: red;">**<%=msg %>**</span>
+                                    <%}%>
+                                        <div class="sbp-preview">
+                                            <div class="sbp-preview-content p-2">
+                                                <div class="row mx-0">
+                                                    <div class="col-md">
+                                                        <div class="form-group my-3">
+                                                            <!-- over fantasy start -->
+                                                            <label for="Fantasy Type*" style="color:black;">Match*</label>
+                                                            
+                                                            <% if(typeof listmatch !=="undefined" && listmatch){%>
+                                                                    <select class="form-control form-control-solid " title="Fantasy Type" id="matchkey_id" data-container="body" name="matchkey_id">
+                                                                        <option value="<%= listmatch._id %>" <%= listmatch._id.toString() === data.matchkey.toString() ? "selected":"" %>><%= listmatch.name%></option>
+                                                                    </select>
+                                                            <%}%>
+                                                                    
+                                                        </div>
+                                                    </div>
+ 
+                                                     
+                                                    <div class="col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="job-title">Question*</label>
+                                                            <% if(data.question) {%>
+                                                            <input class="form-control form-control-solid" value="<%=data.question %>"  id="job-title" type="text" placeholder="Enter Question" name="question" required>
+                                                            <%}else{ %>
+                                                                <input class="form-control form-control-solid" id="job-title" type="text" placeholder="Enter Question" name="question" required>
+                                                            <% }%>
+                                                        </div>
+                                                    </div>
+                                                   
+                                                    <div class="col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="example-datetime-local-input">Options 1</label>
+                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="<%= data.options[0].option_1%>" name="options[]">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="example-datetime-local-input">Options 2</label>
+                                                            <div style="display: flex;">
+                                                            <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="<%= data.options[0].option_2%>" name="options[]">
+                                                            <button class="btn btn-sm btn-success text-uppercase"  style="border-radius: 0px;" type="button" id="add">Add</button>
+                                                          </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <% let i = 3 %>
+                                                    <%for(let item in data.options[0]){%>
+                                                        <%if(`option_${i}`===item){%>
+                                                        <div class="col-12">
+                                                            <div class="form-group my-3">
+                                                                <label for="example-datetime-local-input">Options <%=i%></label>
+                                                                <div style="display: flex;">
+                                                                <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="<%= data.options[0][`${item}`]%>" name="options[]">
+                                                                <button class="remove btn btn-sm btn-red text-uppercase"  style="border-radius: 0px;">X</button></div>
+                                                            </div>
+                                                        </div>
+                                                        <%++i%>
+                                                     <%}%>   
+                                                    <%}%>
+                                                    <div class="col-12" id="items">
+                                                    </div>
+
+                                                    <div class="col-md">
+                                                        <div class="form-group my-3">
+                                                            <label for="Answer*" style="color:black;">Answer*</label>
+                                                            <select class="form-control form-control-solid " title="Fantasy Type" id="answerId" data-container="body" name="answer">
+                                                             <%if(data.answer === "Please Give Answer"){%>
+                                                            <option value=" " selected disabled><%= data.answer%></option> 
+                                                            <%}else{%>  
+                                                             <%for(let item in data.options[0]){%>
+                                                             <%let option  = item.charAt(0).toUpperCase() + item.slice(1)
+                                                             %>
+                                                             <% let opt = option.split('_').join(' ')%>
+                                                             <option value="<%=item%>" <%=data.answer===item ? 'selected' : "" %>><%= opt%></option>  
+                                                             <%}%>  
+                                                             <% }%>     
+                                                            </select>    
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="job-title">Entry Fee*</label>
+                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" value="<%=data.entryfee %>" name="entryfee">
+                                                        </div>
+                                                    </div>
+                                                    <% let entryfee = data.winning_amount/data.entryfee %>
+                                
+                                                    <div class="col-6">
+                                                        <div class="form-group my-2">
+                                                            <label class="control-label text-bold">Multiply*</label>
+                                                            <div style="display: flex;">
+                                                            <input required="" class="form-control form-control-solid" name="winning_amount" value="<%= entryfee%>" type="number">
+                                                            <label class="control-label col-3 text-bold" >*Entry Fee</label></div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <div class="form-group">
+                                                            <div class="row justify-content-center py-0">
+                                                                <h1 class="fs-14 font-weight-bold text-center mt-3 col-12">
+                                                                    Image</h1>
+                                                                <div class="avatar-upload col-auto position-relative">
+                                                                    <div
+                                                                        class="avatar-edit position-absolute right-0px z-index-1 top-2px">
+                                                                        <input type='file' name="image" id="image"
+                                                                            accept=".png" class="imageUpload d-none" />
+                                                                        <label
+                                                                            class="d-grid w-40px h-40px mb-0 rounded-pill bg-white text-success fs-20 shadow pointer font-weight-normal align-items-center justify-content-center"
+                                                                            for="image"><i
+                                                                                class="fad fa-pencil"></i></label>
+                                                                    </div>
+                                                                    <div
+                                                                        class="avatar-preview w-100px h-100px position-relative rounded-pill shadow">
+                                                                        <% if(data.image) {%>
+                                                                            <div class="w-100 h-100 rounded-pill"
+                                                                                id="image-imagePreview"
+                                                                                style="background-image: url('<%=data.image %>');">
+                                                                            </div>
+                                                                            <%}else{ %>
+                                                                                <div class="w-100 h-100 rounded-pill"
+                                                                                    id="image-imagePreview"
+                                                                                    style="background-image: url(/uploadImage/defaultImage.jpg);">
+                                                                                </div>
+                                                                                <% }%>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+    
+                                                    </div>
+
+                                                    <div class="col-md-3">
+                                                        <div class="form-group my-3">
+                                                          <div class="custom-control custom-checkbox custom-control-inline">
+                                                            <input type="checkbox" class="custom-control-input sel_all" id="select_all3" name="is_bonus"
+                                                            value="<%=data.is_bonus %>" <%=data.is_bonus == 1 ? 'checked': '' %>>
+                                                            <label class="custom-control-label" for="select_all3">Is Bonus Allowed</label>
+                                                          </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 mt-3">
+                                                    <div class="form-group d-none" id="bonuspercentage">
+                                                        <label class="label-control text-bold">Bonus Percentage (No need to enter % here. Just enter
+                                                        number here)*</label>
+                                                        <input disabled="" id="ch2" type="text" min="0" max="100" class="form-control form-control-solid"
+                                                        name="bonus_percentage" value="<%=data.bonus_percentage %>" <%=data.bonus_percentage  ? ' ': 'disabled=""' %> placeholder="Enter Bonus Percentage" required="">
+                                                    </div>
+                                                    </div>
+
+
+                                                    <div class="col-12 text-right mt-4 mb-2">
+                                                        <button class="btn btn-sm btn-success text-uppercase"><i class="far fa-check-circle"></i>&nbsp;Submit</button>
+                                                    </div>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+                    </div>
+                </main>
+
+                <%- include("../../partials/alertMsg") %>
+                <%- include("../../partials/footer") %>
+                <script>
+                    
+                    i = <%- Object.keys(data.options[0]).length %>
+                   $("#add").on("click", ()=>{
+                       ++i
+                       $("#items").append(`<div class="form-group my-3">
+                                       <label for="example-datetime-local-input">Options ${i}</label>
+                                       <div style="display: flex;">
+                                       <input class="form-control form-control-solid" type="text" placeholder="Enter Option"  value="" name="options[]">
+                                       <button class="remove btn btn-sm btn-red text-uppercase"  style="border-radius: 0px;">X</button></div>
+                                   </div>`);
+                       $("#answerId").append(`<option value="option_${i}">Option ${i}</option>`)
+                   })
+                   $("body").on("click", ".remove", (e)=>{
+                       $(`#answerId option[value="option_${i}"]`).remove();
+                       --i
+                       $(e.target).parent("div").parent("div").remove();
+                   })
+               </script>
+               <script>
+                function readURL(input) {
+                        if (input.files && input.files[0]) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) {
+                                $('#' + input.id + '-imagePreview').css('background-image', 'url(' + e.target.result + ')');
+                                $('#' + input.id + '-imagePreview').hide();
+                                $('#' + input.id + '-imagePreview').fadeIn(650);
+                            }
+                            reader.readAsDataURL(input.files[0]);
+                        }
+                    }
+                    $(".imageUpload").change(function () {
+                        readURL(this);
+                    });
+            </script>
+                    <script>
+                        $(window).on('load', function() {
+
+                            $('#preloader_admin').hide();
+
+                        })
+                    </script>
+                    <script>
+                         $('input[name=is_bonus]').change(function () {
+                            if ($('input[name=is_bonus]').prop('checked') == true) {
+                                cosnole.log("hello")
+                            $('input[name=bonus_percentage]').val('');
+                            $("input[name=bonus_percentage]").prop('disabled', false);
+                            $("#bonuspercentage").removeClass('d-none');
+                            $("#multientryteam").show();
+                            }
+                            if ($('input[name=is_bonus]').prop('checked') == false) {
+                            $("input[name=bonus_percentage]").prop('disabled', true);
+                            $("#bonuspercentage").addClass('d-none');
+                            $("#multientryteam").hide();
+                            }
+
+                        });
+                        $('#special').on('click', function() {
+                            mySelect.find('option:selected').prop('disabled', true);
+                            mySelect.selectpicker('refresh');
+                        });
+
+                        $('#special2').on('click', function() {
+                            mySelect.find('option:disabled').prop('disabled', false);
+                            mySelect.selectpicker('refresh');
+                        });
+
+                        $('#basic2').selectpicker({
+                            liveSearch: true,
+                            maxOptions: 1
+                        });
+                    </script>
+                    <script>
+                        $(document).ready(function() {
+
+                            if ($('#accordionSidenavPages a').hasClass('active')) {
+                                $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
+                                $('#accordionSidenavPages a.active').parent().parent().addClass('show');
+                                // console.log(id);
+                            } else {
+                                $('#takeonebar').addClass('slamdown');
+                            }
+                        });
+                    </script>
+                   
+
+
+                    <script type="text/javascript">
+                        $.datetimepicker.setLocale('en');
+                        $('.datetimepickerget').datetimepicker({
+                            lang: 'en',
+                            formatDate: 'd.m.Y',
+                            step: 5,
+                            startDate: new Date()
+                        });
+                    </script>
+                    <script type="text/javascript">
+                        $('.datepicker').datepicker({
+                            lang: 'en',
+                            formatDate: 'd.m.Y',
+                            step: 5,
+                        });
+                    </script>
+
+                    <script>
+                        /*jslint browser:true*/
+                        /*global jQuery, document*/
+
+                        jQuery(document).ready(function() {
+                            'use strict';
+
+                            jQuery('#example-datetime-local-input, #example-datetime-local-input2, #start_date, #end_date, #dob-date, #expire_date').datetimepicker();
+                        });
+                    </script>

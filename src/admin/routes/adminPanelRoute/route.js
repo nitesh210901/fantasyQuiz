@@ -71,6 +71,7 @@ const contactController=require("../../controller/contactController");
 const howtoplayController=require("../../controller/howtoplayController");
 const FAQQuestionController=require("../../controller/FAQQuestionsController");
 const QuizController=require("../../controller/quizController");
+const stockQuizController=require("../../controller/stockQuizController");
 const stockContestController=require("../../controller/stockContestController");
 const stockCategoryController=require("../../controller/stockCategoryController");
 const stockController=require("../../controller/stockController");
@@ -490,11 +491,8 @@ router.get("/delete_FAQ_Question/:id", auth, getUrl, FAQQuestionController.delet
 router.get("/add_quiz", auth, getUrl,QuizController.AddQuizPage);
 router.post("/add_quiz", auth,upload.single("image"), getUrl,QuizController.AddQuiz);
 router.get("/view_quiz", auth, getUrl, QuizController.ViewQuiz);
-// router.post("/quiz-Data-Table", auth, QuizController.QuizDataTable);
 router.post("/quiz-Data-Table", auth, QuizController.QuizDataTable);
 router.post("/quiz_give_answer/:id", auth, QuizController.QuizGIveAnswer);
-router.get('/quizRefundAmount',auth,QuizController.quizRefundAmount)
-
 router.get("/edit-quiz/:id", auth, getUrl, QuizController.editQuiz);
 router.post("/edit-quiz-data/:id", auth, upload.single("image"),QuizController.editQuizData);
 router.get("/deletequiz", auth, QuizController.deletequiz);
@@ -511,15 +509,9 @@ router.get("/importmatchQuestion/:matchKey", auth, getUrl, QuizController.import
 router.get("/Import-global-contest", auth, getUrl, QuizController.importGlobalContestPage);
 router.get("/quizimportmatchData/:matchKey", auth, getUrl, QuizController.quizimportchallengersData);
 
-// router.get("/update-quiz-status/:id", auth, getUrl, QuizController.updateStatusforQuiz);
-//-----cricket api controller (3rd party api)------------//
-// router.get("/listMatches", cricketApiController.listOfMatches);
 router.get("/listMatches", cricketApiController.listOfMatches_entity);
 router.get("/importPlayers/:matchkey", cricketApiController.fetchPlayerByMatch_entity);
-// overfantasy sahil
 router.get('/quiz/:id', auth,matchController.quiz);
-router.get("/overfantacy/update_results_of_matches",overResultController.overupdate_results_of_matches);
-//router.get('/overfantasy/overInformations', auth, OverFantasyController.overInformations);
 
 
 // ---------------------------------Winner Declare manager----------------
@@ -566,5 +558,27 @@ router.post("/stock-Category-table", auth, stockCategoryController.stockCategory
 router.get("/edit-stock-category", auth, getUrl, stockCategoryController.editStockCategory);
 router.post("/edit-stock-category-data/:stockId", upload.single("image"), auth, stockCategoryController.editStockCategoryData);
 router.get("/delete-stock-category", auth, getUrl, stockCategoryController.deleteStockCategory);
+
+// ---------------------------------Stock Quiz Manager-----------------------------------------
+router.get("/stock/add_quiz", auth, getUrl,stockQuizController.AddQuizPage);
+router.post("/stock/add_quiz", auth,upload.single("image"), getUrl,stockQuizController.AddQuiz);
+router.get("/stock/view_quiz", auth, getUrl, stockQuizController.ViewQuiz);
+router.post("/stock/stock/quiz-Data-Table", auth, stockQuizController.QuizDataTable);
+router.post("/stock/quiz_give_answer/:id", auth, stockQuizController.QuizGIveAnswer);
+router.get("/stock/edit-quiz/:id", auth, getUrl, stockQuizController.editQuiz);
+router.post("/stock/edit-quiz-data/:id", auth, upload.single("image"),stockQuizController.editQuizData);
+router.get("/stock/deletequiz", auth, stockQuizController.deletequiz);
+router.get("/stock/view-all-global-questions", auth, stockQuizController.ViewallGlobalQuestions_page);
+router.post("/stock/global-questions-datatable", auth, stockQuizController.globalQuestionsDatatable);
+router.get("/stock/add-global-question", auth, stockQuizController.addGlobalQuestionPage);
+router.post("/stock/add-global-question", auth, stockQuizController.addGlobalQuestion);
+router.get("/stock/edit-global-question/:id", auth, getUrl, stockQuizController.editglobalquestion_page);
+router.post("/stock/edit-global-question-data", auth, stockQuizController.editGlobalQuestionData);
+router.get("/stock/delete-global-question", auth, getUrl, stockQuizController.deleteGlobalQuestion);
+router.post("/stock/delete-multi-global-question", auth, stockQuizController.globalQuestionMuldelete);
+router.get("/stock/Import-global-questions", auth, stockQuizController.importGlobalQuestionPage);
+router.get("/stock/importmatchQuestion/:matchKey", auth, getUrl, stockQuizController.importQuestionData);
+router.get("/stock/Import-global-contest", auth, getUrl, stockQuizController.importGlobalContestPage);
+router.get("/stock/quizimportmatchData/:matchKey", auth, getUrl, stockQuizController.quizimportchallengersData);
 
 module.exports = router;

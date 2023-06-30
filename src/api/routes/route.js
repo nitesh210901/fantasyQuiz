@@ -12,6 +12,7 @@ const CronJob = require('../services/cronJobServices');
 const quizFantasyController=require("../controller/quizFantasyController")
 const stockController=require("../controller/stockController")
 const mcxController=require("../controller/mcxController")
+const stockPortfolioController=require("../controller/stockPortfolioController")
 
 const auth = require('../../middlewares/apiauth');
 
@@ -371,4 +372,11 @@ router.get('/getstockContest', auth, stockController.getStockContest);
 
 // -------------------------MCX Manager-------------------------
 router.get('/get-mcx-contest', auth, mcxController.listMCXContest);
+
+// ---------------------------------My 'portfolio-----------------------------------------
+router.get("/get-portfolio-stocks", auth, stockPortfolioController.getStocklistInPortfolio);
+router.post("/create-portfolio-stocks", auth, stockPortfolioController.createPortfolio);
+router.post("/update-portfolio-stocks", auth, stockPortfolioController.updatePortfolio);
+router.delete("/delete-portfolio-stocks", auth, stockPortfolioController.deletePortfolio);
+
 module.exports = router;
