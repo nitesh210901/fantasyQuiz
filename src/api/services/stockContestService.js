@@ -31,12 +31,9 @@ class overfantasyServices {
       completeContest: this.completeContest.bind(this),
       myContestleaderboard: this.myContestleaderboard.bind(this),
       getStockMyTeams: this.getStockMyTeams.bind(this),
-      updateResultStocks: this.updateResultStocks.bind(this),
       getStockCategory: this.getStockCategory.bind(this),
       getStockAccordingCategory: this.getStockAccordingCategory.bind(this),
       getAllStockWithAllSelector: this.getAllStockWithAllSelector.bind(this),
-      saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
-      updateResultStocks: this.updateResultStocks.bind(this),
       updateJoinedusers: this.updateJoinedusers.bind(this),
       getStockUsableBalance: this.getStockUsableBalance.bind(this),
       liveStockRanksLeaderboard: this.liveStockRanksLeaderboard.bind(this),
@@ -44,9 +41,7 @@ class overfantasyServices {
       NewjoinedcontestLive: this.NewjoinedcontestLive.bind(this),
       AllCompletedContest: this.AllCompletedContest.bind(this),
       getStockContest: this.getStockContest.bind(this),
-
       rankUpdateInMatch1: this.rankUpdateInMatch1.bind(this),
-
     }
   }
 
@@ -54,7 +49,6 @@ class overfantasyServices {
     try {
       console.log("--updateJoinedusers----")
       const query = {};
-      // query.matchkey = req.query.stock_contest_cat
       query.fantasy_type = req.query.stock_contest_cat
       query.stock_contest_cat = req.query.stock_contest_cat
       query.contest_type = 'Amount'
@@ -71,49 +65,28 @@ class overfantasyServices {
                 'joinedusers': totalJoinedUserInLeauge.length,
               },
             };
-            // console.log("--matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1--",matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1)
             if (matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1) {
               let newmatchchallenge = {};
-              // delete newmatchchallenge._id;
-              // delete newmatchchallenge.createdAt;
-              // delete newmatchchallenge.updatedAt;
               newmatchchallenge.joinedusers = 0;
-              // newmatchchallenge.contestId = matchchallenge.contestId
               newmatchchallenge.contest_cat = matchchallenge.contest_cat
-              // newmatchchallenge.challenge_id = matchchallenge.challenge_id
-              // newmatchchallenge.matchkey = matchchallenge.matchkey
               newmatchchallenge.fantasy_type = matchchallenge.fantasy_type
               newmatchchallenge.entryfee = matchchallenge.entryfee
               newmatchchallenge.win_amount = matchchallenge.win_amount
-              // newmatchchallenge.multiple_entryfee = matchchallenge.multiple_entryfee
-              // newmatchchallenge.expert_teamid = matchchallenge.expert_teamid
               newmatchchallenge.maximum_user = matchchallenge.maximum_user
               newmatchchallenge.status = matchchallenge.status
-              // newmatchchallenge.created_by = matchchallenge.created_by
               newmatchchallenge.contest_type = matchchallenge.contest_type
-              // newmatchchallenge.expert_name = matchchallenge.expert_name
               newmatchchallenge.contest_name = matchchallenge.contest_name || ''
               newmatchchallenge.amount_type = matchchallenge.amount_type
               newmatchchallenge.mega_status = matchchallenge.mega_status
               newmatchchallenge.winning_percentage = matchchallenge.winning_percentage
               newmatchchallenge.is_bonus = matchchallenge.is_bonus
-              // newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
               newmatchchallenge.pricecard_type = matchchallenge.pricecard_type
               newmatchchallenge.minimum_user = matchchallenge.minimum_user
-              // newmatchchallenge.confirmed_challenge = matchchallenge.confirmed_challenge
-              // newmatchchallenge.multi_entry = matchchallenge.multi_entry
               newmatchchallenge.team_limit = matchchallenge.team_limit
               newmatchchallenge.image = matchchallenge.image
               newmatchchallenge.c_type = matchchallenge.c_type
-              // newmatchchallenge.is_private = matchchallenge.is_private
               newmatchchallenge.is_running = matchchallenge.is_running
-              // newmatchchallenge.is_expert = matchchallenge.is_expert
               newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
-              // newmatchchallenge.matchpricecards = matchchallenge.matchpricecards
-              // newmatchchallenge.is_expert = matchchallenge.is_expert
-              // newmatchchallenge.team1players = matchchallenge.team1players
-              // newmatchchallenge.team2players = matchchallenge.team2players
-              // console.log("---newmatchchallenge--",newmatchchallenge)
               let data = await stockContestModel.findOne({
                 _id: matchchallenge._id,
                 fantasy_type: matchchallenge.fantasy_type,
@@ -128,7 +101,6 @@ class overfantasyServices {
                 let createNewContest = new stockContestModel(newmatchchallenge);
                 let mynewContest = await createNewContest.save();
               }
-              // console.log("---createNewContest----",mynewContest)
             }
             await stockContestModel.updateOne({ _id: mongoose.Types.ObjectId(matchchallenge._id) }, update);
           }
@@ -139,6 +111,7 @@ class overfantasyServices {
     }
 
   };
+  
   async listStockContest(req) {
     try {
       const { stock_contest_cat } = req.query;
@@ -527,11 +500,6 @@ class overfantasyServices {
                 'userbalance.balance': balance - mainbal,
                 'userbalance.bonus': bonus - mainbonus,
                 'userbalance.winning': winning - mainwin,
-                $inc: {
-                  totalchallenges: totalchallenges,
-                  totalmatches: totalmatches,
-                  totalseries: totalseries,
-                },
               };
               let randomStr = randomstring.generate({
                 length: 4,
@@ -584,11 +552,6 @@ class overfantasyServices {
                 'userbalance.balance': balance - mainbal,
                 'userbalance.bonus': bonus - mainbonus,
                 'userbalance.winning': winning - mainwin,
-                $inc: {
-                  totalchallenges: totalchallenges,
-                  totalmatches: totalmatches,
-                  totalseries: totalseries,
-                },
               };
               let randomStr = randomstring.generate({
                 length: 4,
@@ -1420,97 +1383,7 @@ class overfantasyServices {
     }
   }
 
-  async updateResultStocks(req) {
-    try {
-      console.log('nitesh______+++++++++');
-      const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
-      let newData;
-      const listContest = await stockContestModel.find({
-        fantasy_type: { $ne: 'CRICKET' },
-        start_date: { $gte: currentDate },
-        launch_status: 'launched',
-        final_status: { $nin: ['winnerdeclared', 'IsCanceled'] },
-        status: { $ne: 'completed' }
-      });
-      if (listContest.length > 0) {
-        for (let index of listContest) {
-          let matchTimings = index.start_date;
-          const currentDate1 = moment().format('YYYY-MM-DD+HH:mm:ss');
 
-          if (currentDate1 >= matchTimings) {
-            const result = await this.getSockScoresUpdates(listContest);
-
-            const headers = {
-              "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
-            };
-
-            await Promise.all(result.map(async (ele) => {
-              const insertData = {
-                userId: ele.userid,
-                teamid: ele.teamid,
-                contestId: ele.contestId,
-                joinId: ele._id,
-              };
-
-              const investment = +ele.invested;
-              const startDate = ele.start_date;
-              const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
-              console.log(formattedDate,"ooooooooooooooo")
-              const dateFormat = moment().format('YYYY/MM/DD HH:mm');
-              let matchStatus = {};
-              if (dateFormat >= ele.start_date) {
-                matchStatus['status'] = 'started';
-                matchStatus['final_status'] = 'IsReviewed';
-              }
-              await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, matchStatus);
-            
-              const chkSave = await stockContestModel.findOneAndUpdate({ _id: ele.contestId }, matchStatus, { upsert: true });
-              let total = 0;
-
-              await Promise.all(ele.stockTeam.map(async (stock) => {
-                try {
-                  const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}&to=${formattedDate}`, {
-                    headers: headers
-                  });
-
-                  total += resp.data.data.candles.reduce((acc, candle) => {
-                    const openPrice = candle[1];
-                    const closePrice = candle[4];
-                    return acc + (investment * closePrice / openPrice);
-                  }, 0);
-                } catch (err) {
-                  console.log(err);
-                  console.error(err);
-                }
-              }));
-
-              insertData.finalvalue = total;
-              await this.rankUpdateInMatch1(ele.contestId);  
-
-              newData = await stockFinalResult.findOneAndUpdate(
-                { userId: ele.userid, teamid: ele.teamid, contestId: ele.contestId },
-                insertData,
-                { upsert: true }
-              );
-            }));
-
-
-          }
-
-        }
-
-      }
-
-      return {
-        "message": "League Data",
-        data: newData || {}
-      };
-
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
 
   async rankUpdateInMatch1(contestId){
     try {
@@ -1755,40 +1628,7 @@ class overfantasyServices {
 
   }
 
-  async saveCurrentPriceOfStock(req, res) {
-    try {
-      const stockData = await stockModel.find({ isEnable: true });
-
-      const headers = {
-        "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
-      };
-
-      const formattedDate = moment().format('YYYY-MM-DD+HH:mm');
-      const requests = stockData.map(async (stock) => {
-        try {
-          const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}:00&to=${formattedDate}:00`, {
-            "headers": headers
-          });
-          const historicalData = resp.data.data.candles;
-          const updates = historicalData.map(async (candle) => {
-            const openPrice = candle[1];
-            const closePrice = candle[4];
-            await stockModel.findOneAndUpdate({ instrument_token: stock.instrument_token }, { "openPrice": openPrice, 'closePrice': closePrice }, { upsert: true });
-          });
-          await Promise.all(updates);
-        } catch (err) {
-          throw err;
-        }
-      });
-      await Promise.all(requests);
-      return {
-        "message": "League Data",
-        data: requests || {}
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
+ 
 
   // async liveStockRanksLeaderboard(req) {
   //   try {

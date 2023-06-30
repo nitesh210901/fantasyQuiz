@@ -4,6 +4,7 @@ const moment = require("moment");
 const stockCategoryModel = require("../../models/stockcategoryModel");
 const stockContestModel = require("../../models/stockContestModel");
 const stockModel = require("../../models/stockModel");
+const stockContestService = require("../services/stockContestService");
 
 class stockCategory {
     constructor() {
@@ -16,6 +17,10 @@ class stockCategory {
             enableDisableStock: this.enableDisableStock.bind(this),
             showStockFinalResult: this.showStockFinalResult.bind(this),
             showStockResulTable: this.showStockResulTable.bind(this),
+            saveStocks: this.saveStocks.bind(this),
+            saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
+            updateResultStocks: this.updateResultStocks.bind(this),
+
         }
     }
 
@@ -268,183 +273,224 @@ class stockCategory {
         console.log(error);
         throw error;
     }
-}
+  }
 
-async showStockResulTable(req, res, next) {
-  try {
-    let condition = {};
-    // condition = {"fantasy_type":req.query.fantasy_type, "launch_status":"launched", "status":"started" , final_status:"pending"};
+  async showStockResulTable(req, res, next) {
+    try {
+      let condition = {};
+      // condition = {"fantasy_type":req.query.fantasy_type, "launch_status":"launched", "status":"started" , final_status:"pending"};
 
-    stockContestModel.countDocuments({condition}).exec((err, rows) => {
-      let totalFiltered = rows;
-      let data = [];
-      let count = 1;
+      stockContestModel.countDocuments({condition}).exec((err, rows) => {
+        let totalFiltered = rows;
+        let data = [];
+        let count = 1;
 
-      stockContestModel.find(condition).exec((err, rows1) => {
-        rows1.forEach(async (doc) => {
-          let dateFormat = moment(`${doc.start_date}`, "YYYY-MM-DD HH:mm:ss");
-          let day = dateFormat.format("dddd");
-          let date = dateFormat.format("YYYY-MM-DD");
-          let time = dateFormat.format("hh:mm:ss a");
-          let constest_status = "";
-          // console.log("-------------doc.status -------------------",doc.status ,"-----------doc.name----------",doc.name)
-          if (doc.status != "notstarted") {
-            if (doc.final_status == "pending") {
-              constest_status = `<div class="row">
-                                              <div class="col-12 my-1">
-                                                  <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this stock contest?')">
-                                                      Is Abandoned
-                                                      &nbsp;
-                                                      <i class="fad fa-caret-right"></i>
-                                                  </a>
-                                              </div>
-                                              <div class="col-12 my-1">
-                                                  <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this stock contest?')">
-                                                      Is Canceled
-                                                      &nbsp;
-                                                      <i class="fad fa-caret-right"></i>
-                                                  </a>
-                                              </div>
-                                          </div>`;
-            } else if (doc.final_status == "IsReviewed") {
-              constest_status = `<div class="row">
-                                      <div class="col-12 my-1">
-                                          <a class="text-warning text-decoration-none font-weight-600" href="">
-                                              Is Reviewed
-                                              &nbsp;
-                                              <i class="fad fa-caret-right"></i>
-                                          </a>
-                                      </div>
-                                      <div class="col-12 my-1">
-                                          <a class="text-success text-decoration-none font-weight-600 pointer" data-toggle="modal" data-target="#keys${count}">
-                                              Is Winner Declared
-                                              &nbsp;
-                                              <i class="fad fa-caret-right"></i>
-                                          </a>
-                                      </div>
-                                      <div class="col-12 my-1">
-                                          <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this stock contest?')">
-                                              Is Abandoned
-                                              &nbsp;
-                                              <i class="fad fa-caret-right"></i>
-                                          </a>
-                                      </div>
-                                      <div class="col-12 my-1">
-                                          <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this stock contest?')">
-                                              Is Canceled
-                                              &nbsp;
-                                              <i class="fad fa-caret-right"></i>
-                                          </a>
-                                      </div>
-                                  </div>
-                                  
-                              <div id="keys${count}" class="modal fade" role="dialog" >
-                              <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable  w-100 h-100">
-                                  <div class="modal-content">
-                                  <div class="modal-header">
-                                      <h4 class="modal-title">Stock IsWinnerDeclared</h4>
-                                      <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                  </div>
-                                  <div class="modal-body abcd">
-                                      <form action="/updateStockFinalStatus/${doc._id}/winnerdeclared" method="post">
-                                      <div class="col-md-12 col-sm-12 form-group">
-                                      <label> Enter Your Master Password </label>
+        stockContestModel.find(condition).exec((err, rows1) => {
+          rows1.forEach(async (doc) => {
+            let dateFormat = moment(`${doc.start_date}`, "YYYY-MM-DD HH:mm:ss");
+            let day = dateFormat.format("dddd");
+            let date = dateFormat.format("YYYY-MM-DD");
+            let time = dateFormat.format("hh:mm:ss a");
+            let constest_status = "";
+            // console.log("-------------doc.status -------------------",doc.status ,"-----------doc.name----------",doc.name)
+            if (doc.status != "notstarted") {
+              if (doc.final_status == "pending") {
+                constest_status = `<div class="row">
+                                                <div class="col-12 my-1">
+                                                    <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this stock contest?')">
+                                                        Is Abandoned
+                                                        &nbsp;
+                                                        <i class="fad fa-caret-right"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="col-12 my-1">
+                                                    <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this stock contest?')">
+                                                        Is Canceled
+                                                        &nbsp;
+                                                        <i class="fad fa-caret-right"></i>
+                                                    </a>
+                                                </div>
+                                            </div>`;
+              } else if (doc.final_status == "IsReviewed") {
+                constest_status = `<div class="row">
+                                        <div class="col-12 my-1">
+                                            <a class="text-warning text-decoration-none font-weight-600" href="">
+                                                Is Reviewed
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-12 my-1">
+                                            <a class="text-success text-decoration-none font-weight-600 pointer" data-toggle="modal" data-target="#keys${count}">
+                                                Is Winner Declared
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-12 my-1">
+                                            <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsAbandoned', 'Are you sure you want to Abandoned this stock contest?')">
+                                                Is Abandoned
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>
+                                        <div class="col-12 my-1">
+                                            <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this stock contest?')">
+                                                Is Canceled
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
                                     
-                                      <input type="password"  name="masterpassword" class="form-control form-control-solid" placeholder="Enter password here">
-                                      </div>
-                                      <div class="col-auto text-right ml-auto mt-4 mb-2">
-                                      <button type="submit" class="btn btn-sm btn-success text-uppercase "><i class="far fa-check-circle"></i>&nbsp;Submit</button>
-                                      </div>
-                                      </form>
-                                  </div>
-                                  <div class="modal-footer">
-                                      <button type="button" class="btn btn-sm btn-default" data-dismiss="modal" >Close</button>
-                                  </div>
-                                  </div>
-                              </div>
-                              </div>`;
-            } else if (doc.final_status == "winnerdeclared") {
-              constest_status = `<div class="row">
-                                  <div class="col-12 my-1">
-                                      <span class="text-success text-decoration-none font-weight-600 pointer" data-toggle="modal" data-target="#keys4">
-                                          Winner Declared
-                                          &nbsp;
-                                      </span>
-                                  </div>
-                              </div>`;
+                                <div id="keys${count}" class="modal fade" role="dialog" >
+                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable  w-100 h-100">
+                                    <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">Stock IsWinnerDeclared</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    </div>
+                                    <div class="modal-body abcd">
+                                        <form action="/updateStockFinalStatus/${doc._id}/winnerdeclared" method="post">
+                                        <div class="col-md-12 col-sm-12 form-group">
+                                        <label> Enter Your Master Password </label>
+                                      
+                                        <input type="password"  name="masterpassword" class="form-control form-control-solid" placeholder="Enter password here">
+                                        </div>
+                                        <div class="col-auto text-right ml-auto mt-4 mb-2">
+                                        <button type="submit" class="btn btn-sm btn-success text-uppercase "><i class="far fa-check-circle"></i>&nbsp;Submit</button>
+                                        </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-sm btn-default" data-dismiss="modal" >Close</button>
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>`;
+              } else if (doc.final_status == "winnerdeclared") {
+                constest_status = `<div class="row">
+                                    <div class="col-12 my-1">
+                                        <span class="text-success text-decoration-none font-weight-600 pointer" data-toggle="modal" data-target="#keys4">
+                                            Winner Declared
+                                            &nbsp;
+                                        </span>
+                                    </div>
+                                </div>`;
+              } else {
+                constest_status = ``;
+              }
             } else {
+              constest_status = "";
+              constest_status = `<div class="row">
+                                <div class="col-12 my-1">
+                                    <span class="text-danger text-decoration-none font-weight-600">
+                                        Not Started
+                                        &nbsp;
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-12 my-1">
+                                            <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this stock contest?')">
+                                                Is Canceled
+                                                &nbsp;
+                                                <i class="fad fa-caret-right"></i>
+                                            </a>
+                                        </div>`
+            }
+            if(doc.final_status == 'IsCanceled'){
               constest_status = ``;
             }
-          } else {
-            constest_status = "";
-            constest_status = `<div class="row">
-                              <div class="col-12 my-1">
-                                  <span class="text-danger text-decoration-none font-weight-600">
-                                      Not Started
-                                      &nbsp;
-                                  </span>
-                              </div>
-                          </div>
-                          <div class="col-12 my-1">
-                                          <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockContest?contestId=${doc._id}&status=IsCanceled', 'Are you sure you want to cancel this stock contest?')">
-                                              Is Canceled
-                                              &nbsp;
-                                              <i class="fad fa-caret-right"></i>
-                                          </a>
-                                      </div>`
-          }
-          if(doc.final_status == 'IsCanceled'){
-            constest_status = ``;
-          }
 
 
-          // ---------------quiz----------
+            // ---------------quiz----------
 
-         
-          data.push({
-            count: count,
-            contest_name: `<div class="row">
-                              <div class="col-12 my-1">
-                                      <span class="text-decoration-none text-secondary font-weight-600 fs-16">${doc.contest_name}</span> 
-                                      &nbsp; 
-                              </div>
-                              <div class="col-12 my-1">
-                                  <span class="text-dark">${day},</span>
-                                  <span class="text-warning">${date}</span>
-                                  <span class="text-success ml-2">${time}</span>
-                              </div>
-                              <div class="col-12 my-1">
-                                  <a class="text-decoration-none text-secondary font-weight-600" href="/total-joined-user/${doc._id}">
-                                      Total Joined User ${doc.joinedusers} 
-                                      &nbsp; 
-                                      <i class="fad fa-caret-right"></i>
-                                  </a>
-                              </div>
-                              <div class="col-12 my-1">
-                                  <span class="text-decoration-none text-dark font-weight-600">
-                                      Contest Status : ${doc.final_status}
-                                  </span>
-                              </div>
-                          </div>`,
+          
+            data.push({
+              count: count,
+              contest_name: `<div class="row">
+                                <div class="col-12 my-1">
+                                        <span class="text-decoration-none text-secondary font-weight-600 fs-16">${doc.contest_name}</span> 
+                                        &nbsp; 
+                                </div>
+                                <div class="col-12 my-1">
+                                    <span class="text-dark">${day},</span>
+                                    <span class="text-warning">${date}</span>
+                                    <span class="text-success ml-2">${time}</span>
+                                </div>
+                                <div class="col-12 my-1">
+                                    <a class="text-decoration-none text-secondary font-weight-600" href="/total-joined-user/${doc._id}">
+                                        Total Joined User ${doc.joinedusers} 
+                                        &nbsp; 
+                                        <i class="fad fa-caret-right"></i>
+                                    </a>
+                                </div>
+                                <div class="col-12 my-1">
+                                    <span class="text-decoration-none text-dark font-weight-600">
+                                        Contest Status : ${doc.final_status}
+                                    </span>
+                                </div>
+                            </div>`,
 
-            constest_status: constest_status
-          });
-          count++;
-          if (count > rows1.length) {
-            let json_data = JSON.stringify({
-              data,
+              constest_status: constest_status
             });
-            res.send(json_data);
-          }
+            count++;
+            if (count > rows1.length) {
+              let json_data = JSON.stringify({
+                data,
+              });
+              res.send(json_data);
+            }
+          });
         });
       });
-    });
-  } catch (error) {
-    console.log("error",error)
-    next(error);
+    } catch (error) {
+      console.log("error",error)
+      next(error);
+    }
   }
+
+  async saveStocks(req, res, next){
+    try {
+        let stockdata = await axios.get(`https://api.kite.trade/instruments`);
+        const data = await convertCsv().fromString(stockdata.data);
+        let arr = [];
+        for(let i of data){
+            if(i.exchange === 'NSE' || i.exchange === 'MCX'){
+                i['type'] = i.exchange;
+                arr.push(stockModel.updateOne(
+                { instrument_token: i.instrument_token },
+                { $set: i },
+                { upsert: true }));
+            }
+        }
+        Promise.allSettled(arr).then((values) => {
+            return res.status(200).json(Object.assign({ success: true }));
+        });
+          return res.status(200).json(Object.assign({ success: true }, data));
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
 }
 
+  async updateResultStocks(req, res, next) {
+    try {
+        const data = await stockContestService.updateResultStocks(req);
+        return res.status(200).json(Object.assign({ success: true }, data));
+    } catch (error) {
+        next(error);
+    } 
+  }
+
+  async saveCurrentPriceOfStock(req, res, next) {
+    try {
+        const data = await stockContestService.saveCurrentPriceOfStock(req);
+        return res.status(200).json(Object.assign({ success: true }, data));
+    } catch (error) {
+        next(error);
+    }
+  }
 
 }
 module.exports = new stockCategory();

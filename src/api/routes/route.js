@@ -349,7 +349,6 @@ router.post('/stock-create-team', auth, stockController.stockCreateTeam);
 router.post('/join-stock-contest', auth, stockController.stockJoinContest);
 router.get('/get-stock-contest-category', auth, stockController.getStockContestCategory);
 router.get('/getAllContestStock', auth, stockController.getAllNewStock);
-router.get("/saveStocks", auth, stockController.saveStocks);
 router.get("/get-stock-category", auth, stockController.getStockCategory);
 router.get('/getAllStockWithAllSelector', auth, stockController.getAllStockWithAllSelector);
 router.get("/getallstockaccordingcategory", auth, stockController.getStockAccordingCategory);
@@ -358,12 +357,10 @@ router.get('/get-single-contest-details', auth, stockController.getSingleContest
 router.get('/view-stock-team', auth, stockController.viewStockTeam);
 router.get('/completed-contest', auth, stockController.completeContest);
 router.get('/my-contest-leaderboard', auth, stockController.myContestleaderboard);
-router.get("/save-current-stock-price", auth, stockController.saveCurrentPriceOfStock);
 router.get("/get-stock-usable-balance", auth, stockController.getStockUsableBalance);
 router.get("/rankupdate", auth, stockController.rankUpdateInMatch1);
 
 router.get('/getStockMyTeams', auth, stockController.getStockMyTeams);
-router.get('/point-calculation-stock', stockController.updateResultStocks);
 router.get("/live-stock-rank-leaderboard", auth, stockController.liveStockRanksLeaderboard)
 router.get('/newjoinedcontest', auth, stockController.Newjoinedcontest);
 router.get('/newjoinedcontestlive', auth, stockController.NewjoinedcontestLive);

@@ -366,6 +366,12 @@ router.get("/refund_amount", resultController.refund_amount);
 router.get("/insertProfitLossData", resultController.insertProfitLossData);
 
 
+//Cron don't add auth and getUrl function
+router.get('/point-calculation-stock', stockController.updateResultStocks);
+router.get("/save-current-stock-price", auth, stockController.saveCurrentPriceOfStock);
+router.get("/saveStocks", auth, stockController.saveStocks);
+
+
 router.get("/match-result", auth, getUrl, resultController.matchResult);
 router.post("/match-result-table", auth, resultController.matchResultData);
 router.get("/match-details/:id", auth, getUrl, resultController.matchDetails);
