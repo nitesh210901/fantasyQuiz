@@ -54,7 +54,7 @@ class overfantasyServices {
     try {
       console.log("--updateJoinedusers----")
       const query = {};
-      query.matchkey = req.query.stock_contest_cat
+      // query.matchkey = req.query.stock_contest_cat
       query.fantasy_type = req.query.stock_contest_cat
       query.stock_contest_cat = req.query.stock_contest_cat
       query.contest_type = 'Amount'
@@ -78,44 +78,44 @@ class overfantasyServices {
               // delete newmatchchallenge.createdAt;
               // delete newmatchchallenge.updatedAt;
               newmatchchallenge.joinedusers = 0;
-              newmatchchallenge.contestId = matchchallenge.contestId
+              // newmatchchallenge.contestId = matchchallenge.contestId
               newmatchchallenge.contest_cat = matchchallenge.contest_cat
-              newmatchchallenge.challenge_id = matchchallenge.challenge_id
-              newmatchchallenge.matchkey = matchchallenge.matchkey
+              // newmatchchallenge.challenge_id = matchchallenge.challenge_id
+              // newmatchchallenge.matchkey = matchchallenge.matchkey
               newmatchchallenge.fantasy_type = matchchallenge.fantasy_type
               newmatchchallenge.entryfee = matchchallenge.entryfee
               newmatchchallenge.win_amount = matchchallenge.win_amount
-              newmatchchallenge.multiple_entryfee = matchchallenge.multiple_entryfee
-              newmatchchallenge.expert_teamid = matchchallenge.expert_teamid
+              // newmatchchallenge.multiple_entryfee = matchchallenge.multiple_entryfee
+              // newmatchchallenge.expert_teamid = matchchallenge.expert_teamid
               newmatchchallenge.maximum_user = matchchallenge.maximum_user
               newmatchchallenge.status = matchchallenge.status
-              newmatchchallenge.created_by = matchchallenge.created_by
+              // newmatchchallenge.created_by = matchchallenge.created_by
               newmatchchallenge.contest_type = matchchallenge.contest_type
-              newmatchchallenge.expert_name = matchchallenge.expert_name
+              // newmatchchallenge.expert_name = matchchallenge.expert_name
               newmatchchallenge.contest_name = matchchallenge.contest_name || ''
               newmatchchallenge.amount_type = matchchallenge.amount_type
               newmatchchallenge.mega_status = matchchallenge.mega_status
               newmatchchallenge.winning_percentage = matchchallenge.winning_percentage
               newmatchchallenge.is_bonus = matchchallenge.is_bonus
-              newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
+              // newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
               newmatchchallenge.pricecard_type = matchchallenge.pricecard_type
               newmatchchallenge.minimum_user = matchchallenge.minimum_user
-              newmatchchallenge.confirmed_challenge = matchchallenge.confirmed_challenge
-              newmatchchallenge.multi_entry = matchchallenge.multi_entry
+              // newmatchchallenge.confirmed_challenge = matchchallenge.confirmed_challenge
+              // newmatchchallenge.multi_entry = matchchallenge.multi_entry
               newmatchchallenge.team_limit = matchchallenge.team_limit
               newmatchchallenge.image = matchchallenge.image
               newmatchchallenge.c_type = matchchallenge.c_type
-              newmatchchallenge.is_private = matchchallenge.is_private
+              // newmatchchallenge.is_private = matchchallenge.is_private
               newmatchchallenge.is_running = matchchallenge.is_running
-              newmatchchallenge.is_expert = matchchallenge.is_expert
+              // newmatchchallenge.is_expert = matchchallenge.is_expert
               newmatchchallenge.bonus_percentage = matchchallenge.bonus_percentage
-              newmatchchallenge.matchpricecards = matchchallenge.matchpricecards
-              newmatchchallenge.is_expert = matchchallenge.is_expert
-              newmatchchallenge.team1players = matchchallenge.team1players
-              newmatchchallenge.team2players = matchchallenge.team2players
+              // newmatchchallenge.matchpricecards = matchchallenge.matchpricecards
+              // newmatchchallenge.is_expert = matchchallenge.is_expert
+              // newmatchchallenge.team1players = matchchallenge.team1players
+              // newmatchchallenge.team2players = matchchallenge.team2players
               // console.log("---newmatchchallenge--",newmatchchallenge)
               let data = await stockContestModel.findOne({
-                contestId: matchchallenge.contestId,
+                _id: matchchallenge._id,
                 fantasy_type: matchchallenge.fantasy_type,
                 entryfee: matchchallenge.entryfee,
                 win_amount: matchchallenge.win_amount,
@@ -200,6 +200,16 @@ class overfantasyServices {
           }
          },
       });
+
+      matchpipe.push({
+        '$addFields': {
+          'image': {
+            '$concat': [
+              `${process.env.BASE_URL}`, '$image'
+            ]
+          }
+        }
+      })
 
       matchpipe.push({
         $sort: {
@@ -1445,6 +1455,7 @@ class overfantasyServices {
               const investment = +ele.invested;
               const startDate = ele.start_date;
               const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
+              console.log(formattedDate,"ooooooooooooooo")
               const dateFormat = moment().format('YYYY/MM/DD HH:mm');
               let matchStatus = {};
               if (dateFormat >= ele.start_date) {

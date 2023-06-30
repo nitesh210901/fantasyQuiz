@@ -223,19 +223,19 @@ class matchServices {
                         $ifNull: [{
                             $cond: {
                                 if: { $or: [{ $eq: [{ $substr: [{ $arrayElemAt: ['$team1.logo', 0] }, 0, 1] }, '/'] }, { $eq: [{ $substr: [{ $arrayElemAt: ['$team1.logo', 0] }, 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', { $arrayElemAt: ['$team1.logo', 0] }] },
+                                then: { $concat: [`${constant.BASE_URL}/`, '', { $arrayElemAt: ['$team1.logo', 0] }] },
                                 else: { $arrayElemAt: ['$team1.logo', 0] },
                             }
-                        }, `${constant.BASE_URL}team_image.png`]
+                        }, `${constant.BASE_URL}/team_image.png`]
                     },
                     team2logo: {
                         $ifNull: [{
                             $cond: {
                                 if: { $or: [{ $eq: [{ $substr: [{ $arrayElemAt: ['$team2.logo', 0] }, 0, 1] }, '/'] }, { $eq: [{ $substr: [{ $arrayElemAt: ['$team2.logo', 0] }, 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', { $arrayElemAt: ['$team2.logo', 0] }] },
+                                then: { $concat: [`${constant.BASE_URL}/`, '', { $arrayElemAt: ['$team2.logo', 0] }] },
                                 else: { $arrayElemAt: ['$team2.logo', 0] },
                             }
-                        }, `${constant.BASE_URL}team_image.png`]
+                        }, `${constant.BASE_URL}/team_image.png`]
                     },
                     matchopenstatus: {
                         $cond: {
@@ -485,19 +485,19 @@ class matchServices {
                     $ifNull: [{
                         $cond: {
                             if: { $or: [{ $eq: [{ $substr: ['$team1.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team1.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team1.logo'] },
+                            then: { $concat: [`${constant.BASE_URL}/`, '', '$team1.logo'] },
                             else: '$team1.logo',
                         }
-                    }, `${constant.BASE_URL}team_image.png`]
+                    }, `${constant.BASE_URL}/team_image.png`]
                 },
                 team2logo: {
                     $ifNull: [{
                         $cond: {
                             if: { $or: [{ $eq: [{ $substr: ['$team2.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team2.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team2.logo'] },
+                            then: { $concat: [`${constant.BASE_URL}/`, '', '$team2.logo'] },
                             else: '$team2.logo',
                         }
-                    }, `${constant.BASE_URL}team_image.png`]
+                    }, `${constant.BASE_URL}/team_image.png`]
                 },
                 start_date: { $ifNull: ['$match.start_date', '0000-00-00 00:00:00'] },
                 status: {
@@ -1307,19 +1307,19 @@ class matchServices {
                                     $or: [{ $eq: [{ $substr: ['$playersData.image', 0, 1] }, '/'] },
                                     { $eq: [{ $substr: ['$playersData.image', 0, 1] }, 'p'] }]
                                 },
-                                then: { $concat: [`${constant.BASE_URL}`, '', '$playersData.image'] },
+                                then: { $concat: [`${constant.BASE_URL}/`, '', '$playersData.image'] },
                                 else: {
                                     $cond: {
                                         if: { $eq: ['$playersData.image', ''] },
                                         then: {
                                             $cond: {
                                                 if: { $eq: ['$playersData.team', '$listmatches.team1Id'] },
-                                                then: `${constant.BASE_URL}white_team1.png`,
+                                                then: `${constant.BASE_URL}/white_team1.png`,
                                                 else: {
                                                     $cond: {
                                                         if: { $eq: ['$playersData.team', '$listmatches.team2Id'] },
-                                                        then: `${constant.BASE_URL}black_team1.png`,
-                                                        else: `${constant.BASE_URL}black_team1.png`
+                                                        then: `${constant.BASE_URL}/black_team1.png`,
+                                                        else: `${constant.BASE_URL}/black_team1.png`
                                                     }
                                                 }
                                             }
@@ -1328,7 +1328,7 @@ class matchServices {
                                     }
                                 }
                             }
-                        }, `${constant.BASE_URL}black_team1.png`]
+                        }, `${constant.BASE_URL}/black_team1.png`]
                     },
                     teamName: { $arrayElemAt: ['$team.teamName', 0] },
                     teamcolor: { $ifNull: [{ $arrayElemAt: ['$team.color', 0] }, constant.TEAM_DEFAULT_COLOR.DEF1] },
@@ -1336,10 +1336,10 @@ class matchServices {
                         $ifNull: [{
                             $cond: {
                                 if: { $or: [{ $eq: [{ $substr: [{ $arrayElemAt: ['$team.logo', 0] }, 0, 1] }, '/'] }, { $eq: [{ $substr: [{ $arrayElemAt: ['$team.logo', 0] }, 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', { $arrayElemAt: ['$team.logo', 0] }] },
+                                then: { $concat: [`${constant.BASE_URL}/`, '', { $arrayElemAt: ['$team.logo', 0] }] },
                                 else: { $arrayElemAt: ['$team.logo', 0] },
                             }
-                        }, `${constant.BASE_URL}team_image.png`]
+                        }, `${constant.BASE_URL}/team_image.png`]
                     },
                     team_short_name: { $arrayElemAt: ['$team.short_name', 0] },
                     totalpoints: '0',
@@ -1479,19 +1479,19 @@ class matchServices {
                                     $or: [{ $eq: [{ $substr: ['$playersData.image', 0, 1] }, '/'] },
                                     { $eq: [{ $substr: ['$playersData.image', 0, 1] }, 'p'] }]
                                 },
-                                then: { $concat: [`${constant.BASE_URL}`, '', '$playersData.image'] },
+                                then: { $concat: [`${constant.BASE_URL}/`, '', '$playersData.image'] },
                                 else: {
                                     $cond: {
                                         if: { $eq: ['$playersData.image', ''] },
                                         then: {
                                             $cond: {
                                                 if: { $eq: ['$playersData.team', '$listmatches.team1Id'] },
-                                                then: `${constant.BASE_URL}white_team1.png`,
+                                                then: `${constant.BASE_URL}/white_team1.png`,
                                                 else: {
                                                     $cond: {
                                                         if: { $eq: ['$playersData.team', '$listmatches.team2Id'] },
-                                                        then: `${constant.BASE_URL}black_team1.png`,
-                                                        else: `${constant.BASE_URL}black_team1.png`
+                                                        then: `${constant.BASE_URL}/black_team1.png`,
+                                                        else: `${constant.BASE_URL}/black_team1.png`
                                                     }
                                                 }
                                             }
@@ -1500,7 +1500,7 @@ class matchServices {
                                     }
                                 }
                             }
-                        }, `${constant.BASE_URL}black_team1.png`]
+                        }, `${constant.BASE_URL}/black_team1.png`]
                     },
                     teamName: { $arrayElemAt: ['$team.teamName', 0] },
                     teamcolor: { $ifNull: [{ $arrayElemAt: ['$team.color', 0] }, constant.TEAM_DEFAULT_COLOR.DEF1] },
@@ -1508,10 +1508,10 @@ class matchServices {
                         $ifNull: [{
                             $cond: {
                                 if: { $or: [{ $eq: [{ $substr: [{ $arrayElemAt: ['$team.logo', 0] }, 0, 1] }, '/'] }, { $eq: [{ $substr: [{ $arrayElemAt: ['$team.logo', 0] }, 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', { $arrayElemAt: ['$team.logo', 0] }] },
+                                then: { $concat: [`${constant.BASE_URL}/`, '', { $arrayElemAt: ['$team.logo', 0] }] },
                                 else: { $arrayElemAt: ['$team.logo', 0] },
                             }
-                        }, `${constant.BASE_URL}team_image.png`]
+                        }, `${constant.BASE_URL}/team_image.png`]
                     },
                     team_short_name: { $arrayElemAt: ['$team.short_name', 0] },
                     totalpoints: '0',
@@ -2745,7 +2745,6 @@ let sk=0;
                 }
             ]);
 
-            console.log(createTeam + "create team")
             if (!createTeam) {
                 return {
                     message: 'Team Not Available',
@@ -2775,9 +2774,9 @@ let sk=0;
                 } else {
                     // Pimage = `${constant.BASE_URL}avtar1.png`
                     if ((listmatchData.team1Id._id.toString() == playerData.team.toString())) {
-                        Pimage = `${constant.BASE_URL}white_team1.png`;
+                        Pimage = `${constant.BASE_URL}/white_team1.png`;
                     } else {
-                        Pimage = `${constant.BASE_URL}black_team1.png`;
+                        Pimage = `${constant.BASE_URL}/black_team1.png`;
                     }
                 }
                 console.log("toyal points" + parseFloat(filterData.points.toFixed(2)))

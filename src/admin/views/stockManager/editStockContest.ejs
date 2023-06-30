@@ -34,8 +34,9 @@
                         <div class="container-fluid mt-n10">
                             <div class="card">
                                 <div class="card-header">Global Contest</div>
-                                <form method="POST" action="/edit-stock-contest-data" class="card-body">
+                                <form method="POST" action="/edit-stock-contest-data" class="card-body" enctype="multipart/form-data">
                                     <input type="hidden" name="stockContestsId" value="<%=getstockdata._id %>">
+                                    <input type="hidden" name="typename" value="stockContest">
                                     <div class="sbp-preview">
                                         <div class="sbp-preview-content py-2">
                                             <div class="row mx-0">
@@ -120,9 +121,8 @@
                                                     </div>
                                                     
                                                 </div>
-                                                <div class="col-md-6">
-                                                    
-                                                    <!-- <div class="form-group my-3">
+                                                <!-- <div class="col-md-6"> 
+                                                    <div class="form-group my-3">
                                                         <label class="label-control text-bold fs-13">Amount
                                                             Type*</label><br>
                                                         <div class="custom-control custom-radio custom-control-inline">
@@ -139,11 +139,9 @@
                                                             <label class="custom-control-label fs-15"
                                                                 for="customRadio2_amount_type">Prize</label>
                                                         </div>
-                                                    </div> -->
-                                                   
-                                                </div>
+                                                    </div>
+                                                </div> -->
                                                 <div class="col-md-6">
-                                                  
                                                     <div class="form-group my-3">
                                                         <label class="label-control text-bold">Entry Fee*</label>
                                                         <input type="number" onkeypress="return isNumberKey(event)" value='<%=getstockdata.entryfee %>'
@@ -152,30 +150,18 @@
                                                             placeholder="Enter Entry Fee" name="entryfee" value=""
                                                             required="" autocomplete="off">
                                                     </div>
-                                                   
                                                 </div>
                                                 <div class="col-md-6">
-                                                    
                                                     <div class="form-group my-3">
                                                         <label class="label-control text-bold">Winning Amount*</label>
                                                         <input type="number" onkeypress="return isNumberKey(event)" value='<%=getstockdata.win_amount %>'
                                                             min="0" class="form-control form-control-solid"
                                                             placeholder="Enter Winning Amount" name="win_amount"
                                                             required="" value="" autocomplete="off">
-                                                    </div>
-                                                    
+                                                    </div> 
                                                 </div>
-                                                <div class="col-md-6">
-                                                   
-                                                    <div class="form-group my-3">
-                                                        <label class="label-control text-bold">Select Teams*</label>
-                                                        <input type="number" onkeypress="return isNumberKey(event)"
-                                                            min="0" class="form-control form-control-solid"
-                                                            placeholder="Select No Of Team" name="select_team" value='<%=getstockdata.select_team %>'
-                                                            required="" value="" autocomplete="off">
-                                                    </div>
-                                                    
-                                                </div>
+
+                                                
                                                 <div class="col-md-12">
                                                     
                                                     <div class="form-group my-3" id="max_user">
@@ -188,7 +174,7 @@
                                                     </div>
                                                     
                                                 </div>
-                                                <div class="col-md-6">
+                                                <!-- <div class="col-md-6">
                                                   
                                                     <div class="form-group my-3">
                                                         <label class="label-control text-bold">start date*</label>
@@ -209,6 +195,19 @@
                                                             name="end_date"  value='<%=getstockdata.end_date %>' autocomplete="off">
                                                     </div>
                                                  
+                                                </div> -->
+    
+                                                <div class="col-md-6 col-12">
+                                                    <div class="form-group my-3">
+                                                        <label for="example-datetime-local-input">Start Date*</label>
+                                                        <input class="form-control form-control-solid" type="text" placeholder="Enter Start Date" id="example-datetime-local-input" autocomplete="off"  name="start_date" value='<%=getstockdata.start_date %>' required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 col-12">
+                                                    <div class="form-group my-3">
+                                                        <label for="example-datetime-local-input2">End Date*</label>
+                                                        <input class="form-control form-control-solid" type="text" placeholder="Enter End Date"  name="end_date" autocomplete="off" id="example-datetime-local-input2" value='<%=getstockdata.end_date %>' required>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-12">
                                                   
@@ -288,6 +287,40 @@
                                                             placeholder="Enter Bonus Percentage" required="">
                                                     </div>
                                                    
+                                                </div>
+
+                                                <div class="col-12">
+                                                    <div class="form-group">
+                                                        <div class="row justify-content-center py-0">
+                                                            <h1 class="fs-14 font-weight-bold text-center mt-3 col-12">
+                                                                Image</h1>
+                                                            <div class="avatar-upload col-auto position-relative">
+                                                                <div
+                                                                    class="avatar-edit position-absolute right-0px z-index-1 top-2px">
+                                                                    <input type='file' name="image" id="image"
+                                                                        accept=".png" class="imageUpload d-none" />
+                                                                    <label
+                                                                        class="d-grid w-40px h-40px mb-0 rounded-pill bg-white text-success fs-20 shadow pointer font-weight-normal align-items-center justify-content-center"
+                                                                        for="image"><i
+                                                                            class="fad fa-pencil"></i></label>
+                                                                </div>
+                                                                <div
+                                                                    class="avatar-preview w-100px h-100px position-relative rounded-pill shadow">
+                                                                    <% if(getstockdata.image) {%>
+                                                                        <div class="w-100 h-100 rounded-pill"
+                                                                            id="image-imagePreview"
+                                                                            style="background-image: url('<%=getstockdata.image %>');">
+                                                                        </div>
+                                                                        <%}else{ %>
+                                                                            <div class="w-100 h-100 rounded-pill"
+                                                                                id="image-imagePreview"
+                                                                                style="background-image: url(/uploadImage/defaultImage.jpg);">
+                                                                            </div>
+                                                                            <% }%>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div class="col-12 text-right mt-md-4 mb-md-2">
                                                     <button type="reset" class="btn btn-sm text-uppercase btn-warning"
@@ -434,6 +467,22 @@
 
                     </script>
 
+                    <script>
+                        function readURL(input) {
+                            if (input.files && input.files[0]) {
+                                var reader = new FileReader();
+                                reader.onload = function (e) {
+                                    $('#' + input.id + '-imagePreview').css('background-image', 'url(' + e.target.result + ')');
+                                    $('#' + input.id + '-imagePreview').hide();
+                                    $('#' + input.id + '-imagePreview').fadeIn(650);
+                                }
+                                reader.readAsDataURL(input.files[0]);
+                            }
+                        }
+                        $(".imageUpload").change(function () {
+                            readURL(this);
+                        });
+                    </script>
 
                     <script>
                         function isNumberKey(evt) {

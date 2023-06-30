@@ -1444,25 +1444,30 @@ class UserServices {
     };
   }
   async getmainbanner(req) {
+    let {fantasy_type} = req.query
     const superAdmin = await AdminModel.findOne({
       role: constant.ADMIN.SUPER_ADMIN,
     });
-    // console.log(superAdmin,">>>>>>>>>>>>>>>")
     let images;
     if (superAdmin) {
       images = superAdmin.sidebanner
         ? superAdmin.sidebanner.filter(
-          (item) => item.type == constant.SIDE_BANNER_TYPES.APP_TYPE
+          (item) => item.type == constant.SIDE_BANNER_TYPES.APP_TYPE && item.fantasy_type === fantasy_type
         )
         : [];
     } else {
       image = [];
     }
+    console.log(images)
     const image = await images.map((item) => {
       let url = "";
       let image = "";
+      let fantasy_type = ""
       if (item.url) {
         url = item.url
+      }
+      if (item.fantasy_type) {
+        fantasy_type = item.fantasy_type
       }
       if (item.image) {
         //const BASE_URL = "https://admin.Riskle.com"
@@ -1472,6 +1477,7 @@ class UserServices {
         // image_local: `${constant.BASE_URL_LOCAL}${item.image}`,
         url: url,
         image: image,
+        fantasy_type:fantasy_type,
         bannerType: item.bannerType
       };
     });

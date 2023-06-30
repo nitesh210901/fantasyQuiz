@@ -49,6 +49,7 @@ class matchController {
             }
             return res.status(200).json(Object.assign({ success: true }, final));
         } catch (error) {
+            console.log(error);
             next(error);
         }
     }
