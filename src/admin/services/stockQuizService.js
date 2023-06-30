@@ -57,38 +57,17 @@ class quizServices {
 
     async AddQuiz(req) {
         try {
-            if(req.fileValidationError){
-                return{
-                    status:false,
-                    message:req.fileValidationError
-                }
-
-            }
-            let { contestId, question, options, answer, entryfee, winning_amount, bonus_percentage ,is_bonus} = req.body
-            let option = []
-            let opt = {}
-            if (options.length > 0) {
-                for (let i = 0; i < options.length; i++) {
-                    opt[`option_${i+1}`] = options[i]
-                }
-            }
-            option.push(opt)
-            let image;
-            if (req.file) {
-                image = `/${req.body.typename}/${req.file.filename}`;
-            }
+            let { question, option_1, option_2,option_3,answer, entryfee,start_date,end_date} = req.body
             let addquiz = new stockQuizModel({
-                contestId: contestId,
                 question: question,
-                options: option,
+                option_1: option_1,
+                option_2: option_2,
+                option_3: option_3,
                 answer: answer,
                 entryfee: entryfee,
-                winning_amount: winning_amount * entryfee,
-                is_bonus:is_bonus,
-                bonus_percentage: bonus_percentage,
-                image: image,
+                start_date: start_date,
+                end_date:end_date
             });
-
             let savequiz = await addquiz.save();
             if (savequiz) {
                 return {
@@ -287,50 +266,18 @@ class quizServices {
         let whereObj ={
             _id:req.params.id
         }
-        if(req.fileValidationError){
-            return{
-                status:false,
-                message:req.fileValidationError
-            }
-
-        }
-        let image = `/${req.body.typename}/${req.file?.filename}` || "";
-        let { matchkey, question, options, answer, entryfee, winning_amount, bonus_percentage, is_bonus } = req.body
-        console.log(is_bonus,"pppp",bonus_percentage)
-            let option = []
-            let opt = {}
-            if (options.length > 0) {
-                for (let i = 0; i < options.length; i++) {
-                    opt[`option_${i+1}`] = options[i]
-                }
-             }
-        option.push(opt)
+        let { question, option_1, option_2,option_3,answer, entryfee,start_date,end_date} = req.body
            let doc
-            if (req.file) {
                  doc = {
-                    matchkey: matchkey,
                     question: question,
-                    options: option,
+                    option_1: option_1,
+                    option_2: option_2,
+                    option_3: option_3,
                     answer: answer,
                     entryfee: entryfee,
-                    winning_amount: winning_amount * entryfee,
-                     is_bonus:is_bonus,
-                    bonus_percentage: bonus_percentage,
-                    image: image
+                    start_date: start_date,
+                    end_date:end_date
                 }
-            } else {
-                 doc = {
-                    matchkey: matchkey,
-                    question: question,
-                    options: option,
-                    answer: answer,
-                    entryfee: entryfee,
-                    winning_amount: winning_amount * entryfee,
-                    is_bonus:is_bonus,
-                    bonus_percentage: bonus_percentage
-                }
-            }
-            delete doc.typename;
             const data=await stockQuizModel.updateOne(whereObj,{$set:doc});
             if(data.modifiedCount == 1){
             return {
@@ -345,12 +292,12 @@ class quizServices {
             if(deletequiz.deletedCount > 0 ){
                 return {
                     status:true,
-                    message:'quiz deleted successfully'
+                    message:'stock quiz deleted successfully'
                 };
             }else{
                 return {
                     status:false,
-                    message:'quiz can not delete --error'
+                    message:'stock quiz can not delete --error'
                 }
             }
 
