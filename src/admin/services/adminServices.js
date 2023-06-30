@@ -182,7 +182,7 @@ class adminServices {
                 doc.image = `/${doc.typename}/${req.file.filename}`;
             }
             delete doc.typename;
-            // console.log("doc.......", doc)
+            console.log("doc.......", doc)
             // console.log('----------------------------------req.body', req.body);
             const addBannerData = await adminModel.updateOne({ role: adminId }, {
                 $push: {

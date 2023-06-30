@@ -97,11 +97,17 @@
                                                             <% if(data.fantasy_type) {%>
                                                                 <option value="Cricket" <%=data.fantasy_type =='Cricket'
                                                                     ? 'selected' : '' %> >Cricket</option>
-                                                                <option value="quiz" <%=data.fantasy_type =='quiz'
-                                                                    ? 'selected' : '' %> >Quiz</option>
+                                                                <option value="Stocks" <%=data.fantasy_type =='Stocks'
+                                                                    ? 'selected' : '' %> >Stocks</option>
+                                                                    <option value="Mcx" <%=data.fantasy_type =='Mcx'
+                                                                    ? 'selected' : '' %> >Mcx</option>
+                                                                    <option value="Commodity" <%=data.fantasy_type =='Commodity'
+                                                                    ? 'selected' : '' %> >Commodity</option>
                                                             <% }else{ %>
                                                                     <option value="Cricket">Cricket</option>
-                                                                    <option value="quiz">Quiz</option>
+                                                                    <option value="Stocks">Stocks</option>
+                                                                    <option value="Mcx">Mcx</option>
+                                                                    <option value="Commodity">Commodity</option>
                                                             <% }%>
                                                         </select>
                                                     </div>
