@@ -32,6 +32,8 @@ class challengersService {
             distributeWinningAmount: this.distributeWinningAmount.bind(this),
             stockviewtransactions: this.stockviewtransactions.bind(this),
             cancelContestStock: this.cancelContestStock.bind(this),
+            saveCurrentPriceOfStock: this.saveCurrentPriceOfStock.bind(this),
+            updateResultStocks: this.updateResultStocks.bind(this),
         }
     }
    
@@ -1500,7 +1502,6 @@ class challengersService {
                                                     'userbalance.bonus': bonus,
                                                     'userbalance.winning': winning,
                                                     'totalwinning': totalwinning
-    
                                                 };
                                                 transactiondata = {
                                                     type: type,
@@ -1527,7 +1528,6 @@ class challengersService {
                                                     'userbalance.bonus': bonus,
                                                     'userbalance.winning': bal_win_amt,
                                                     'totalwinning': total_available_amt
-    
                                                 };
                                                 transactiondata = {
                                                     type: type,
@@ -1577,6 +1577,132 @@ class challengersService {
         } catch (error) {
             console.log(error);
            throw error;
+        }
+    }
+
+    async saveCurrentPriceOfStock(req, res) {
+        try {
+          const stockData = await stockModel.find({ isEnable: true });
+    
+          const headers = {
+            "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
+          };
+    
+          const formattedDate = moment().format('YYYY-MM-DD+HH:mm');
+          const requests = stockData.map(async (stock) => {
+            try {
+              const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}:00&to=${formattedDate}:00`, {
+                "headers": headers
+              });
+              const historicalData = resp.data.data.candles;
+              const updates = historicalData.map(async (candle) => {
+                const openPrice = candle[1];
+                const closePrice = candle[4];
+                await stockModel.findOneAndUpdate({ instrument_token: stock.instrument_token }, { "openPrice": openPrice, 'closePrice': closePrice }, { upsert: true });
+              });
+              await Promise.all(updates);
+            } catch (err) {
+              throw err;
+            }
+          });
+          await Promise.all(requests);
+          return {
+            "message": "League Data",
+            data: requests || {}
+          };
+        } catch (error) {
+          throw error;
+        }
+    }
+
+    async updateResultStocks(req) {
+        try {
+          console.log('nitesh______+++++++++');
+          const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
+          let newData;
+          const listContest = await stockContestModel.find({
+            fantasy_type: { $ne: 'CRICKET' },
+            start_date: { $gte: currentDate },
+            launch_status: 'launched',
+            final_status: { $nin: ['winnerdeclared', 'IsCanceled'] },
+            status: { $ne: 'completed' }
+          });
+          if (listContest.length > 0) {
+            for (let index of listContest) {
+              let matchTimings = index.start_date;
+              const currentDate1 = moment().format('YYYY-MM-DD+HH:mm:ss');
+    
+              if (currentDate1 >= matchTimings) {
+                const result = await this.getSockScoresUpdates(listContest);
+    
+                const headers = {
+                  "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
+                };
+    
+                await Promise.all(result.map(async (ele) => {
+                  const insertData = {
+                    userId: ele.userid,
+                    teamid: ele.teamid,
+                    contestId: ele.contestId,
+                    joinId: ele._id,
+                  };
+    
+                  const investment = +ele.invested;
+                  const startDate = ele.start_date;
+                  const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
+                  const dateFormat = moment().format('YYYY/MM/DD HH:mm');
+                  let matchStatus = {};
+                  if (dateFormat >= ele.start_date) {
+                    matchStatus['status'] = 'started';
+                    matchStatus['final_status'] = 'IsReviewed';
+                  }
+                  await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, matchStatus);
+                
+                  const chkSave = await stockContestModel.findOneAndUpdate({ _id: ele.contestId }, matchStatus, { upsert: true });
+                  let total = 0;
+    
+                  await Promise.all(ele.stockTeam.map(async (stock) => {
+                    try {
+                      const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}&to=${formattedDate}`, {
+                        headers: headers
+                      });
+    
+                      total += resp.data.data.candles.reduce((acc, candle) => {
+                        const openPrice = candle[1];
+                        const closePrice = candle[4];
+                        return acc + (investment * closePrice / openPrice);
+                      }, 0);
+                    } catch (err) {
+                      console.log(err);
+                      console.error(err);
+                    }
+                  }));
+    
+                  insertData.finalvalue = total;
+                  await this.rankUpdateInMatch1(ele.contestId);  
+    
+                  newData = await stockFinalResult.findOneAndUpdate(
+                    { userId: ele.userid, teamid: ele.teamid, contestId: ele.contestId },
+                    insertData,
+                    { upsert: true }
+                  );
+                }));
+    
+    
+              }
+    
+            }
+    
+          }
+    
+          return {
+            "message": "League Data",
+            data: newData || {}
+          };
+    
+        } catch (error) {
+          console.log(error);
+          throw error;
         }
     }
 }

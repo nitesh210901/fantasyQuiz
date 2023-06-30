@@ -27,9 +27,10 @@ const userModel = require("../../models/userModel");
 const constant = require('../../config/const_credential');
 const Redis = require('../../utils/redis');
 const matchServices = require("./matchServices");
-const { quiz } = require('../../admin/services/matchServices');
-// ------over fantasy---
-//const JoinQuizTeamModel = require("../../models/overJoinedTeam");
+const {
+    quiz
+} = require('../../admin/services/matchServices');
+
 
 class quizfantasyServices {
     constructor() {
@@ -50,7 +51,7 @@ class quizfantasyServices {
             quizGiveAnswer: this.quizGiveAnswer.bind(this),
             quizgetUsableBalance: this.quizgetUsableBalance.bind(this),
             joinQuiz: this.joinQuiz.bind(this),
-            findArrayIntersection:this.findArrayIntersection.bind(this),
+            findArrayIntersection: this.findArrayIntersection.bind(this),
             quizAnswerMatch: this.quizAnswerMatch.bind(this),
             // quiz_refund_amount: this.quiz_refund_amount.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
@@ -70,8 +71,7 @@ class quizfantasyServices {
     }
 
     async getJoinleague(userId, matchkey) {
-        const total_joinedcontestData = await JoinLeaugeModel.aggregate([
-            {
+        const total_joinedcontestData = await JoinLeaugeModel.aggregate([{
                 $match: {
                     userid: mongoose.Types.ObjectId(userId),
                     matchkey: mongoose.Types.ObjectId(matchkey)
@@ -90,167 +90,160 @@ class quizfantasyServices {
 
     async getQuiz(req) {
         try {
-            let { matchkey } = req.query;
+            let {
+                matchkey
+            } = req.query;
             let userId = req.user._id
             let pipeline = []
             pipeline.push({
                 '$addFields': {
-                  'options': {
-                    '$objectToArray': {
-                      '$arrayElemAt': [
-                        '$options', 0
-                      ]
+                    'options': {
+                        '$objectToArray': {
+                            '$arrayElemAt': [
+                                '$options', 0
+                            ]
+                        }
                     }
-                  }
                 }
-              }, {
+            }, {
                 '$addFields': {
-                  'options': {
-                    '$map': {
-                      'input': '$options', 
-                      'as': 'option', 
-                      'in': {
-                        'answer': '$$option.v'
-                      }
+                    'options': {
+                        '$map': {
+                            'input': '$options',
+                            'as': 'option',
+                            'in': {
+                                'answer': '$$option.v'
+                            }
+                        }
                     }
-                  }
                 }
-              }, {
+            }, {
                 '$match': {
-                  'matchkey': new mongoose.Types.ObjectId(matchkey)
+                    'matchkey': new mongoose.Types.ObjectId(matchkey)
                 }
-              }, {
+            }, {
                 $lookup: {
-                  from: "quizjoinedleauges",
-                  let: {
-                    matchkey: "$matchkey",
-                    quizId: "$_id",
-                    userid: new mongoose.Types.ObjectId(userId)
-                  },
-                  pipeline: [
-                    {
-                      $match: {
-                        $expr: {
-                          $and: [
-                            {
-                              $eq: [
-                                "$matchkey",
-                                "$$matchkey",
-                              ],
-                            },
-                            {
-                              $eq: ["$quizId", "$$quizId"],
-                            },
-                            {
-                              $eq: ["$userid", "$$userid"],
-                            },
-                          ],
-                        },
-                      },
+                    from: "quizjoinedleauges",
+                    let: {
+                        matchkey: "$matchkey",
+                        quizId: "$_id",
+                        userid: new mongoose.Types.ObjectId(userId)
                     },
-                  ],
-                  as: "quizjoin",
+                    pipeline: [{
+                        $match: {
+                            $expr: {
+                                $and: [{
+                                        $eq: [
+                                            "$matchkey",
+                                            "$$matchkey",
+                                        ],
+                                    },
+                                    {
+                                        $eq: ["$quizId", "$$quizId"],
+                                    },
+                                    {
+                                        $eq: ["$userid", "$$userid"],
+                                    },
+                                ],
+                            },
+                        },
+                    }, ],
+                    as: "quizjoin",
                 },
-              }, {
+            }, {
                 '$addFields': {
-                  'is_selected': {
-                    '$cond': {
-                      'if': {
-                        '$eq': [
-                          {
-                            '$size': '$quizjoin'
-                          }, 1
+                    'is_selected': {
+                        '$cond': {
+                            'if': {
+                                '$eq': [{
+                                    '$size': '$quizjoin'
+                                }, 1]
+                            },
+                            'then': true,
+                            'else': false
+                        }
+                    },
+                    'image': {
+                        '$concat': [
+                            `${process.env.BASE_URL}`, '$image'
                         ]
-                      }, 
-                      'then': true, 
-                      'else': false
                     }
-                  }, 
-                  'image': {
-                    '$concat': [
-                      `${process.env.BASE_URL}`, '$image'
-                    ]
-                  }
                 }
-              }, {
+            }, {
                 '$lookup': {
-                  'from': 'quizjoinedleauges', 
-                  'let': {
-                    'matchkey': '$matchkey', 
-                    'id': '$_id'
-                  }, 
-                  'pipeline': [
-                    {
-                      '$match': {
-                        '$expr': {
-                          '$eq': [
-                            '$matchkey', '$$matchkey'
-                          ], 
-                          '$eq': [
-                            '$quizId', '$$id'
-                          ]
+                    'from': 'quizjoinedleauges',
+                    'let': {
+                        'matchkey': '$matchkey',
+                        'id': '$_id'
+                    },
+                    'pipeline': [{
+                        '$match': {
+                            '$expr': {
+                                '$eq': [
+                                    '$matchkey', '$$matchkey'
+                                ],
+                                '$eq': [
+                                    '$quizId', '$$id'
+                                ]
+                            }
                         }
-                      }
-                    }
-                  ], 
-                  'as': 'userArray'
+                    }],
+                    'as': 'userArray'
                 }
-              }, {
+            }, {
                 '$addFields': {
-                  'userIdArray': {
-                    '$map': {
-                      'input': '$userArray', 
-                      'as': 'item', 
-                      'in': '$$item.userid'
-                    }
-                  }
-                }
-              }, {
-                '$lookup': {
-                  'from': 'users', 
-                  'let': {
-                    'id': '$userIdArray'
-                  }, 
-                  'pipeline': [
-                    {
-                      '$match': {
-                        '$expr': {
-                          '$in': [
-                            '$_id', '$$id'
-                          ]
+                    'userIdArray': {
+                        '$map': {
+                            'input': '$userArray',
+                            'as': 'item',
+                            'in': '$$item.userid'
                         }
-                      }
-                    }, {
-                      '$project': {
-                        'image': 1
-                      }
                     }
-                  ], 
-                  'as': 'userAnswer'
                 }
-              }, {
+            }, {
+                '$lookup': {
+                    'from': 'users',
+                    'let': {
+                        'id': '$userIdArray'
+                    },
+                    'pipeline': [{
+                        '$match': {
+                            '$expr': {
+                                '$in': [
+                                    '$_id', '$$id'
+                                ]
+                            }
+                        }
+                    }, {
+                        '$project': {
+                            'image': 1
+                        }
+                    }],
+                    'as': 'userAnswer'
+                }
+            }, {
                 '$project': {
-                  'userArray': 0, 
-                  'userIdArray': 0, 
-                  'answer': 0, 
-                  'bonus_percentage': 0, 
-                  'is_bonus': 0, 
-                  'quiz_status': 0, 
-                  'quizjoin': 0
+                    'userArray': 0,
+                    'userIdArray': 0,
+                    'answer': 0,
+                    'bonus_percentage': 0,
+                    'is_bonus': 0,
+                    'quiz_status': 0,
+                    'quizjoin': 0
                 }
-              })
+            })
             let data = await quizModel.aggregate(pipeline)
             if (data.length === 0) {
                 return {
-                        status :false,
-                        message: "Quiz  not Found",
-                        data:[]
-                    }
+                    status: false,
+                    message: "Quiz  not Found",
+                    data: []
+                }
             }
             return {
-                status :true,
+                status: true,
                 message: "Quiz fatch Successfully",
-                data:data
+                data: data
             }
         } catch (error) {
             console.log('error', error);
@@ -260,37 +253,51 @@ class quizfantasyServices {
 
     async getSingleQuiz(req) {
         try {
-            let { quizId ,matchkey} = req.query
-            let data = await quizModel.findOne({_id: quizId,matchkey},{answer:0})
+            let {
+                quizId,
+                matchkey
+            } = req.query
+            let data = await quizModel.findOne({
+                _id: quizId,
+                matchkey
+            }, {
+                answer: 0
+            })
             if (!data) {
                 return {
-                        status :false,
-                        message: "Match Not Found",
-                        data:{}
-                    }
+                    status: false,
+                    message: "Match Not Found",
+                    data: {}
+                }
             }
             return {
-                status :true,
+                status: true,
                 message: "Single Quiz Fatch Successfully",
-                data:data
+                data: data
             }
         } catch (error) {
             console.log('error', error);
             throw error;
         }
     }
-  
+
     async quizGiveAnswer(req) {
         try {
-            let { matchkey, quizId ,answer} = req.body
+            let {
+                matchkey,
+                quizId,
+                answer
+            } = req.body
             let userId = req.user._id
 
-            let quizData = await quizModel.findOne({ _id: quizId })
+            let quizData = await quizModel.findOne({
+                _id: quizId
+            })
             if (!quizData) {
                 return {
                     status: false,
                     message: "Quiz not found",
-                    data:{}
+                    data: {}
                 }
             }
             if (quizData.matchkey.toString() === matchkey) {
@@ -299,7 +306,13 @@ class quizfantasyServices {
                 obj.quizId = quizId
                 obj.userId = userId
                 obj.answer = answer
-                let data = await quizUserAnswer.findOneAndUpdate({ quizId: quizId }, { $set: obj }, { upsert: true })
+                let data = await quizUserAnswer.findOneAndUpdate({
+                    quizId: quizId
+                }, {
+                    $set: obj
+                }, {
+                    upsert: true
+                })
                 return {
                     status: true,
                     message: "Answer Successfully Added"
@@ -309,7 +322,7 @@ class quizfantasyServices {
                 return {
                     status: false,
                     message: "Quiz not found",
-                    data:{}
+                    data: {}
                 }
             }
         } catch (error) {
@@ -321,9 +334,13 @@ class quizfantasyServices {
 
     async quizCreateTeam(req) {
         try {
-            const { matchkey, teamnumber, quiz } = req.body;
+            const {
+                matchkey,
+                teamnumber,
+                quiz
+            } = req.body;
             let quizArray = quiz.map(item => item.questionId),
-            quizObjectIdArray = [];
+                quizObjectIdArray = [];
             if (quizArray.length < 10) {
                 return {
                     message: 'Select atleast 11 Questions.',
@@ -332,7 +349,12 @@ class quizfantasyServices {
                 };
             }
             for (let quizObjectId of quizArray) quizObjectIdArray.push(mongoose.Types.ObjectId(quizObjectId.questionId));
-            const joinlist = await JoinQuizTeamModel.find({ matchkey: matchkey, userid: req.user._id }).sort({ teamnumber: -1 });
+            const joinlist = await JoinQuizTeamModel.find({
+                matchkey: matchkey,
+                userid: req.user._id
+            }).sort({
+                teamnumber: -1
+            });
             const duplicateData = await this.checkForDuplicateTeam(joinlist, quizArray, teamnumber);
             if (duplicateData === false) {
                 return {
@@ -342,7 +364,9 @@ class quizfantasyServices {
                 };
             }
 
-            let listmatchData = await listMatchesModel.findOne({ _id: mongoose.Types.ObjectId(matchkey) });
+            let listmatchData = await listMatchesModel.findOne({
+                _id: mongoose.Types.ObjectId(matchkey)
+            });
             if (!listmatchData) {
                 return {
                     message: 'Match Not Found',
@@ -371,11 +395,15 @@ class quizfantasyServices {
                 matchkey: matchkey,
                 teamnumber: parseInt(teamnumber),
                 userid: req.user._id,
-            }).sort({ teamnumber: -1 });
+            }).sort({
+                teamnumber: -1
+            });
             if (joinTeam) {
                 data["user_type"] = 0;
                 data['created_at'] = joinTeam.createdAt;
-                const updateTeam = await JoinQuizTeamModel.findOneAndUpdate({ _id: joinTeam._id }, data, {
+                const updateTeam = await JoinQuizTeamModel.findOneAndUpdate({
+                    _id: joinTeam._id
+                }, data, {
                     new: true,
                 });
                 if (updateTeam) {
@@ -424,10 +452,12 @@ class quizfantasyServices {
     }
 
 
-    async quizGetMyTeams(req) {     
+    async quizGetMyTeams(req) {
         try {
             let finalData = [];
-            const listmatchData = await listMatchesModel.findOne({ _id: req.query.matchkey }).populate({
+            const listmatchData = await listMatchesModel.findOne({
+                _id: req.query.matchkey
+            }).populate({
                 path: 'team1Id',
                 select: 'short_name'
             }).populate({
@@ -445,13 +475,17 @@ class quizfantasyServices {
                     data: []
                 }
             }
-            const matchchallenges = await matchchallengesModel.find({ matchkey: mongoose.Types.ObjectId(req.query.matchkey) });
+            const matchchallenges = await matchchallengesModel.find({
+                matchkey: mongoose.Types.ObjectId(req.query.matchkey)
+            });
             console.log(`--------------matchchallenges.length----------------`, matchchallenges.length);
 
             // ----------total join contest and ----
-            const total_teams = await JoinQuizTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
-            const total_joinedcontestData = await JoinLeaugeModel.aggregate([
-                {
+            const total_teams = await JoinQuizTeamModel.countDocuments({
+                matchkey: req.query.matchkey,
+                userid: req.user._id,
+            });
+            const total_joinedcontestData = await JoinLeaugeModel.aggregate([{
                     $match: {
                         userid: mongoose.Types.ObjectId(req.user._id),
                         matchkey: mongoose.Types.ObjectId(req.query.matchkey)
@@ -465,12 +499,12 @@ class quizfantasyServices {
                     $count: "total_count"
                 }
             ])
-            let count_JoinContest = total_joinedcontestData[0]?.total_count;
+            let count_JoinContest = total_joinedcontestData[0] ? .total_count;
             // ---------------------//
             let i = 0;
             for (let element of createTeams) {
                 i++
-                
+
                 const tempObj = {
                     status: 1,
                     userid: req.user._id,
@@ -494,11 +528,11 @@ class quizfantasyServices {
 
                 let team1count = 0;
                 let team2count = 0;
-                   
+
                 let totalPoints = 0;
-                
+
                 tempObj["quiz"] = element.quiz ? element.quiz : '',
-                tempObj['team1count'] = team1count;
+                    tempObj['team1count'] = team1count;
                 tempObj['jointeamid'] = element._id;
                 tempObj['team2count'] = team2count;
                 tempObj['total_teams'] = total_teams;
@@ -531,11 +565,21 @@ class quizfantasyServices {
         aggPipe.push({
             $group: {
                 _id: '$matchkey',
-                matchkey: { $first: '$matchkey' },
-                joinedleaugeId: { $first: '$_id' },
-                userid: { $first: '$userid' },
-                matchchallengeid: { $first: '$challengeid' },
-                jointeamid: { $first: '$teamid' },
+                matchkey: {
+                    $first: '$matchkey'
+                },
+                joinedleaugeId: {
+                    $first: '$_id'
+                },
+                userid: {
+                    $first: '$userid'
+                },
+                matchchallengeid: {
+                    $first: '$challengeid'
+                },
+                jointeamid: {
+                    $first: '$teamid'
+                },
             }
         });
         aggPipe.push({
@@ -559,10 +603,27 @@ class quizfantasyServices {
         });
         aggPipe.push({
             $match: {
-                $or: [
-                    { $and: [{ 'match.final_status': 'pending' }, { 'match.status': 'started' }] },
-                    { $and: [{ 'match.status': "completed" }, { 'match.final_status': 'IsReviewed' }] },
-                    { $and: [{ 'match.status': "notstarted" }, { 'match.final_status': 'pending' }] },
+                $or: [{
+                        $and: [{
+                            'match.final_status': 'pending'
+                        }, {
+                            'match.status': 'started'
+                        }]
+                    },
+                    {
+                        $and: [{
+                            'match.status': "completed"
+                        }, {
+                            'match.final_status': 'IsReviewed'
+                        }]
+                    },
+                    {
+                        $and: [{
+                            'match.status': "notstarted"
+                        }, {
+                            'match.final_status': 'pending'
+                        }]
+                    },
                 ]
             }
         });
@@ -577,20 +638,23 @@ class quizfantasyServices {
         aggPipe.push({
             $lookup: {
                 from: 'joinedleauges',
-                let: { matchkey: '$matchkey', userid: '$userid' },
+                let: {
+                    matchkey: '$matchkey',
+                    userid: '$userid'
+                },
                 pipeline: [{
                     $match: {
                         $expr: {
                             $and: [{
-                                $eq: ['$matchkey', '$$matchkey'],
-                            },
-                            {
-                                $eq: ['$userid', '$$userid'],
-                            },
+                                    $eq: ['$matchkey', '$$matchkey'],
+                                },
+                                {
+                                    $eq: ['$userid', '$$userid'],
+                                },
                             ],
                         },
                     },
-                },],
+                }, ],
                 as: 'joinedleauges',
             }
         });
@@ -603,42 +667,45 @@ class quizfantasyServices {
             $group: {
                 _id: '$joinedleauges.challengeid',
                 // matchchallengeid: { $first: '$joinedleauges.challengeid' },
-                joinedleaugeId: { $first: '$joinedleauges._id' },
-                matchkey: { $first: '$matchkey' },
-                jointeamid: { $first: '$jointeamid' },
-                userid: { $first: '$userid' },
-                match: { $first: '$match' },
+                joinedleaugeId: {
+                    $first: '$joinedleauges._id'
+                },
+                matchkey: {
+                    $first: '$matchkey'
+                },
+                jointeamid: {
+                    $first: '$jointeamid'
+                },
+                userid: {
+                    $first: '$userid'
+                },
+                match: {
+                    $first: '$match'
+                },
             },
         });
-        // aggPipe.push({
-        //     $lookup: {
-        //         from: 'matchchallenges',
-        //         localField: '_id',
-        //         foreignField: '_id',
-        //         as: 'matchchallenge',
-        //     },
-        // });
-        // aggPipe.push({
-        //     $unwind: {
-        //         path: '$matchchallenge',
-        //         preserveNullAndEmptyArrays: true,
-        //     },
-        // });
+
         aggPipe.push({
             $group: {
                 _id: '$matchkey',
-                joinedleaugeId: { $first: '$joinedleaugeId' },
-                matchkey: { $first: '$matchkey' },
-                jointeamid: { $first: '$jointeamid' },
-                match: { $first: '$match' },
-                count: { $sum: 1 },
+                joinedleaugeId: {
+                    $first: '$joinedleaugeId'
+                },
+                matchkey: {
+                    $first: '$matchkey'
+                },
+                jointeamid: {
+                    $first: '$jointeamid'
+                },
+                match: {
+                    $first: '$match'
+                },
+                count: {
+                    $sum: 1
+                },
             },
         });
-        // aggPipe.push({
-        //     $match:{
-        //         'match.final_status':'IsReviewed'
-        //     }
-        // },);
+
         aggPipe.push({
             $lookup: {
                 from: 'series',
@@ -682,19 +749,47 @@ class quizfantasyServices {
             $project: {
                 _id: 0,
                 matchkey: 1,
-                playing11_status: { $ifNull: ['$match.playing11_status', 1] },
-                matchname: { $ifNull: ['$match.name', ''] },
-                team1ShortName: { $ifNull: ['$team1.short_name', ''] },
-                team2ShortName: { $ifNull: ['$team2.short_name', ''] },
-                teamfullname1: { $ifNull: ['$team1.teamName', 0] },
-                teamfullname2: { $ifNull: ['$team2.teamName', 0] },
-                team1color: { $ifNull: ['$team1.color', constant.TEAM_DEFAULT_COLOR.DEF1] },
-                team2color: { $ifNull: ['$team2.color', constant.TEAM_DEFAULT_COLOR.DEF1] },
+                playing11_status: {
+                    $ifNull: ['$match.playing11_status', 1]
+                },
+                matchname: {
+                    $ifNull: ['$match.name', '']
+                },
+                team1ShortName: {
+                    $ifNull: ['$team1.short_name', '']
+                },
+                team2ShortName: {
+                    $ifNull: ['$team2.short_name', '']
+                },
+                teamfullname1: {
+                    $ifNull: ['$team1.teamName', 0]
+                },
+                teamfullname2: {
+                    $ifNull: ['$team2.teamName', 0]
+                },
+                team1color: {
+                    $ifNull: ['$team1.color', constant.TEAM_DEFAULT_COLOR.DEF1]
+                },
+                team2color: {
+                    $ifNull: ['$team2.color', constant.TEAM_DEFAULT_COLOR.DEF1]
+                },
                 team1logo: {
                     $ifNull: [{
                         $cond: {
-                            if: { $or: [{ $eq: [{ $substr: ['$team1.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team1.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team1.logo'] },
+                            if: {
+                                $or: [{
+                                    $eq: [{
+                                        $substr: ['$team1.logo', 0, 1]
+                                    }, '/']
+                                }, {
+                                    $eq: [{
+                                        $substr: ['$team1.logo', 0, 1]
+                                    }, 't']
+                                }]
+                            },
+                            then: {
+                                $concat: [`${constant.BASE_URL}`, '', '$team1.logo']
+                            },
                             else: '$team1.logo',
                         }
                     }, `${constant.BASE_URL}team_image.png`]
@@ -702,39 +797,68 @@ class quizfantasyServices {
                 team2logo: {
                     $ifNull: [{
                         $cond: {
-                            if: { $or: [{ $eq: [{ $substr: ['$team2.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team2.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team2.logo'] },
+                            if: {
+                                $or: [{
+                                    $eq: [{
+                                        $substr: ['$team2.logo', 0, 1]
+                                    }, '/']
+                                }, {
+                                    $eq: [{
+                                        $substr: ['$team2.logo', 0, 1]
+                                    }, 't']
+                                }]
+                            },
+                            then: {
+                                $concat: [`${constant.BASE_URL}`, '', '$team2.logo']
+                            },
                             else: '$team2.logo',
                         }
                     }, `${constant.BASE_URL}team_image.png`]
                 },
-                start_date: { $ifNull: ['$match.start_date', '0000-00-00 00:00:00'] },
+                start_date: {
+                    $ifNull: ['$match.start_date', '0000-00-00 00:00:00']
+                },
                 status: {
                     $ifNull: [{
-                        $cond: {
-                            if: { $lt: ['$match.start_date', moment().format('YYYY-MM-DD HH:mm:ss')] },
-                            then: 'closed',
-                            else: 'opened',
+                            $cond: {
+                                if: {
+                                    $lt: ['$match.start_date', moment().format('YYYY-MM-DD HH:mm:ss')]
+                                },
+                                then: 'closed',
+                                else: 'opened',
+                            },
                         },
-                    },
                         'opened',
                     ],
                 },
-                launch_status: { $ifNull: ['$match.launch_status', ''] },
-                final_status: { $ifNull: ['$match.final_status', ''] },
-                series_name: { $ifNull: ['$series.name', ''] },
-                type: { $ifNull: ['$match.fantasy_type', 'Cricket'] },
-                series_id: { $ifNull: ['$series._id', ''] },
+                launch_status: {
+                    $ifNull: ['$match.launch_status', '']
+                },
+                final_status: {
+                    $ifNull: ['$match.final_status', '']
+                },
+                series_name: {
+                    $ifNull: ['$series.name', '']
+                },
+                type: {
+                    $ifNull: ['$match.fantasy_type', 'Cricket']
+                },
+                series_id: {
+                    $ifNull: ['$series._id', '']
+                },
                 winning_status: "pending",
-                available_status: { $ifNull: [1, 1] },
-                joinedcontest: { $ifNull: ['$count', 0] },
+                available_status: {
+                    $ifNull: [1, 1]
+                },
+                joinedcontest: {
+                    $ifNull: ['$count', 0]
+                },
                 team1Id: '$match.team1Id',
                 team2Id: '$match.team2Id',
 
             }
         });
         const JoiendMatches = await JoinLeaugeModel.aggregate(aggPipe);
-        // console.log('JoiendMatches -->', JoiendMatches)
         return JoiendMatches;
     }
 
@@ -745,26 +869,59 @@ class quizfantasyServices {
             console.log(`date`, date);
             let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
             matchpipe.push({
-                $match: { fantasy_type: 'overfantasy' }
+                $match: {
+                    fantasy_type: 'overfantasy'
+                }
             });
             matchpipe.push({
                 $match: {
-                    $and: [{ status: 'notstarted' }, { launch_status: 'launched' }, { start_date: { $gt: date } }, { start_date: { $lt: EndDate } }],
-                    final_status: { $nin: ['IsCanceled', 'IsAbandoned'] }
+                    $and: [{
+                        status: 'notstarted'
+                    }, {
+                        launch_status: 'launched'
+                    }, {
+                        start_date: {
+                            $gt: date
+                        }
+                    }, {
+                        start_date: {
+                            $lt: EndDate
+                        }
+                    }],
+                    final_status: {
+                        $nin: ['IsCanceled', 'IsAbandoned']
+                    }
                 }
             });
 
             matchpipe.push({
-                $lookup: { from: 'teams', localField: 'team1Id', foreignField: '_id', as: 'team1' }
+                $lookup: {
+                    from: 'teams',
+                    localField: 'team1Id',
+                    foreignField: '_id',
+                    as: 'team1'
+                }
             });
             matchpipe.push({
-                $lookup: { from: 'teams', localField: 'team2Id', foreignField: '_id', as: 'team2' }
+                $lookup: {
+                    from: 'teams',
+                    localField: 'team2Id',
+                    foreignField: '_id',
+                    as: 'team2'
+                }
             });
             matchpipe.push({
-                $lookup: { from: 'series', localField: 'series', foreignField: '_id', as: 'series' }
+                $lookup: {
+                    from: 'series',
+                    localField: 'series',
+                    foreignField: '_id',
+                    as: 'series'
+                }
             });
             matchpipe.push({
-                $match: { 'series.status': 'opened' }
+                $match: {
+                    'series.status': 'opened'
+                }
             });
             matchpipe.push({
                 $sort: {
@@ -778,39 +935,101 @@ class quizfantasyServices {
                     name: 1,
                     format: 1,
                     order_status: 1,
-                    series: { $arrayElemAt: ['$series._id', 0] },
-                    seriesname: { $arrayElemAt: ['$series.name', 0] },
-                    team1name: { $arrayElemAt: ['$team1.short_name', 0] },
-                    team2name: { $arrayElemAt: ['$team2.short_name', 0] },
-                    teamfullname1: { $arrayElemAt: ['$team1.teamName', 0] },
-                    teamfullname2: { $arrayElemAt: ['$team2.teamName', 0] },
+                    series: {
+                        $arrayElemAt: ['$series._id', 0]
+                    },
+                    seriesname: {
+                        $arrayElemAt: ['$series.name', 0]
+                    },
+                    team1name: {
+                        $arrayElemAt: ['$team1.short_name', 0]
+                    },
+                    team2name: {
+                        $arrayElemAt: ['$team2.short_name', 0]
+                    },
+                    teamfullname1: {
+                        $arrayElemAt: ['$team1.teamName', 0]
+                    },
+                    teamfullname2: {
+                        $arrayElemAt: ['$team2.teamName', 0]
+                    },
                     matchkey: 1,
                     type: '$fantasy_type',
                     winnerstatus: '$final_status',
                     playing11_status: 1,
-                    team1color: { $ifNull: [{ $arrayElemAt: ['$team1.color', 0] }, constant.TEAM_DEFAULT_COLOR.DEF1] },
-                    team2color: { $ifNull: [{ $arrayElemAt: ['$team2.color', 0] }, constant.TEAM_DEFAULT_COLOR.DEF1] },
+                    team1color: {
+                        $ifNull: [{
+                            $arrayElemAt: ['$team1.color', 0]
+                        }, constant.TEAM_DEFAULT_COLOR.DEF1]
+                    },
+                    team2color: {
+                        $ifNull: [{
+                            $arrayElemAt: ['$team2.color', 0]
+                        }, constant.TEAM_DEFAULT_COLOR.DEF1]
+                    },
                     team1logo: {
                         $ifNull: [{
                             $cond: {
-                                if: { $or: [{ $eq: [{ $substr: [{ $arrayElemAt: ['$team1.logo', 0] }, 0, 1] }, '/'] }, { $eq: [{ $substr: [{ $arrayElemAt: ['$team1.logo', 0] }, 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', { $arrayElemAt: ['$team1.logo', 0] }] },
-                                else: { $arrayElemAt: ['$team1.logo', 0] },
+                                if: {
+                                    $or: [{
+                                        $eq: [{
+                                            $substr: [{
+                                                $arrayElemAt: ['$team1.logo', 0]
+                                            }, 0, 1]
+                                        }, '/']
+                                    }, {
+                                        $eq: [{
+                                            $substr: [{
+                                                $arrayElemAt: ['$team1.logo', 0]
+                                            }, 0, 1]
+                                        }, 't']
+                                    }]
+                                },
+                                then: {
+                                    $concat: [`${constant.BASE_URL}`, '', {
+                                        $arrayElemAt: ['$team1.logo', 0]
+                                    }]
+                                },
+                                else: {
+                                    $arrayElemAt: ['$team1.logo', 0]
+                                },
                             }
                         }, `${constant.BASE_URL}team_image.png`]
                     },
                     team2logo: {
                         $ifNull: [{
                             $cond: {
-                                if: { $or: [{ $eq: [{ $substr: [{ $arrayElemAt: ['$team2.logo', 0] }, 0, 1] }, '/'] }, { $eq: [{ $substr: [{ $arrayElemAt: ['$team2.logo', 0] }, 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', { $arrayElemAt: ['$team2.logo', 0] }] },
-                                else: { $arrayElemAt: ['$team2.logo', 0] },
+                                if: {
+                                    $or: [{
+                                        $eq: [{
+                                            $substr: [{
+                                                $arrayElemAt: ['$team2.logo', 0]
+                                            }, 0, 1]
+                                        }, '/']
+                                    }, {
+                                        $eq: [{
+                                            $substr: [{
+                                                $arrayElemAt: ['$team2.logo', 0]
+                                            }, 0, 1]
+                                        }, 't']
+                                    }]
+                                },
+                                then: {
+                                    $concat: [`${constant.BASE_URL}`, '', {
+                                        $arrayElemAt: ['$team2.logo', 0]
+                                    }]
+                                },
+                                else: {
+                                    $arrayElemAt: ['$team2.logo', 0]
+                                },
                             }
                         }, `${constant.BASE_URL}team_image.png`]
                     },
                     matchopenstatus: {
                         $cond: {
-                            if: { $lte: ['$start_date', moment().format('YYYY-MM-DD HH:mm:ss')] },
+                            if: {
+                                $lte: ['$start_date', moment().format('YYYY-MM-DD HH:mm:ss')]
+                            },
                             then: 'closed',
                             else: 'opened',
                         },
@@ -858,11 +1077,21 @@ class quizfantasyServices {
         aggPipe.push({
             $group: {
                 _id: '$matchkey',
-                matchkey: { $first: '$matchkey' },
-                joinedleaugeId: { $first: '$_id' },
-                userid: { $first: '$userid' },
-                matchchallengeid: { $first: '$challengeid' },
-                jointeamid: { $first: '$teamid' },
+                matchkey: {
+                    $first: '$matchkey'
+                },
+                joinedleaugeId: {
+                    $first: '$_id'
+                },
+                userid: {
+                    $first: '$userid'
+                },
+                matchchallengeid: {
+                    $first: '$challengeid'
+                },
+                jointeamid: {
+                    $first: '$teamid'
+                },
             },
         });
         aggPipe.push({
@@ -886,36 +1115,36 @@ class quizfantasyServices {
         });
         aggPipe.push({
             $match: {
-                $or: [{ 'match.final_status': 'pending' }, { 'match.final_status': 'IsReviewed' }],
+                $or: [{
+                    'match.final_status': 'pending'
+                }, {
+                    'match.final_status': 'IsReviewed'
+                }],
             },
         });
-        // --------------
-        // aggPipe.push({
-        //     $sort: {
-        //         'match.start_date': -1,
-        //     },
-        // });
-        // ------------
         aggPipe.push({
             $limit: 5,
         });
         aggPipe.push({
             $lookup: {
                 from: 'joinedleauges',
-                let: { matchkey: '$matchkey', userid: '$userid' },
+                let: {
+                    matchkey: '$matchkey',
+                    userid: '$userid'
+                },
                 pipeline: [{
                     $match: {
                         $expr: {
                             $and: [{
-                                $eq: ['$matchkey', '$$matchkey'],
-                            },
-                            {
-                                $eq: ['$userid', '$$userid'],
-                            },
+                                    $eq: ['$matchkey', '$$matchkey'],
+                                },
+                                {
+                                    $eq: ['$userid', '$$userid'],
+                                },
                             ],
                         },
                     },
-                },],
+                }, ],
                 as: 'joinedleauges',
             },
         });
@@ -928,37 +1157,41 @@ class quizfantasyServices {
             $group: {
                 _id: '$joinedleauges.challengeid',
                 // matchchallengeid: { $first: '$joinedleauges.challengeid' },
-                joinedleaugeId: { $first: '$joinedleauges._id' },
-                matchkey: { $first: '$matchkey' },
-                jointeamid: { $first: '$jointeamid' },
-                userid: { $first: '$userid' },
-                match: { $first: '$match' },
+                joinedleaugeId: {
+                    $first: '$joinedleauges._id'
+                },
+                matchkey: {
+                    $first: '$matchkey'
+                },
+                jointeamid: {
+                    $first: '$jointeamid'
+                },
+                userid: {
+                    $first: '$userid'
+                },
+                match: {
+                    $first: '$match'
+                },
             },
         });
-        // -----------------
-        // aggPipe.push({
-        //     $lookup: {
-        //         from: 'matchchallenges',
-        //         localField: '_id',
-        //         foreignField: '_id',
-        //         as: 'matchchallenge',
-        //     },
-        // });
-        // aggPipe.push({
-        //     $unwind: {
-        //         path: '$matchchallenge',
-        //         preserveNullAndEmptyArrays: true,
-        //     },
-        // });
-        // --------------
         aggPipe.push({
             $group: {
                 _id: '$matchkey',
-                joinedleaugeId: { $first: '$joinedleaugeId' },
-                matchkey: { $first: '$matchkey' },
-                jointeamid: { $first: '$jointeamid' },
-                match: { $first: '$match' },
-                count: { $sum: 1 },
+                joinedleaugeId: {
+                    $first: '$joinedleaugeId'
+                },
+                matchkey: {
+                    $first: '$matchkey'
+                },
+                jointeamid: {
+                    $first: '$jointeamid'
+                },
+                match: {
+                    $first: '$match'
+                },
+                count: {
+                    $sum: 1
+                },
             },
         });
         aggPipe.push({
@@ -1004,20 +1237,46 @@ class quizfantasyServices {
             $project: {
                 _id: 0,
                 matchkey: 1,
-                matchname: { $ifNull: ['$match.name', ''] },
-                team1ShortName: { $ifNull: ['$team1.short_name', ''] },
-                team2ShortName: { $ifNull: ['$team2.short_name', ''] },
-                team1fullname: { $ifNull: ['$team1.teamName', ''] },
-                team2fullname: { $ifNull: ['$team2.teamName', ''] },
-                team1color: { $ifNull: ['$team1.color', constant.TEAM_DEFAULT_COLOR.DEF1] },
-                team2color: { $ifNull: ['$team2.color', constant.TEAM_DEFAULT_COLOR.DEF1] },
+                matchname: {
+                    $ifNull: ['$match.name', '']
+                },
+                team1ShortName: {
+                    $ifNull: ['$team1.short_name', '']
+                },
+                team2ShortName: {
+                    $ifNull: ['$team2.short_name', '']
+                },
+                team1fullname: {
+                    $ifNull: ['$team1.teamName', '']
+                },
+                team2fullname: {
+                    $ifNull: ['$team2.teamName', '']
+                },
+                team1color: {
+                    $ifNull: ['$team1.color', constant.TEAM_DEFAULT_COLOR.DEF1]
+                },
+                team2color: {
+                    $ifNull: ['$team2.color', constant.TEAM_DEFAULT_COLOR.DEF1]
+                },
                 start_date: "$match.start_date",
                 fantasy_type: "$match.fantasy_type",
                 team1logo: {
                     $ifNull: [{
                         $cond: {
-                            if: { $or: [{ $eq: [{ $substr: ['$team1.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team1.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team1.logo'] },
+                            if: {
+                                $or: [{
+                                    $eq: [{
+                                        $substr: ['$team1.logo', 0, 1]
+                                    }, '/']
+                                }, {
+                                    $eq: [{
+                                        $substr: ['$team1.logo', 0, 1]
+                                    }, 't']
+                                }]
+                            },
+                            then: {
+                                $concat: [`${constant.BASE_URL}`, '', '$team1.logo']
+                            },
                             else: '$team1.logo',
                         }
                     }, `${constant.BASE_URL}team_image.png`]
@@ -1025,32 +1284,64 @@ class quizfantasyServices {
                 team2logo: {
                     $ifNull: [{
                         $cond: {
-                            if: { $or: [{ $eq: [{ $substr: ['$team2.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team2.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team2.logo'] },
+                            if: {
+                                $or: [{
+                                    $eq: [{
+                                        $substr: ['$team2.logo', 0, 1]
+                                    }, '/']
+                                }, {
+                                    $eq: [{
+                                        $substr: ['$team2.logo', 0, 1]
+                                    }, 't']
+                                }]
+                            },
+                            then: {
+                                $concat: [`${constant.BASE_URL}`, '', '$team2.logo']
+                            },
                             else: '$team2.logo',
                         }
                     }, `${constant.BASE_URL}team_image.png`]
                 },
-                start_date: { $ifNull: ['$match.start_date', '0000-00-00 00:00:00'] },
+                start_date: {
+                    $ifNull: ['$match.start_date', '0000-00-00 00:00:00']
+                },
                 status: {
                     $ifNull: [{
-                        $cond: {
-                            if: { $lt: ['$match.start_date', moment().format('YYYY-MM-DD HH:mm:ss')] },
-                            then: 'closed',
-                            else: 'opened',
+                            $cond: {
+                                if: {
+                                    $lt: ['$match.start_date', moment().format('YYYY-MM-DD HH:mm:ss')]
+                                },
+                                then: 'closed',
+                                else: 'opened',
+                            },
                         },
-                    },
                         'opened',
                     ],
                 },
-                launch_status: { $ifNull: ['$match.launch_status', ''] },
-                final_status: { $ifNull: ['$match.final_status', ''] },
-                series_name: { $ifNull: ['$series.name', ''] },
-                type: { $ifNull: ['$match.fantasy_type', 'Cricket'] },
-                series_id: { $ifNull: ['$series._id', ''] },
-                available_status: { $ifNull: [1, 1] },
-                joinedcontest: { $ifNull: ['$count', 0] },
-                playing11_status: { $ifNull: ['$match.playing11_status', 1] },
+                launch_status: {
+                    $ifNull: ['$match.launch_status', '']
+                },
+                final_status: {
+                    $ifNull: ['$match.final_status', '']
+                },
+                series_name: {
+                    $ifNull: ['$series.name', '']
+                },
+                type: {
+                    $ifNull: ['$match.fantasy_type', 'Cricket']
+                },
+                series_id: {
+                    $ifNull: ['$series._id', '']
+                },
+                available_status: {
+                    $ifNull: [1, 1]
+                },
+                joinedcontest: {
+                    $ifNull: ['$count', 0]
+                },
+                playing11_status: {
+                    $ifNull: ['$match.playing11_status', 1]
+                },
                 team1Id: '$match.team1Id',
                 team2Id: '$match.team2Id',
             }
@@ -1058,7 +1349,9 @@ class quizfantasyServices {
         console.log("------------------moment().format('YYYY-MM-DD HH:mm:ss')----------------------------------", moment().format('YYYY-MM-DD HH:mm:ss'))
         aggPipe.push({
             $match: {
-                start_date: { $gt: moment().format('YYYY-MM-DD HH:mm:ss') }
+                start_date: {
+                    $gt: moment().format('YYYY-MM-DD HH:mm:ss')
+                }
             }
         })
         const JoiendMatches = await JoinLeaugeModel.aggregate(aggPipe);
@@ -1090,11 +1383,21 @@ class quizfantasyServices {
             aggPipe.push({
                 $group: {
                     _id: '$matchkey',
-                    matchkey: { $first: '$matchkey' },
-                    joinedleaugeId: { $first: '$_id' },
-                    userid: { $first: '$userid' },
-                    matchchallengeid: { $first: '$challengeid' },
-                    jointeamid: { $first: '$teamid' },
+                    matchkey: {
+                        $first: '$matchkey'
+                    },
+                    joinedleaugeId: {
+                        $first: '$_id'
+                    },
+                    userid: {
+                        $first: '$userid'
+                    },
+                    matchchallengeid: {
+                        $first: '$challengeid'
+                    },
+                    jointeamid: {
+                        $first: '$teamid'
+                    },
                 }
             });
             aggPipe.push({
@@ -1117,7 +1420,9 @@ class quizfantasyServices {
                 },
             });
             aggPipe.push({
-                $match: { 'match.final_status': 'winnerdeclared' },
+                $match: {
+                    'match.final_status': 'winnerdeclared'
+                },
             });
             aggPipe.push({
                 $sort: {
@@ -1127,47 +1432,59 @@ class quizfantasyServices {
             aggPipe.push({
                 $lookup: {
                     from: 'finalresults',
-                    let: { matchkey: '$matchkey' },
+                    let: {
+                        matchkey: '$matchkey'
+                    },
                     pipeline: [{
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ['$$matchkey', '$matchkey'] },
-                                    { $eq: ['$userid', mongoose.Types.ObjectId(req.user._id)] },
-                                ],
+                            $match: {
+                                $expr: {
+                                    $and: [{
+                                            $eq: ['$$matchkey', '$matchkey']
+                                        },
+                                        {
+                                            $eq: ['$userid', mongoose.Types.ObjectId(req.user._id)]
+                                        },
+                                    ],
+                                },
                             },
                         },
-                    },
-                    {
-                        $group: {
-                            _id: null,
-                            amount: { $sum: '$amount' },
+                        {
+                            $group: {
+                                _id: null,
+                                amount: {
+                                    $sum: '$amount'
+                                },
+                            },
                         },
-                    },
                     ],
                     as: 'finalresultsTotalAmount',
                 },
             });
             aggPipe.push({
-                $unwind: { path: '$finalresultsTotalAmount' }
+                $unwind: {
+                    path: '$finalresultsTotalAmount'
+                }
             });
             aggPipe.push({
                 $lookup: {
                     from: 'joinedleauges',
-                    let: { matchkey: '$matchkey', userid: '$userid' },
+                    let: {
+                        matchkey: '$matchkey',
+                        userid: '$userid'
+                    },
                     pipeline: [{
                         $match: {
                             $expr: {
                                 $and: [{
-                                    $eq: ['$matchkey', '$$matchkey'],
-                                },
-                                {
-                                    $eq: ['$userid', '$$userid'],
-                                },
+                                        $eq: ['$matchkey', '$$matchkey'],
+                                    },
+                                    {
+                                        $eq: ['$userid', '$$userid'],
+                                    },
                                 ],
                             },
                         },
-                    },],
+                    }, ],
                     as: 'joinedleauges',
                 },
             });
@@ -1185,17 +1502,31 @@ class quizfantasyServices {
                 }
             });
             aggPipe.push({
-                $unwind: { path: "$winingData" }
+                $unwind: {
+                    path: "$winingData"
+                }
             })
             aggPipe.push({
                 $group: {
                     _id: '$joinedleauges.challengeid',
-                    joinedleaugeId: { $first: '$joinedleauges._id' },
-                    matchkey: { $first: '$matchkey' },
-                    jointeamid: { $first: '$jointeamid' },
-                    match: { $first: '$match' },
-                    finalresultsTotalAmount: { $first: '$finalresultsTotalAmount' },
-                    winingData: { $first: "$winingData" }
+                    joinedleaugeId: {
+                        $first: '$joinedleauges._id'
+                    },
+                    matchkey: {
+                        $first: '$matchkey'
+                    },
+                    jointeamid: {
+                        $first: '$jointeamid'
+                    },
+                    match: {
+                        $first: '$match'
+                    },
+                    finalresultsTotalAmount: {
+                        $first: '$finalresultsTotalAmount'
+                    },
+                    winingData: {
+                        $first: "$winingData"
+                    }
                 },
             });
             aggPipe.push({
@@ -1215,13 +1546,27 @@ class quizfantasyServices {
             aggPipe.push({
                 $group: {
                     _id: '$matchkey',
-                    joinedleaugeId: { $first: '$joinedleaugeId' },
-                    matchkey: { $first: '$matchkey' },
-                    jointeamid: { $first: '$jointeamid' },
-                    match: { $first: '$match' },
-                    finalresultsTotalAmount: { $first: '$finalresultsTotalAmount' },
-                    winingData: { $first: "$winingData" },
-                    count: { $sum: 1 },
+                    joinedleaugeId: {
+                        $first: '$joinedleaugeId'
+                    },
+                    matchkey: {
+                        $first: '$matchkey'
+                    },
+                    jointeamid: {
+                        $first: '$jointeamid'
+                    },
+                    match: {
+                        $first: '$match'
+                    },
+                    finalresultsTotalAmount: {
+                        $first: '$finalresultsTotalAmount'
+                    },
+                    winingData: {
+                        $first: "$winingData"
+                    },
+                    count: {
+                        $sum: 1
+                    },
                 },
             });
             aggPipe.push({
@@ -1267,19 +1612,47 @@ class quizfantasyServices {
                 $project: {
                     _id: 0,
                     matchkey: 1,
-                    matchname: { $ifNull: ['$match.name', ''] },
-                    winning_status: { $ifNull: ["$winingData.winning_status", ""] },
-                    team1ShortName: { $ifNull: ['$team1.short_name', ''] },
-                    team2ShortName: { $ifNull: ['$team2.short_name', ''] },
-                    team1fullname: { $ifNull: ['$team1.teamName', ''] },
-                    team2fullname: { $ifNull: ['$team2.teamName', ''] },
-                    team1color: { $ifNull: ['$team1.color', constant.TEAM_DEFAULT_COLOR.DEF1] },
-                    team2color: { $ifNull: ['$team2.color', constant.TEAM_DEFAULT_COLOR.DEF1] },
+                    matchname: {
+                        $ifNull: ['$match.name', '']
+                    },
+                    winning_status: {
+                        $ifNull: ["$winingData.winning_status", ""]
+                    },
+                    team1ShortName: {
+                        $ifNull: ['$team1.short_name', '']
+                    },
+                    team2ShortName: {
+                        $ifNull: ['$team2.short_name', '']
+                    },
+                    team1fullname: {
+                        $ifNull: ['$team1.teamName', '']
+                    },
+                    team2fullname: {
+                        $ifNull: ['$team2.teamName', '']
+                    },
+                    team1color: {
+                        $ifNull: ['$team1.color', constant.TEAM_DEFAULT_COLOR.DEF1]
+                    },
+                    team2color: {
+                        $ifNull: ['$team2.color', constant.TEAM_DEFAULT_COLOR.DEF1]
+                    },
                     team1logo: {
                         $ifNull: [{
                             $cond: {
-                                if: { $or: [{ $eq: [{ $substr: ['$team1.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team1.logo', 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', '$team1.logo'] },
+                                if: {
+                                    $or: [{
+                                        $eq: [{
+                                            $substr: ['$team1.logo', 0, 1]
+                                        }, '/']
+                                    }, {
+                                        $eq: [{
+                                            $substr: ['$team1.logo', 0, 1]
+                                        }, 't']
+                                    }]
+                                },
+                                then: {
+                                    $concat: [`${constant.BASE_URL}`, '', '$team1.logo']
+                                },
                                 else: '$team1.logo',
                             }
                         }, `${constant.BASE_URL}team_image.png`]
@@ -1287,40 +1660,67 @@ class quizfantasyServices {
                     team2logo: {
                         $ifNull: [{
                             $cond: {
-                                if: { $or: [{ $eq: [{ $substr: ['$team2.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team2.logo', 0, 1] }, 't'] }] },
-                                then: { $concat: [`${constant.BASE_URL}`, '', '$team2.logo'] },
+                                if: {
+                                    $or: [{
+                                        $eq: [{
+                                            $substr: ['$team2.logo', 0, 1]
+                                        }, '/']
+                                    }, {
+                                        $eq: [{
+                                            $substr: ['$team2.logo', 0, 1]
+                                        }, 't']
+                                    }]
+                                },
+                                then: {
+                                    $concat: [`${constant.BASE_URL}`, '', '$team2.logo']
+                                },
                                 else: '$team2.logo',
                             }
                         }, `${constant.BASE_URL}team_image.png`]
                     },
-                    start_date: { $ifNull: ['$match.start_date', '0000-00-00 00:00:00'] },
+                    start_date: {
+                        $ifNull: ['$match.start_date', '0000-00-00 00:00:00']
+                    },
                     fantasy_type: "$match.fantasy_type",
                     status: {
                         $ifNull: [{
-                            $cond: {
-                                if: { $lt: ['$match.start_date', moment().format('YYYY-MM-DD HH:mm:ss')] },
-                                then: 'closed',
-                                else: 'opened',
+                                $cond: {
+                                    if: {
+                                        $lt: ['$match.start_date', moment().format('YYYY-MM-DD HH:mm:ss')]
+                                    },
+                                    then: 'closed',
+                                    else: 'opened',
+                                },
                             },
-                        },
                             'opened',
                         ],
                     },
-                    totalWinningAmount: { $ifNull: ['$finalresultsTotalAmount.amount', 0] },
-                    launch_status: { $ifNull: ['$match.launch_status', ''] },
-                    final_status: { $ifNull: ['$match.final_status', ''] },
-                    series_name: { $ifNull: ['$series.name', ''] },
-                    type: { $ifNull: ['$match.fantasy_type', 'Cricket'] },
-                    series_id: { $ifNull: ['$series._id', ''] },
-                    available_status: { $ifNull: [1, 1] },
-                    joinedcontest: { $ifNull: ['$count', 0] },
+                    totalWinningAmount: {
+                        $ifNull: ['$finalresultsTotalAmount.amount', 0]
+                    },
+                    launch_status: {
+                        $ifNull: ['$match.launch_status', '']
+                    },
+                    final_status: {
+                        $ifNull: ['$match.final_status', '']
+                    },
+                    series_name: {
+                        $ifNull: ['$series.name', '']
+                    },
+                    type: {
+                        $ifNull: ['$match.fantasy_type', 'Cricket']
+                    },
+                    series_id: {
+                        $ifNull: ['$series._id', '']
+                    },
+                    available_status: {
+                        $ifNull: [1, 1]
+                    },
+                    joinedcontest: {
+                        $ifNull: ['$count', 0]
+                    },
                 }
             });
-            // aggPipe.push({
-            //     $match: {
-            //         fantasy_type: req.fantasy_type
-            //     }
-            // })
             const JoiendMatches = await JoinLeaugeModel.aggregate(aggPipe);
             if (JoiendMatches.length > 0) {
                 return {
@@ -1349,16 +1749,16 @@ class quizfantasyServices {
         }
         return true;
     }
-    
+
 
     async findArrayIntersection(quizArray, previousQuiz) {
         const c = [];
         let j = 0,
             i = 0;
         let data = previousQuiz.map((value) => value.questionId.toString())
-            for (i = 0; i < quizArray.length; ++i) {
-                if (data.indexOf(quizArray[i]) != -1) {
-                    c[j++] = quizArray[i];
+        for (i = 0; i < quizArray.length; ++i) {
+            if (data.indexOf(quizArray[i]) != -1) {
+                c[j++] = quizArray[i];
             }
         }
         if (i >= quizArray.length) {
@@ -1378,64 +1778,7 @@ class quizfantasyServices {
         }
     }
 
-    //pointcount
 
-    async pointcount(matchkey, teamid) {
-        //overpointsModel
-        //overMatchModel
-        let totalpoint = 0;
-        let totalpointarray = [];
-        const pointcounts = await overMatchModel.find({ matchkey: matchkey, teamid: teamid })
-        //  console.log("pointcounts",pointcounts.length)
-        //pointcounts=JSON.parse(pointcounts)
-        const jointeam = await JoinQuizTeamModel.findOne({ matchkey: matchkey })
-        for await (let item of pointcounts) {
-            //pointcounts.forEach( async(item)=>{
-            totalpoint = 0;
-            totalpoint = totalpoint + (item.runs) + (item.fours) + ((item.six) * 2) + ((item.wicket) * (-6)) + ((item.maiden_over) * (-2));
-            //console.log("asdatotalpoint"+totalpoint)
-            if (item.wicket >= 3)
-                totalpoint = totalpoint + 3
-            if (item.runs >= 6 && item.runs <= 10)
-                totalpoint = totalpoint + 1
-            if (item.runs >= 11 && item.runs <= 15)
-                totalpoint = totalpoint + 2
-            if (item.runs >= 16)
-                totalpoint = totalpoint + 4
-            //console.log("totalpoint"+totalpoint)
-            totalpointarray.push(totalpoint);
-            //console.log("totalpoint"+totalpoint)   
-
-            await overMatchModel.updateOne({ matchkey: matchkey, teamid: teamid, over: item.over }, { total_points: totalpoint });
-
-            await overpointsModel.updateOne({ matchkey: matchkey, teamid: teamid, over: item.over }, { total_points: totalpoint });
-
-            //await JoinQuizTeamModel.updateMany({matchkey:matchkey,teamid:teamid,over:item.over},{total_points:totalpoint})
-
-
-            console.log("item.over" + item.over, "totalpoint", totalpoint)
-            for (let ele of (jointeam.overs || [])) {
-                if (ele.teamid == teamid && ele.over == item.over && ele.MegaOver == 1) {
-                    ele.points = 2 * totalpoint;
-                    console.log("item.over", ele.over, "totalpoint", totalpoint)
-                }
-                else if (ele.teamid == teamid && ele.over == item.over) {
-                    ele.points = totalpoint;
-                    console.log("item.over", ele.over, "totalpoint", totalpoint)
-                }
-            }
-            //console.log("jointeam.overs"+arr)
-        }
-        await JoinQuizTeamModel.updateOne({ matchkey: matchkey }, { $set: { overs: jointeam.overs } });
-        //console.log("updatejointeam",updatejointeam)
-        console.log("asas")
-        return true;
-    }
-
-    // end pointcount
-
-
-    ///overinformation
 
 
     async quizInformations(req) {
@@ -1445,125 +1788,21 @@ class quizfantasyServices {
                 method: "get",
             });
             console.log("responsefid", response.data.response.inning.fielding_team_id);
-            // const { matchkey, teamid } = req.query;
-            // let overData = [];
 
-
-
-            // let over =
-            // {
-            //     "over": 0,
-            //     "fours": 0,
-            //     "six": 0,
-            //     "wickets": 0,
-            //     "maiden_over": 0,
-            //     "runs": 0,
-            // }
-            // over.matchkey = matchkey;
-            // over.teamid = teamid;
-
-            // let overwicket, oversix, overfour, overmaiden;
-            // let overExactinformation = [];
-            // let oversinformation = [];
-            // let supportive = [];
-
-            // let rawdata = fs.readFileSync('D:\\overfantsy.json');
-            // let student = JSON.parse(rawdata);
-
-            // //student.response.commentaries.forEach(item=>{
-            // for (let i = 0; i < student.response.commentaries.length; i++) {
-            //     if (student.response.commentaries[i].event == "overend") {
-            //         student.response.commentaries[i].overwicket = overwicket;
-
-            //         supportive.push(student.response.commentaries[i]);
-            //         oversinformation.push(supportive)
-            //         supportive = [];
-            //         overwicket = 0;
-
-            //     }
-            //     else {
-            //         if (student.response.commentaries[i].event == "wicket")
-            //             overwicket++;
-            //         supportive.push(student.response.commentaries[i])
-            //     }
-
-            // }
-            // //console.log("hii"+oversinformation)
-            // oversinformation.forEach(item => {
-            //     console.log("hii")
-            //     item.forEach(item2 => {
-            //         if (item2.six == true) {
-            //             console.log("six")
-            //             over.six++;
-            //         }
-            //         if (item2.four == true) {
-            //             console.log("four")
-            //             over.fours++;
-            //         }
-            //         if (item2.event == "overend") {
-            //             console.log("overend")
-            //             over.over = item2.over
-            //             over.runs = item2.runs;
-            //             over.wickets = item2.overwicket;
-
-            //             if (over.runs == 0)
-            //                 over.maiden_over = 1;
-
-            //         }
-
-
-
-            //     })
-
-            //     overData.push(over);
-
-            //     //console.log("over"+over)
-            //     over =
-            //     {
-            //         "over": 0,
-            //         "fours": 0,
-            //         "six": 0,
-            //         "wickets": 0,
-            //         "maiden_over": 0,
-            //         "runs": 0,
-
-            //     }
-            //     over.matchkey = matchkey;
-            //     over.teamid = teamid;
-
-
-            // })
-
-            // const saveOverData = await overMatchModel.create(overData)
-            // await overpointsModel.create(overData)
-            // this.pointcount(matchkey, teamid);
-
-
-
-
-
-            // return saveOverData
-
-            // const response = await axios({
-            // 	url: "https://rest.entitysport.com/v2/matches/60071/innings/1/commentary?token=8dac1e4f7ee5ce23c747d7216c1e66c0",
-            // 	method: "get",
-            // });
-            //console.log(response.data);
         } catch (error) {
             throw error;
         }
     }
-    //overinformation
 
-   
-    //quizViewteam
     async updateIsViewedForBoatTeam(jointeamid) {
         try {
             await JoinQuizTeamModel.findOneAndUpdate({
                 _id: mongoose.Types.ObjectId(jointeamid),
                 user_type: 1,
                 is_viewed: false
-            }, { is_viewed: true });
+            }, {
+                is_viewed: true
+            });
             return true;
         } catch (error) {
             throw error;
@@ -1580,11 +1819,21 @@ class quizfantasyServices {
         aggPipe.push({
             $group: {
                 _id: '$matchkey',
-                matchkey: { $first: '$matchkey' },
-                joinedleaugeId: { $first: '$_id' },
-                userid: { $first: '$userid' },
-                matchchallengeid: { $first: '$challengeid' },
-                jointeamid: { $first: '$teamid' },
+                matchkey: {
+                    $first: '$matchkey'
+                },
+                joinedleaugeId: {
+                    $first: '$_id'
+                },
+                userid: {
+                    $first: '$userid'
+                },
+                matchchallengeid: {
+                    $first: '$challengeid'
+                },
+                jointeamid: {
+                    $first: '$teamid'
+                },
             },
         });
         aggPipe.push({
@@ -1607,7 +1856,11 @@ class quizfantasyServices {
         });
         aggPipe.push({
             $match: {
-                $or: [{ 'match.final_status': 'pending' }, { 'match.final_status': 'IsReviewed' }],
+                $or: [{
+                    'match.final_status': 'pending'
+                }, {
+                    'match.final_status': 'IsReviewed'
+                }],
             },
         });
 
@@ -1616,20 +1869,23 @@ class quizfantasyServices {
         aggPipe.push({
             $lookup: {
                 from: 'joinedleauges',
-                let: { matchkey: '$matchkey', userid: '$userid' },
+                let: {
+                    matchkey: '$matchkey',
+                    userid: '$userid'
+                },
                 pipeline: [{
                     $match: {
                         $expr: {
                             $and: [{
-                                $eq: ['$matchkey', '$$matchkey'],
-                            },
-                            {
-                                $eq: ['$userid', '$$userid'],
-                            },
+                                    $eq: ['$matchkey', '$$matchkey'],
+                                },
+                                {
+                                    $eq: ['$userid', '$$userid'],
+                                },
                             ],
                         },
                     },
-                },],
+                }, ],
                 as: 'joinedleauges',
             },
         });
@@ -1642,35 +1898,42 @@ class quizfantasyServices {
             $group: {
                 _id: '$joinedleauges.challengeid',
                 // matchchallengeid: { $first: '$joinedleauges.challengeid' },
-                joinedleaugeId: { $first: '$joinedleauges._id' },
-                matchkey: { $first: '$matchkey' },
-                jointeamid: { $first: '$jointeamid' },
-                userid: { $first: '$userid' },
-                match: { $first: '$match' },
+                joinedleaugeId: {
+                    $first: '$joinedleauges._id'
+                },
+                matchkey: {
+                    $first: '$matchkey'
+                },
+                jointeamid: {
+                    $first: '$jointeamid'
+                },
+                userid: {
+                    $first: '$userid'
+                },
+                match: {
+                    $first: '$match'
+                },
             },
         });
-        // aggPipe.push({
-        //     $lookup: {
-        //         from: 'matchchallenges',
-        //         localField: '_id',
-        //         foreignField: '_id',
-        //         as: 'matchchallenge',
-        //     },
-        // });
-        // aggPipe.push({
-        //     $unwind: {
-        //         path: '$matchchallenge',
-        //         preserveNullAndEmptyArrays: true,
-        //     },
-        // });
+
         aggPipe.push({
             $group: {
                 _id: '$matchkey',
-                joinedleaugeId: { $first: '$joinedleaugeId' },
-                matchkey: { $first: '$matchkey' },
-                jointeamid: { $first: '$jointeamid' },
-                match: { $first: '$match' },
-                count: { $sum: 1 },
+                joinedleaugeId: {
+                    $first: '$joinedleaugeId'
+                },
+                matchkey: {
+                    $first: '$matchkey'
+                },
+                jointeamid: {
+                    $first: '$jointeamid'
+                },
+                match: {
+                    $first: '$match'
+                },
+                count: {
+                    $sum: 1
+                },
             },
         });
         aggPipe.push({
@@ -1731,8 +1994,7 @@ class quizfantasyServices {
                 $expr: {
                     $and: [{
                         $lte: ['$date', today],
-                    },
-                    ],
+                    }, ],
                 },
             }
         });
@@ -1746,19 +2008,45 @@ class quizfantasyServices {
             $project: {
                 _id: 0,
                 matchkey: 1,
-                matchname: { $ifNull: ['$match.name', ''] },
-                team1ShortName: { $ifNull: ['$team1.short_name', ''] },
-                team2ShortName: { $ifNull: ['$team2.short_name', ''] },
-                team1fullname: { $ifNull: ['$team1.teamName', ''] },
-                team2fullname: { $ifNull: ['$team2.teamName', ''] },
-                team1color: { $ifNull: ['$team1.color', constant.TEAM_DEFAULT_COLOR.DEF1] },
-                team2color: { $ifNull: ['$team2.color', constant.TEAM_DEFAULT_COLOR.DEF1] },
+                matchname: {
+                    $ifNull: ['$match.name', '']
+                },
+                team1ShortName: {
+                    $ifNull: ['$team1.short_name', '']
+                },
+                team2ShortName: {
+                    $ifNull: ['$team2.short_name', '']
+                },
+                team1fullname: {
+                    $ifNull: ['$team1.teamName', '']
+                },
+                team2fullname: {
+                    $ifNull: ['$team2.teamName', '']
+                },
+                team1color: {
+                    $ifNull: ['$team1.color', constant.TEAM_DEFAULT_COLOR.DEF1]
+                },
+                team2color: {
+                    $ifNull: ['$team2.color', constant.TEAM_DEFAULT_COLOR.DEF1]
+                },
                 start_date: "$match.start_date",
                 team1logo: {
                     $ifNull: [{
                         $cond: {
-                            if: { $or: [{ $eq: [{ $substr: ['$team1.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team1.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team1.logo'] },
+                            if: {
+                                $or: [{
+                                    $eq: [{
+                                        $substr: ['$team1.logo', 0, 1]
+                                    }, '/']
+                                }, {
+                                    $eq: [{
+                                        $substr: ['$team1.logo', 0, 1]
+                                    }, 't']
+                                }]
+                            },
+                            then: {
+                                $concat: [`${constant.BASE_URL}`, '', '$team1.logo']
+                            },
                             else: '$team1.logo',
                         }
                     }, `${constant.BASE_URL}team_image.png`]
@@ -1766,33 +2054,69 @@ class quizfantasyServices {
                 team2logo: {
                     $ifNull: [{
                         $cond: {
-                            if: { $or: [{ $eq: [{ $substr: ['$team2.logo', 0, 1] }, '/'] }, { $eq: [{ $substr: ['$team2.logo', 0, 1] }, 't'] }] },
-                            then: { $concat: [`${constant.BASE_URL}`, '', '$team2.logo'] },
+                            if: {
+                                $or: [{
+                                    $eq: [{
+                                        $substr: ['$team2.logo', 0, 1]
+                                    }, '/']
+                                }, {
+                                    $eq: [{
+                                        $substr: ['$team2.logo', 0, 1]
+                                    }, 't']
+                                }]
+                            },
+                            then: {
+                                $concat: [`${constant.BASE_URL}`, '', '$team2.logo']
+                            },
                             else: '$team2.logo',
                         }
                     }, `${constant.BASE_URL}team_image.png`]
                 },
-                start_date: { $ifNull: ['$match.start_date', '0000-00-00 00:00:00'] },
-                start_date1: { $toDate: { $ifNull: ['$match.start_date', '0000-00-00 00:00:00'] } },
+                start_date: {
+                    $ifNull: ['$match.start_date', '0000-00-00 00:00:00']
+                },
+                start_date1: {
+                    $toDate: {
+                        $ifNull: ['$match.start_date', '0000-00-00 00:00:00']
+                    }
+                },
                 status: {
                     $ifNull: [{
-                        $cond: {
-                            if: { $lt: ['$match.start_date', moment().format('YYYY-MM-DD HH:mm:ss')] },
-                            then: 'closed',
-                            else: 'opened',
+                            $cond: {
+                                if: {
+                                    $lt: ['$match.start_date', moment().format('YYYY-MM-DD HH:mm:ss')]
+                                },
+                                then: 'closed',
+                                else: 'opened',
+                            },
                         },
-                    },
                         'opened',
                     ],
                 },
-                launch_status: { $ifNull: ['$match.launch_status', ''] },
-                final_status: { $ifNull: ['$match.final_status', ''] },
-                series_name: { $ifNull: ['$series.name', ''] },
-                type: { $ifNull: ['$match.fantasy_type', 'Cricket'] },
-                series_id: { $ifNull: ['$series._id', ''] },
-                available_status: { $ifNull: [1, 1] },
-                joinedcontest: { $ifNull: ['$count', 0] },
-                playing11_status: { $ifNull: ['$playing11_status', 1] }
+                launch_status: {
+                    $ifNull: ['$match.launch_status', '']
+                },
+                final_status: {
+                    $ifNull: ['$match.final_status', '']
+                },
+                series_name: {
+                    $ifNull: ['$series.name', '']
+                },
+                type: {
+                    $ifNull: ['$match.fantasy_type', 'Cricket']
+                },
+                series_id: {
+                    $ifNull: ['$series._id', '']
+                },
+                available_status: {
+                    $ifNull: [1, 1]
+                },
+                joinedcontest: {
+                    $ifNull: ['$count', 0]
+                },
+                playing11_status: {
+                    $ifNull: ['$playing11_status', 1]
+                }
             }
         });
         aggPipe.push({
@@ -1818,7 +2142,7 @@ class quizfantasyServices {
     async quizViewTeam(req) {
         try {
             let finalData = [];
-            
+
             finalData = await JoinQuizTeamModel.findOne({
                 _id: req.query.jointeamid,
                 matchkey: req.query.matchkey,
@@ -1838,20 +2162,24 @@ class quizfantasyServices {
 
     async quizAnswerMatch(matchkey) {
         try {
-            let joinData = await QuizJoinLeaugeModel.find({ matchkey })
-            let quizData = await quizModel.find({ matchkey: matchkey })
+            let joinData = await QuizJoinLeaugeModel.find({
+                matchkey
+            })
+            let quizData = await quizModel.find({
+                matchkey: matchkey
+            })
             if (joinData.length == 0) {
                 return {
                     message: "Quiz Answer Not Found",
                     status: false,
-                    data:{}
+                    data: {}
                 }
             }
             if (quizData.length == 0) {
                 return {
                     message: " Quiz not found",
                     status: false,
-                    data:{}
+                    data: {}
                 }
             }
             let data;
@@ -1859,9 +2187,16 @@ class quizfantasyServices {
                 for (let join_data of joinData) {
                     for (let quiz_data of quizData) {
                         if (quiz_data._id.toString() === join_data.quizId.toString() && quiz_data.matchkey.toString() === join_data.matchkey.toString()) {
-                                if (join_data.answer === quiz_data.answer) {
-                                    data = await QuizJoinLeaugeModel.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId }, { winamount: quiz_data.multiply }, { new: true })
-                                }
+                            if (join_data.answer === quiz_data.answer) {
+                                data = await QuizJoinLeaugeModel.findOneAndUpdate({
+                                    matchkey: join_data.matchkey,
+                                    quizId: join_data.quizId
+                                }, {
+                                    winamount: quiz_data.multiply
+                                }, {
+                                    new: true
+                                })
+                            }
                         }
                     }
                     return {
@@ -1885,9 +2220,15 @@ class quizfantasyServices {
         if (joinLeagues.length > 0) {
             for (let league of joinLeagues) {
                 let leaugestransaction = league.leaugestransaction;
-                let refund_data = await refundModel.findOne({ joinid: mongoose.Types.ObjectId(league._id) });
+                let refund_data = await refundModel.findOne({
+                    joinid: mongoose.Types.ObjectId(league._id)
+                });
                 if (!refund_data) {
-                    const user = await userModel.findOne({ _id: leaugestransaction.user_id }, { userbalance: 1 });
+                    const user = await userModel.findOne({
+                        _id: leaugestransaction.user_id
+                    }, {
+                        userbalance: 1
+                    });
                     if (user) {
                         const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
                         const balance = parseFloat(user.userbalance.balance.toFixed(2));
@@ -1931,7 +2272,11 @@ class quizfantasyServices {
                             transaction_id: transaction_id
                         };
                         await Promise.all([
-                            userModel.findOneAndUpdate({ _id: leaugestransaction.user_id }, userObj, { new: true }),
+                            userModel.findOneAndUpdate({
+                                _id: leaugestransaction.user_id
+                            }, userObj, {
+                                new: true
+                            }),
                             refundModel.create(refundData),
                             TransactionModel.create(transactiondata)
                         ]);
@@ -1941,180 +2286,7 @@ class quizfantasyServices {
         }
         return true;
     }
-    // async quizrefundprocess(challengeid, entryfee, matchkey, reason) {
-    //     console.log("-------------------------------------refundprocess-----------------------------")
-    //     let joinLeagues = await JoinLeaugeModel.find({
-    //         matchkey: mongoose.Types.ObjectId(matchkey),
-    //         challengeid: mongoose.Types.ObjectId(challengeid),
-    //     });
-    //     if (joinLeagues.length > 0) {
-    //         for (let league of joinLeagues) {
-    //             let leaugestransaction = league.leaugestransaction;
-    //             let refund_data = await refundModel.findOne({ joinid: mongoose.Types.ObjectId(league._id) });
-    //             if (!refund_data) {
-    //                 const user = await userModel.findOne({ _id: leaugestransaction.user_id }, { userbalance: 1 });
-    //                 if (user) {
-    //                     const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
-    //                     const balance = parseFloat(user.userbalance.balance.toFixed(2));
-    //                     const winning = parseFloat(user.userbalance.winning.toFixed(2));
-    //                     const totalBalance = bonus + balance + winning;
-    //                     const userObj = {
-    //                         'userbalance.balance': balance + leaugestransaction.balance,
-    //                         'userbalance.bonus': bonus + leaugestransaction.bonus,
-    //                         'userbalance.winning': winning + leaugestransaction.winning,
-    //                     };
-    //                     let randomStr = randomstring.generate({
-    //                         length: 4,
-    //                         charset: 'alphabetic',
-    //                         capitalization: 'uppercase'
-    //                     });
-    //                     console.log("------randomStr-------2", randomStr)
-    //                     let transaction_id = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
-    //                     let refundData = {
-    //                         userid: leaugestransaction.user_id,
-    //                         amount: entryfee,
-    //                         joinid: league._id,
-    //                         challengeid: league.challengeid,
-    //                         matchkey: matchkey,
-    //                         reason: reason,
-    //                         transaction_id: transaction_id
-    //                     };
-    //                     const transactiondata = {
-    //                         type: 'Refund',
-    //                         amount: entryfee,
-    //                         total_available_amt: totalBalance + entryfee,
-    //                         transaction_by: constant.APP_SHORT_NAME,
-    //                         challengeid: challengeid,
-    //                         userid: leaugestransaction.user_id,
-    //                         paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-    //                         bal_bonus_amt: bonus + leaugestransaction.bonus,
-    //                         bal_win_amt: winning + leaugestransaction.winning,
-    //                         bal_fund_amt: balance + leaugestransaction.balance,
-    //                         bonus_amt: leaugestransaction.bonus,
-    //                         win_amt: leaugestransaction.winning,
-    //                         addfund_amt: leaugestransaction.balance,
-    //                         transaction_id: transaction_id
-    //                     };
-    //                     await Promise.all([
-    //                         userModel.findOneAndUpdate({ _id: leaugestransaction.user_id }, userObj, { new: true }),
-    //                         refundModel.create(refundData),
-    //                         TransactionModel.create(transactiondata)
-    //                     ]);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return true;
-    // }
 
-    // async quiz_refund_amount(req) {
-    //     try {
-    //     console.log("-------------------------------------quizrefundAmount-------------------------")
-    //     const currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
-    //     let match_time = moment().add(10, 'm').format('YYYY-MM-DD HH:mm:ss');
-      
-    //     let pipeline = [];
-    //     pipeline.push({
-    //         $match: {
-    //             // _id:mongoose.Types.ObjectId('63fd749179494aff832d5325'),
-    //             // fantasy_type: "Cricket",
-    //             // start_date: { $lte: match_time },
-    //             launch_status: 'launched',
-    //             final_status: { $nin: ["winnerdeclared", "IsCanceled"] }
-    //         }
-    //     });
-    //     // --------------
-    //     let today= new Date();
-    //     today.setHours(today.getHours() + 5);
-    //     today.setMinutes(today.getMinutes() + 30);
-    //     // let lastDate = today.setMinutes(today.getMinutes() + 10);
-    //     // console.log("--today-+10---",today)
-    //     pipeline.push({
-    //         $addFields: {
-    //             date: {
-    //                 $dateFromString: {
-    //                     dateString: '$start_date',
-    //                     timezone: "-00:00"
-    //                 }
-    //             },
-    //             curDate: today
-    //         }
-    //     });
-    //     pipeline.push({
-    //         $match:{
-    //             $expr: {
-    //                 $and: [{
-    //                     $lte: ['$date','$curDate'],
-    //                     },
-    //                 ],
-    //             },
-    //         }
-    //     });
-    //     // --------------
-    //     pipeline.push({
-    //         $lookup: {
-    //             from: 'matchchallenges',
-    //             let: { matckey: "$_id" },
-    //             pipeline: [{
-    //                 $match: {
-    //                     status: { $ne: "canceled" },
-    //                     $expr: {
-    //                         $and: [
-    //                             { $eq: ["$matchkey", "$$matckey"] },
-    //                         ],
-    //                     },
-    //                 },
-    //             },],
-    //             as: 'matchChallengesData'
-    //         }
-    //     })
-    //     let listmatches = await listMatchesModel.aggregate(pipeline);
-    //     if (listmatches.length > 0) {
-    //         for (let match of listmatches) {
-    //             if (match.matchChallengesData.length > 0) {
-    //                 for (let value1 of match.matchChallengesData) {
-    //                     let data = {};
-    //                     if (value1.maximum_user > value1.joinedusers) {
-    //                         if (value1.confirmed_challenge == 0) {
-    //                             let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'challenge cancel');
-    //                             if (getresponse == true) {
-    //                                 await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-    //                                     $set: {
-    //                                         status: 'canceled'
-    //                                     }
-    //                                 });
-    //                             }
-    //                         }
-    //                     }
-    //                     if (value1.pricecard_type == 'Percentage') {
-    //                         let joinedUsers = await JoinLeaugeModel.find({
-    //                             matchkey: mongoose.Types.ObjectId(match.matchkey),
-    //                             challengeid: mongoose.Types.ObjectId(value1._id),
-    //                         }).count();
-    //                         if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
-    //                             let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
-    //                             if (getresponse == true) {
-    //                                 data['status'] = 'canceled';
-    //                                 await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-    //                                     $set: {
-    //                                         status: 'canceled'
-    //                                     }
-    //                                 });
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //      }
-    //      return {
-    //         message: 'Refund amount successfully ',
-    //         success: true,
-    //     }
-    //     } catch (error) {
-    //         throw error;
-    //     }
-    // }
 
     async findJoinLeaugeExist(matchkey, userId, teamId, challengeDetails) {
         if (!challengeDetails || challengeDetails == null || challengeDetails == undefined) return 4;
@@ -2127,15 +2299,27 @@ class quizfantasyServices {
         if (joinedLeauges.length == 0) return 1;
         if (joinedLeauges.length > 0) {
             if (challengeDetails.multi_entry == 0) {
-                return { message: 'Contest Already joined', status: false, data: {} };
+                return {
+                    message: 'Contest Already joined',
+                    status: false,
+                    data: {}
+                };
             } else {
                 if (joinedLeauges.length >= challengeDetails.team_limit) {
-                    return { message: 'You cannot join with more teams now.', status: false, data: {} };
+                    return {
+                        message: 'You cannot join with more teams now.',
+                        status: false,
+                        data: {}
+                    };
                 } else {
                     const joinedLeaugesCount = joinedLeauges.filter(item => {
                         return item.teamid.toString() === teamId;
                     });
-                    if (joinedLeaugesCount.length) return { message: 'Team already joined', status: false, data: {} };
+                    if (joinedLeaugesCount.length) return {
+                        message: 'Team already joined',
+                        status: false,
+                        data: {}
+                    };
                     else return 2;
                 }
             }
@@ -2151,62 +2335,23 @@ class quizfantasyServices {
             userid: userId,
         });
         if (quizjoinedLeauges.length == 0) return 1;
-        if (quizjoinedLeauges.length > 0) { 
-         return { message: 'Contest Already joined', status: false, data: {} };
-        // const joinedLeaugesCount = joinedLeauges.filter(item => {
-        //     return item.teamid.toString() === teamId;
-        // });
-        // if (joinedLeaugesCount.length) return { message: 'Team already joined', status: false, data: {} };
-        // else return 2;
-        }
-        // if (quizjoinedLeauges.length > 0) {
-        //     if (challengeDetails.multi_entry == 0) {
-        //         return { message: 'Contest Already joined', status: false, data: {} };
-        //     } else {
-        //         if (joinedLeauges.length >= challengeDetails.team_limit) {
-        //             return { message: 'You cannot join with more teams now.', status: false, data: {} };
-        //         } else {
-        //             const joinedLeaugesCount = joinedLeauges.filter(item => {
-        //                 return item.teamid.toString() === teamId;
-        //             });
-        //             if (joinedLeaugesCount.length) return { message: 'Team already joined', status: false, data: {} };
-        //             else return 2;
-        //         }
-        //     }
-        // }
-    }
-
-    async findUsableBonusMoney(challengeDetails, bonus, winning, balance) {
-        if (challengeDetails.is_private == 1 && challengeDetails.is_bonus != 1)
-            return { bonus: bonus, cons_bonus: 0, reminingfee: challengeDetails.entryfee };
-        let totalChallengeBonus = 0;
-        totalChallengeBonus = (challengeDetails.bonus_percentage / 100) * challengeDetails.entryfee;
-
-        const finduserbonus = bonus;
-        let findUsableBalance = winning + balance;
-        let bonusUseAmount = 0;
-        if (finduserbonus >= totalChallengeBonus)
-            (findUsableBalance += totalChallengeBonus), (bonusUseAmount = totalChallengeBonus);
-        else findUsableBalance += bonusUseAmount = finduserbonus;
-        if (findUsableBalance < challengeDetails.entryfee) return false;
-        if (bonusUseAmount >= challengeDetails.entryfee) {
+        if (quizjoinedLeauges.length > 0) {
             return {
-                bonus: finduserbonus - challengeDetails.entryfee,
-                cons_bonus: challengeDetails.entryfee || 0,
-                reminingfee: 0,
-            };
-        } else {
-            return {
-                bonus: finduserbonus - bonusUseAmount,
-                cons_bonus: bonusUseAmount,
-                reminingfee: challengeDetails.entryfee - bonusUseAmount,
+                message: 'Contest Already joined',
+                status: false,
+                data: {}
             };
         }
+
     }
 
     async quizfindUsableBonusMoney(quiz, bonus, winning, balance) {
         if (quiz.is_bonus != 1)
-            return { bonus: bonus, cons_bonus: 0, reminingfee: quiz.entryfee };
+            return {
+                bonus: bonus,
+                cons_bonus: 0,
+                reminingfee: quiz.entryfee
+            };
         let totalQuizBonus = 0;
         totalQuizBonus = (quiz.bonus_percentage / 100) * quiz.entryfee;
         const finduserbonus = bonus;
@@ -2231,16 +2376,6 @@ class quizfantasyServices {
         }
     }
 
-    async findUsableBalanceMoney(resultForBonus, balance) {
-        if (balance >= resultForBonus.reminingfee)
-            return {
-                balance: balance - resultForBonus.reminingfee,
-                cons_amount: resultForBonus.reminingfee,
-                reminingfee: 0,
-            };
-        else
-            return { balance: 0, cons_amount: balance, reminingfee: resultForBonus.reminingfee - balance };
-    }
     async quizfindUsableBalanceMoney(resultForBonus, balance) {
         if (balance >= resultForBonus.reminingfee)
             return {
@@ -2249,18 +2384,13 @@ class quizfantasyServices {
                 reminingfee: 0,
             };
         else
-            return { balance: 0, cons_amount: balance, reminingfee: resultForBonus.reminingfee - balance };
+            return {
+                balance: 0,
+                cons_amount: balance,
+                reminingfee: resultForBonus.reminingfee - balance
+            };
     }
 
-    async findUsableWinningMoney(resultForBalance, winning) {
-        if (winning >= resultForBalance.reminingfee) {
-            return {
-                winning: winning - resultForBalance.reminingfee,
-                cons_win: resultForBalance.reminingfee,
-                reminingfee: 0,
-            };
-        } else { return { winning: 0, cons_win: winning, reminingfee: resultForBalance.reminingfee - winning }; }
-    }
     async quizfindUsableWinningMoney(resultForBalance, winning) {
         if (winning >= resultForBalance.reminingfee) {
             return {
@@ -2268,12 +2398,21 @@ class quizfantasyServices {
                 cons_win: resultForBalance.reminingfee,
                 reminingfee: 0,
             };
-        } else { return { winning: 0, cons_win: winning, reminingfee: resultForBalance.reminingfee - winning }; }
+        } else {
+            return {
+                winning: 0,
+                cons_win: winning,
+                reminingfee: resultForBalance.reminingfee - winning
+            };
+        }
     }
 
     async joinQuizContest(req) {
         try {
-            const { matchchallengeid, jointeamid } = req.body;
+            const {
+                matchchallengeid,
+                jointeamid
+            } = req.body;
             let totalchallenges = 0,
                 totalmatches = 0,
                 totalseries = 0,
@@ -2283,7 +2422,9 @@ class quizfantasyServices {
 
 
             aggpipe.push({
-                $match: { _id: mongoose.Types.ObjectId(matchchallengeid) }
+                $match: {
+                    _id: mongoose.Types.ObjectId(matchchallengeid)
+                }
             });
 
             aggpipe.push({
@@ -2294,7 +2435,7 @@ class quizfantasyServices {
                     as: 'listmatch'
                 }
             });
-            
+
             const matchchallengesData = await matchchallengesModel.aggregate(aggpipe);
             let listmatchId = matchchallengesData[0].listmatch[0]._id;
             let matchchallengesDataId = matchchallengesData[0]._id;
@@ -2303,23 +2444,43 @@ class quizfantasyServices {
             let matchStartDate = matchchallengesData[0].listmatch[0].start_date;
 
             if (matchchallengesData.length == 0) {
-                return { message: 'Match Not Found', success: false, data: {} };
+                return {
+                    message: 'Match Not Found',
+                    success: false,
+                    data: {}
+                };
             }
             const matchTime = await matchServices.getMatchTime(matchStartDate);
             if (matchTime === false) {
                 return {
-                    message: 'Match has been closed, You cannot join leauge now.', 
+                    message: 'Match has been closed, You cannot join leauge now.',
                     status: false,
                     data: {}
                 }
             }
             const jointeamids = jointeamid.split(',');
 
-            const jointeamsCount = await JoinQuizTeamModel.find({ _id: { $in: jointeamids } }).countDocuments();
-            if (jointeamids.length != jointeamsCount) return { message: 'Invalid Team', status: false, data: {} }
+            const jointeamsCount = await JoinQuizTeamModel.find({
+                _id: {
+                    $in: jointeamids
+                }
+            }).countDocuments();
+            if (jointeamids.length != jointeamsCount) return {
+                message: 'Invalid Team',
+                status: false,
+                data: {}
+            }
 
-            const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
-            if (!user || !user.userbalance) return { message: 'Insufficient balance', status: false, data: {} };
+            const user = await userModel.findOne({
+                _id: req.user._id
+            }, {
+                userbalance: 1
+            });
+            if (!user || !user.userbalance) return {
+                message: 'Insufficient balance',
+                status: false,
+                data: {}
+            };
 
             const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
             const balance = parseFloat(user.userbalance.balance.toFixed(2));
@@ -2332,7 +2493,9 @@ class quizfantasyServices {
                 mainwin = 0,
                 tranid = '';
             for (const jointeamId of jointeamids) {
-                const jointeamsData = await JoinQuizTeamModel.findOne({ _id: jointeamId })
+                const jointeamsData = await JoinQuizTeamModel.findOne({
+                    _id: jointeamId
+                })
                 // console.log(`-------------IN ${i} LOOP--------------------`);
                 i++;
                 const result = await this.findJoinLeaugeExist(listmatchId, req.user._id, jointeamId, matchchallenge);
@@ -2374,7 +2537,11 @@ class quizfantasyServices {
                     };
 
                     await Promise.all([
-                        userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                        userModel.findOneAndUpdate({
+                            _id: req.user._id
+                        }, userObj, {
+                            new: true
+                        }),
                         TransactionModel.create(transactiondata)
                     ]);
                     return result;
@@ -2388,7 +2555,7 @@ class quizfantasyServices {
                     winning - mainwin,
                     balance - mainbal
                 );
-                   console.log('resultForBonus',resultForBonus);
+                console.log('resultForBonus', resultForBonus);
                 if (resultForBonus == false) {
 
                     if (i > 1) {
@@ -2425,11 +2592,19 @@ class quizfantasyServices {
                             transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
                         };
                         await Promise.all([
-                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                            userModel.findOneAndUpdate({
+                                _id: req.user._id
+                            }, userObj, {
+                                new: true
+                            }),
                             TransactionModel.create(transactiondata)
                         ]);
                     }
-                    return { message: 'Insufficient balance', status: false, data: {} };
+                    return {
+                        message: 'Insufficient balance',
+                        status: false,
+                        data: {}
+                    };
                 }
                 const resultForBalance = await this.findUsableBalanceMoney(resultForBonus, balance - mainbal);
                 const resultForWinning = await this.findUsableWinningMoney(resultForBalance, winning - mainwin);
@@ -2471,11 +2646,19 @@ class quizfantasyServices {
                             transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
                         };
                         await Promise.all([
-                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                            userModel.findOneAndUpdate({
+                                _id: req.user._id
+                            }, userObj, {
+                                new: true
+                            }),
                             TransactionModel.create(transactiondata)
                         ]);
                     }
-                    return { message: 'Insufficient balance', status: false, data: {} };
+                    return {
+                        message: 'Insufficient balance',
+                        status: false,
+                        data: {}
+                    };
                 }
                 let randomStr = randomstring.generate({
                     length: 4,
@@ -2483,17 +2666,28 @@ class quizfantasyServices {
                     capitalization: 'uppercase'
                 });
 
-                const coupon = randomstring.generate({ charset: 'alphanumeric', length: 4, });
+                const coupon = randomstring.generate({
+                    charset: 'alphanumeric',
+                    length: 4,
+                });
                 tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
                 let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
                 if (result == 1) {
 
-                    joinedMatch = await JoinLeaugeModel.find({ matchkey: listmatchId, userid: req.user._id }).limit(1).count();
+                    joinedMatch = await JoinLeaugeModel.find({
+                        matchkey: listmatchId,
+                        userid: req.user._id
+                    }).limit(1).count();
                     if (joinedMatch == 0) {
-                        joinedSeries = await JoinLeaugeModel.find({ seriesid: seriesId, userid: req.user._id }).limit(1).count();
+                        joinedSeries = await JoinLeaugeModel.find({
+                            seriesid: seriesId,
+                            userid: req.user._id
+                        }).limit(1).count();
                     }
                 }
-                const joinedLeauges = await JoinLeaugeModel.find({ challengeid: matchchallengesDataId }).count();
+                const joinedLeauges = await JoinLeaugeModel.find({
+                    challengeid: matchchallengesDataId
+                }).count();
                 const joinUserCount = joinedLeauges + 1;
                 if (matchchallenge.contest_type == 'Amount' && joinUserCount > matchchallenge.maximum_user) {
                     if (i > 1) {
@@ -2530,11 +2724,19 @@ class quizfantasyServices {
                             transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
                         };
                         await Promise.all([
-                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                            userModel.findOneAndUpdate({
+                                _id: req.user._id
+                            }, userObj, {
+                                new: true
+                            }),
                             TransactionModel.create(transactiondata)
                         ]);
                     }
-                    return { message: 'League is Closed', status: false, data: {} };
+                    return {
+                        message: 'League is Closed',
+                        status: false,
+                        data: {}
+                    };
                 }
                 const joinLeaugeResult = await JoinLeaugeModel.create({
                     userid: req.user._id,
@@ -2560,7 +2762,9 @@ class quizfantasyServices {
                     teamnumber: jointeamsData.teamnumber,
                     joinId: joinLeaugeResult._id
                 });
-                const joinedLeaugesCount = await JoinLeaugeModel.find({ challengeid: matchchallengesDataId }).count();
+                const joinedLeaugesCount = await JoinLeaugeModel.find({
+                    challengeid: matchchallengesDataId
+                }).count();
                 if (result == 1) {
                     totalchallenges = 1;
                     if (joinedMatch == 0) {
@@ -2578,22 +2782,37 @@ class quizfantasyServices {
                     mainwin = mainwin + resultForWinning.cons_win;
                     if (matchchallenge.contest_type == 'Amount' && joinedLeaugesCount == matchchallenge.maximum_user && matchchallenge.is_running != 1) {
                         // console.log(`---------------------8TH IF--------${matchchallenge.is_running}---------`);
-                        await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+                        await matchchallengesModel.findOneAndUpdate({
+                            matchkey: listmatchId,
+                            _id: mongoose.Types.ObjectId(matchchallengeid)
+                        }, {
                             status: 'closed',
                             joinedusers: joinedLeaugesCount,
-                        }, { new: true });
+                        }, {
+                            new: true
+                        });
                     } else {
                         // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
-                        const gg = await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+                        const gg = await matchchallengesModel.findOneAndUpdate({
+                            matchkey: listmatchId,
+                            _id: mongoose.Types.ObjectId(matchchallengeid)
+                        }, {
                             status: 'opened',
                             joinedusers: joinedLeaugesCount,
-                        }, { new: true });
+                        }, {
+                            new: true
+                        });
                     }
                 } else
-                    await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
+                    await matchchallengesModel.findOneAndUpdate({
+                        matchkey: listmatchId,
+                        _id: mongoose.Types.ObjectId(matchchallengeid)
+                    }, {
                         status: 'opened',
                         joinedusers: joinedLeaugesCount,
-                    }, { new: true });
+                    }, {
+                        new: true
+                    });
                 if (i == jointeamids.length) {
                     // console.log(`---------------------9TH IF--------${i}---------`);
                     const userObj = {
@@ -2629,7 +2848,11 @@ class quizfantasyServices {
                         transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
                     };
                     Promise.all([
-                        userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
+                        userModel.findOneAndUpdate({
+                            _id: req.user._id
+                        }, userObj, {
+                            new: true
+                        }),
                         TransactionModel.create(transactiondata)
                     ]);
                     // ----------------------------------------------------------------------------------------------------------------------
@@ -2661,7 +2884,9 @@ class quizfantasyServices {
             const matchchallengesData = await matchchallengesModel.find(query);
             if (matchchallengesData.length > 0) {
                 for (let matchchallenge of matchchallengesData) {
-                    const totalJoinedUserInLeauge = await JoinLeaugeModel.find({ challengeid: mongoose.Types.ObjectId(matchchallenge._id) });
+                    const totalJoinedUserInLeauge = await JoinLeaugeModel.find({
+                        challengeid: mongoose.Types.ObjectId(matchchallenge._id)
+                    });
                     if (matchchallenge.maximum_user == totalJoinedUserInLeauge.length) {
                         const update = {
                             $set: {
@@ -2670,12 +2895,8 @@ class quizfantasyServices {
                                 'joinedusers': totalJoinedUserInLeauge.length,
                             },
                         };
-                        // console.log("--matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1--",matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1)
                         if (matchchallenge.is_running == 1 && matchchallenge.is_duplicated != 1) {
                             let newmatchchallenge = {};
-                            // delete newmatchchallenge._id;
-                            // delete newmatchchallenge.createdAt;
-                            // delete newmatchchallenge.updatedAt;
                             newmatchchallenge.joinedusers = 0;
                             newmatchchallenge.contestid = matchchallenge.contestid
                             newmatchchallenge.contest_cat = matchchallenge.contest_cat
@@ -2721,7 +2942,9 @@ class quizfantasyServices {
                                 maximum_user: matchchallenge.maximum_user,
                                 joinedusers: 0,
                                 status: matchchallenge.status,
-                                is_duplicated: { $ne: 1 }
+                                is_duplicated: {
+                                    $ne: 1
+                                }
                             });
                             if (!data) {
                                 let createNewContest = new matchchallengesModel(newmatchchallenge);
@@ -2729,7 +2952,9 @@ class quizfantasyServices {
                             }
                             // console.log("---createNewContest----",mynewContest)
                         }
-                        await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(matchchallenge._id) }, update);
+                        await matchchallengesModel.updateOne({
+                            _id: mongoose.Types.ObjectId(matchchallenge._id)
+                        }, update);
                     }
                 }
 
@@ -2739,11 +2964,13 @@ class quizfantasyServices {
         }
 
     };
-    
+
     async getAllNewContests(req) {
         try {
             await this.updateJoinedusers(req);
-            let finalData = [], contest_arr = [], aggpipe = [];
+            let finalData = [],
+                contest_arr = [],
+                aggpipe = [];
             aggpipe.push({
                 $lookup: {
                     from: "matchchallenges",
@@ -2751,12 +2978,10 @@ class quizfantasyServices {
                         contestcat: "$_id",
                         matchkey: mongoose.Types.ObjectId(req.query.matchkey),
                     },
-                    pipeline: [
-                        {
+                    pipeline: [{
                             $match: {
                                 $expr: {
-                                    $and: [
-                                        {
+                                    $and: [{
                                             $eq: ["$$matchkey", "$matchkey"],
                                         },
                                         {
@@ -2782,44 +3007,43 @@ class quizfantasyServices {
                                     matchkey: '$matchkey',
                                     userId: mongoose.Types.ObjectId(req.user._id),
                                 },
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            $expr: {
-                                                $and: [
-                                                    {
-                                                        $eq: [
-                                                            "$$matchkey",
-                                                            "$matchkey",
-                                                        ],
-                                                    },
-                                                    {
-                                                        $eq: [
-                                                            "$$challengeId",
-                                                            "$challengeid",
-                                                        ],
-                                                    },
+                                pipeline: [{
+                                    $match: {
+                                        $expr: {
+                                            $and: [{
+                                                    $eq: [
+                                                        "$$matchkey",
+                                                        "$matchkey",
+                                                    ],
+                                                },
+                                                {
+                                                    $eq: [
+                                                        "$$challengeId",
+                                                        "$challengeid",
+                                                    ],
+                                                },
 
-                                                    {
-                                                        $eq: [
-                                                            "$$userId",
-                                                            "$userid",
-                                                        ],
-                                                    },
-                                                ],
-                                            },
+                                                {
+                                                    $eq: [
+                                                        "$$userId",
+                                                        "$userid",
+                                                    ],
+                                                },
+                                            ],
                                         },
-                                    }, {
-                                        $project: {
-                                            refercode: 1
-                                        }
                                     },
-                                ],
+                                }, {
+                                    $project: {
+                                        refercode: 1
+                                    }
+                                }, ],
                                 as: 'joinedleauge'
                             },
                         },
                         {
-                            $sort: { win_amount: -1 },
+                            $sort: {
+                                win_amount: -1
+                            },
                         },
                     ],
                     as: "contest",
@@ -2834,7 +3058,9 @@ class quizfantasyServices {
             })
             aggpipe.push({
                 $match: {
-                    challengeSize: { $gt: 0 }
+                    challengeSize: {
+                        $gt: 0
+                    }
                 }
             })
 
@@ -2852,7 +3078,10 @@ class quizfantasyServices {
                 }
             }
             let [total_teams, total_joinedcontestData] = await Promise.all([
-                JoinQuizTeamModel.countDocuments({ userid: req.user._id, matchkey: req.query.matchkey }),
+                JoinQuizTeamModel.countDocuments({
+                    userid: req.user._id,
+                    matchkey: req.query.matchkey
+                }),
                 this.getJoinleague(req.user._id, req.query.matchkey)
             ]);
             for (let cat of categoryData) {
@@ -2880,7 +3109,9 @@ class quizfantasyServices {
                     }
                     matchchallenge.gift_image = "";
                     matchchallenge.gift_type = "amount";
-                    let find_gift = matchchallenge.matchpricecards.find(function (x) { return x.gift_type == "gift" });
+                    let find_gift = matchchallenge.matchpricecards.find(function (x) {
+                        return x.gift_type == "gift"
+                    });
                     if (find_gift) {
                         matchchallenge.gift_image = `${constant.BASE_URL}${find_gift.image}`;
                         matchchallenge.gift_type = find_gift.gift_type;
@@ -2913,72 +3144,37 @@ class quizfantasyServices {
     }
 
     async getUserRank(rankArray) {
-        //console.log("rankArray",rankArray)
-        // if (rankArray.length == 0) return [];
-        // let lrsno = 0,
-        //     uplus = 0,
-        //     sno = 0;
-        // const getUserRank = [];
-        // for await (const rankData of rankArray) {
-        //     const found = getUserRank.some((ele) => { 
-        //         //console.log("ele",ele.points,"rankData.points",rankData.points,"==",ele.points == rankData.points)
-        //         ele.points == rankData.points });
-        //     //console.log("found",found)
-        //     if (found) {
-        //         console.log("a")
-        //         uplus++;
-        //     } else {
-        //         console.log("b")
-        //         lrsno++;
-        //         //console.log("lrsno",lrsno,"uplus",uplus)
-        //         lrsno = lrsno + uplus;
-                
-        //         uplus = 0;
-        //     }
-        //     //console.log("--->",lrsno)
-        //     getUserRank.push({
-        //         rank: lrsno,
-        //         points: rankData.points,
-        //         userid: rankData.userid,
-        //         userjoinedleaugeId: rankData.userjoinedleaugeId,
-        //         userTeamNumber: rankData.userTeamNumber,
-        //     });
-        //     sno++;
-        //     if (sno == rankArray.length) {
-        //         return getUserRank;
-        //     }
-        // }
-        //sahil rank code
+
         if (rankArray.length == 0) return [];
-let lrsno = 0,
-    uplus = 0,
-    sno = 0;
-const getUserRank = [];
-for await (const rankData of rankArray) {
-    const found = getUserRank.some((ele) => {
-        return ele.points == rankData.points && ele.rank <= lrsno;
-    });
-    if (found) {
-        //console.log("a");
-        uplus++;
-    } else {
-        //console.log("b");
-        lrsno++;
-        lrsno = lrsno + uplus;
-        uplus = 0;
-    }
-    getUserRank.push({
-        rank: lrsno,
-        points: rankData.points,
-        userid: rankData.userid,
-        userjoinedleaugeId: rankData.userjoinedleaugeId,
-        userTeamNumber: rankData.userTeamNumber,
-    });
-    sno++;
-    if (sno == rankArray.length) {
-        return getUserRank;
-    }
-}
+        let lrsno = 0,
+            uplus = 0,
+            sno = 0;
+        const getUserRank = [];
+        for await (const rankData of rankArray) {
+            const found = getUserRank.some((ele) => {
+                return ele.points == rankData.points && ele.rank <= lrsno;
+            });
+            if (found) {
+                //console.log("a");
+                uplus++;
+            } else {
+                //console.log("b");
+                lrsno++;
+                lrsno = lrsno + uplus;
+                uplus = 0;
+            }
+            getUserRank.push({
+                rank: lrsno,
+                points: rankData.points,
+                userid: rankData.userid,
+                userjoinedleaugeId: rankData.userjoinedleaugeId,
+                userTeamNumber: rankData.userTeamNumber,
+            });
+            sno++;
+            if (sno == rankArray.length) {
+                return getUserRank;
+            }
+        }
 
         //sahil rank code end
         return true;
@@ -2986,7 +3182,9 @@ for await (const rankData of rankArray) {
     //overviewendteam    
     async getMyQuizJoinedContest(req) {
         try {
-            const { matchkey } = req.query;
+            const {
+                matchkey
+            } = req.query;
             const aggPipe = [];
             aggPipe.push({
                 $match: {
@@ -2994,15 +3192,23 @@ for await (const rankData of rankArray) {
                     matchkey: mongoose.Types.ObjectId(matchkey),
                 }
             });
-         
+
 
             aggPipe.push({
                 $group: {
                     _id: '$challengeid',
-                    joinedleaugeId: { $first: '$_id' },
-                    matchkey: { $first: '$matchkey' },
-                    jointeamid: { $first: '$teamid' },
-                    userid: { $first: '$userid' },
+                    joinedleaugeId: {
+                        $first: '$_id'
+                    },
+                    matchkey: {
+                        $first: '$matchkey'
+                    },
+                    jointeamid: {
+                        $first: '$teamid'
+                    },
+                    userid: {
+                        $first: '$userid'
+                    },
                 },
             });
             aggPipe.push({
@@ -3015,92 +3221,172 @@ for await (const rankData of rankArray) {
             });
             aggPipe.push({
                 $addFields: {
-                    matchchallengestatus: { $arrayElemAt: ['$matchchallenge.status', 0] }
+                    matchchallengestatus: {
+                        $arrayElemAt: ['$matchchallenge.status', 0]
+                    }
                 }
             });
             aggPipe.push({
-                $match: { matchchallengestatus: { $ne: "canceled" } }
+                $match: {
+                    matchchallengestatus: {
+                        $ne: "canceled"
+                    }
+                }
             });
             aggPipe.push({
                 $project: {
                     _id: 0,
                     matchchallengeid: "$_id",
-                    amount_type: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.amount_type', 0] }, 0] },
+                    amount_type: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.amount_type', 0]
+                        }, 0]
+                    },
                     jointeamid: 1,
                     joinedleaugeId: 1,
                     userid: 1,
-                    // is_expert:matchchallenge.is_expert,
-                    // expert_name:matchchallenge.expert_name,
-                    win_amount: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.win_amount', 0] }, 0] },
-                    contest_cat: { $arrayElemAt: ['$matchchallenge.contest_cat', 0] },
-                    is_bonus: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.is_bonus', 0] }, 0] },
-                    bonus_percentage: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.bonus_percentage', 0] }, 0] },
-                    is_private: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.is_private', 0] }, 0] },
-                    winning_percentage: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.winning_percentage', 0] }, 0] },
-                    contest_type: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.contest_type', 0] }, 0] },
-                    contest_name: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.contest_name', 0] }, 0] },
-                    multi_entry: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.multi_entry', 0] }, 0] },
-                    confirmed_challenge: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.confirmed_challenge', 0] }, 0] },
-                    matchkey: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.matchkey', 0] }, 0] },
-                    entryfee: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.entryfee', 0] }, 0] },
-                    maximum_user: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.maximum_user', 0] }, 0] },
-                    joinedusers: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.joinedusers', 0] }, 0] },
-                    pricecard_type: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.pricecard_type', 0] }, 0] },
-                    status: { $arrayElemAt: ['$matchchallenge.status', 0] },
-                    team_limit: { $arrayElemAt: [{ $ifNull: ['$matchchallenge.team_limit', 0] }, 0] },
-                    matchpricecards: { $arrayElemAt: ['$matchchallenge.matchpricecards', 0] },
+                    win_amount: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.win_amount', 0]
+                        }, 0]
+                    },
+                    contest_cat: {
+                        $arrayElemAt: ['$matchchallenge.contest_cat', 0]
+                    },
+                    is_bonus: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.is_bonus', 0]
+                        }, 0]
+                    },
+                    bonus_percentage: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.bonus_percentage', 0]
+                        }, 0]
+                    },
+                    is_private: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.is_private', 0]
+                        }, 0]
+                    },
+                    winning_percentage: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.winning_percentage', 0]
+                        }, 0]
+                    },
+                    contest_type: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.contest_type', 0]
+                        }, 0]
+                    },
+                    contest_name: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.contest_name', 0]
+                        }, 0]
+                    },
+                    multi_entry: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.multi_entry', 0]
+                        }, 0]
+                    },
+                    confirmed_challenge: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.confirmed_challenge', 0]
+                        }, 0]
+                    },
+                    matchkey: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.matchkey', 0]
+                        }, 0]
+                    },
+                    entryfee: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.entryfee', 0]
+                        }, 0]
+                    },
+                    maximum_user: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.maximum_user', 0]
+                        }, 0]
+                    },
+                    joinedusers: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.joinedusers', 0]
+                        }, 0]
+                    },
+                    pricecard_type: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.pricecard_type', 0]
+                        }, 0]
+                    },
+                    status: {
+                        $arrayElemAt: ['$matchchallenge.status', 0]
+                    },
+                    team_limit: {
+                        $arrayElemAt: [{
+                            $ifNull: ['$matchchallenge.team_limit', 0]
+                        }, 0]
+                    },
+                    matchpricecards: {
+                        $arrayElemAt: ['$matchchallenge.matchpricecards', 0]
+                    },
                 }
             });
             aggPipe.push({
                 $lookup: {
                     from: 'joinedleauges',
-                    let: { matchchallengeid: '$matchchallengeid' },
+                    let: {
+                        matchchallengeid: '$matchchallengeid'
+                    },
                     pipeline: [{
-                        $match: {
-                            $expr: {
-                                $and: [{
-                                    $eq: ['$$matchchallengeid', '$challengeid'],
-                                },],
+                            $match: {
+                                $expr: {
+                                    $and: [{
+                                        $eq: ['$$matchchallengeid', '$challengeid'],
+                                    }, ],
+                                },
                             },
                         },
-                    },
-                    {
-                        $lookup: {
-                            from: 'joinquizteams',
-                            let: { teamid: '$teamid' },
-                            pipeline: [{
-                                $match: {
-                                    $expr: {
-                                        $and: [{
-                                            $eq: ['$$teamid', '$_id'],
-                                        },],
+                        {
+                            $lookup: {
+                                from: 'joinquizteams',
+                                let: {
+                                    teamid: '$teamid'
+                                },
+                                pipeline: [{
+                                        $match: {
+                                            $expr: {
+                                                $and: [{
+                                                    $eq: ['$$teamid', '$_id'],
+                                                }, ],
+                                            },
+                                        },
                                     },
+                                    {
+                                        $project: {
+                                            _id: 0,
+                                            points: 1,
+                                            userid: 1,
+                                            teamnumber: 1,
+                                        },
+                                    },
+                                ],
+                                as: 'jointeam',
+                            },
+                        },
+                        {
+                            $unwind: {
+                                path: '$jointeam',
+                            },
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                jointeam: 1,
+                                refercode: {
+                                    $ifNull: ['$refercode', 0]
                                 },
                             },
-                            {
-                                $project: {
-                                    _id: 0,
-                                    points: 1,
-                                    userid: 1,
-                                    teamnumber: 1,
-                                },
-                            },
-                            ],
-                            as: 'jointeam',
                         },
-                    },
-                    {
-                        $unwind: {
-                            path: '$jointeam',
-                        },
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            jointeam: 1,
-                            refercode: { $ifNull: ['$refercode', 0] },
-                        },
-                    },
                     ],
 
                     as: 'jointeamids',
@@ -3109,23 +3395,30 @@ for await (const rankData of rankArray) {
             aggPipe.push({
                 $lookup: {
                     from: 'finalresults',
-                    let: { matchchallengeid: '$matchchallengeid' },
+                    let: {
+                        matchchallengeid: '$matchchallengeid'
+                    },
                     pipeline: [{
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ['$$matchchallengeid', '$challengeid'] },
-                                    { $eq: ['$userid', mongoose.Types.ObjectId(req.user._id)] },
-                                ],
+                            $match: {
+                                $expr: {
+                                    $and: [{
+                                            $eq: ['$$matchchallengeid', '$challengeid']
+                                        },
+                                        {
+                                            $eq: ['$userid', mongoose.Types.ObjectId(req.user._id)]
+                                        },
+                                    ],
+                                },
                             },
                         },
-                    },
-                    {
-                        $group: {
-                            _id: null,
-                            amount: { $sum: '$amount' },
+                        {
+                            $group: {
+                                _id: null,
+                                amount: {
+                                    $sum: '$amount'
+                                },
+                            },
                         },
-                    },
                     ],
                     as: 'finalresults',
                 },
@@ -3154,21 +3447,51 @@ for await (const rankData of rankArray) {
                     joinedleaugeId: 1,
                     win_amount: '$win_amount',
                     contest_cat: '$contest_cat',
-                    is_bonus: { $ifNull: ['$is_bonus', 0] },
-                    bonus_percentage: { $ifNull: ['$bonus_percentage', 0] },
-                    is_private: { $ifNull: ['$is_private', 0] },
+                    is_bonus: {
+                        $ifNull: ['$is_bonus', 0]
+                    },
+                    bonus_percentage: {
+                        $ifNull: ['$bonus_percentage', 0]
+                    },
+                    is_private: {
+                        $ifNull: ['$is_private', 0]
+                    },
                     winning_percentage: '$winning_percentage',
-                    contest_type: { $ifNull: ['$contest_type', ''] },
-                    multi_entry: { $ifNull: ['$multi_entry', ''] },
-                    contest_name: { $ifNull: ['$contest_name', ''] },
-                    confirmed: { $ifNull: ['$confirmed_challenge', 0] },
-                    matchkey: { $ifNull: ['$matchkey', 0] },
-                    joinedusers: { $ifNull: ['$joinedusers', 0] },
-                    entryfee: { $ifNull: ['$entryfee', 0] },
-                    pricecard_type: { $ifNull: ['$pricecard_type', 0] },
-                    maximum_user: { $ifNull: ['$maximum_user', 0] },
-                    team_limit: { $ifNull: ['$team_limit', 11] },
-                    matchFinalstatus: { $ifNull: [{ $arrayElemAt: ['$listmatch.final_status', 0] }, ''] },
+                    contest_type: {
+                        $ifNull: ['$contest_type', '']
+                    },
+                    multi_entry: {
+                        $ifNull: ['$multi_entry', '']
+                    },
+                    contest_name: {
+                        $ifNull: ['$contest_name', '']
+                    },
+                    confirmed: {
+                        $ifNull: ['$confirmed_challenge', 0]
+                    },
+                    matchkey: {
+                        $ifNull: ['$matchkey', 0]
+                    },
+                    joinedusers: {
+                        $ifNull: ['$joinedusers', 0]
+                    },
+                    entryfee: {
+                        $ifNull: ['$entryfee', 0]
+                    },
+                    pricecard_type: {
+                        $ifNull: ['$pricecard_type', 0]
+                    },
+                    maximum_user: {
+                        $ifNull: ['$maximum_user', 0]
+                    },
+                    team_limit: {
+                        $ifNull: ['$team_limit', 11]
+                    },
+                    matchFinalstatus: {
+                        $ifNull: [{
+                            $arrayElemAt: ['$listmatch.final_status', 0]
+                        }, '']
+                    },
                     matchpricecards: '$matchpricecards',
                     //-------------Comment for bleow commented code----------//
                     matchChallengeStatus: '$status',
@@ -3176,22 +3499,38 @@ for await (const rankData of rankArray) {
                         $filter: {
                             input: '$jointeamids.jointeam',
                             as: 'team',
-                            cond: { $eq: ['$$team.userid', mongoose.Types.ObjectId(req.user._id)] },
+                            cond: {
+                                $eq: ['$$team.userid', mongoose.Types.ObjectId(req.user._id)]
+                            },
                         },
                     },
                     bonus_date: '',
                     totaljointeams: '$jointeamids.jointeam',
-                    refercode: { $ifNull: [{ $arrayElemAt: ['$jointeamids.refercode', 0] }, 0] },
-                    finalresultsAmount: { $ifNull: [{ $arrayElemAt: ['$finalresults.amount', 0] }, 0] },
-                    amount_type: { $ifNull: ['$amount_type', ''] },
+                    refercode: {
+                        $ifNull: [{
+                            $arrayElemAt: ['$jointeamids.refercode', 0]
+                        }, 0]
+                    },
+                    finalresultsAmount: {
+                        $ifNull: [{
+                            $arrayElemAt: ['$finalresults.amount', 0]
+                        }, 0]
+                    },
+                    amount_type: {
+                        $ifNull: ['$amount_type', '']
+                    },
                 },
             });
-          
+
             const JoinContestData = await JoinLeaugeModel.aggregate(aggPipe);
-            
+
             let i = 0;
             const finalData = [];
-            if (JoinContestData.length == 0) return { message: 'Data Not Found', status: true, data: [] };
+            if (JoinContestData.length == 0) return {
+                message: 'Data Not Found',
+                status: true,
+                data: []
+            };
             for await (const challanges of JoinContestData) {
                 //console.log("challanges",challanges)
                 const getCurrentRankArray = [];
@@ -3245,7 +3584,7 @@ for await (const rankData of rankArray) {
                     price_card: [],
                     pricecardstatus: 0,
                 };
-                
+
 
                 if (challanges.multi_entry != 0) {
                     tmpObj['team_limit'] = challanges.team_limit;
@@ -3293,13 +3632,20 @@ for await (const rankData of rankArray) {
                     }
                 } else {
                     tmpObj['totalwinners'] = 1;
-                    tmpObj['price_card'] = [{ start_position: 1, price: `${challanges.win_amount}`, amount_type: `${challanges.amount_type}`, gift_type: "amount" }];
+                    tmpObj['price_card'] = [{
+                        start_position: 1,
+                        price: `${challanges.win_amount}`,
+                        amount_type: `${challanges.amount_type}`,
+                        gift_type: "amount"
+                    }];
                     tmpObj['pricecardstatus'] = 0;
                 }
                 let gift_image = "";
                 let gift_type = "amount";
                 let prize_name = "";
-                let find_gift = challanges.matchpricecards.find(function (x) { return x.gift_type == "gift" });
+                let find_gift = challanges.matchpricecards.find(function (x) {
+                    return x.gift_type == "gift"
+                });
                 if (find_gift) {
                     gift_image = `${constant.BASE_URL}${find_gift.image}`;
                     gift_type = find_gift.gift_type;
@@ -3312,22 +3658,24 @@ for await (const rankData of rankArray) {
                 if (challanges.contest_type == 'Percentage') {
                     tmpObj['isselected'] = challanges.jointeams ?
                         challanges.multi_entry == 1 && challanges.jointeams.length < challanges.team_limit ?
-                            false :
-                            true :
+                        false :
+                        true :
                         false;
                 } else {
                     tmpObj['isselected'] = challanges.jointeams ?
                         challanges.multi_entry == 1 &&
-                            challanges.jointeams.length < challanges.team_limit &&
-                            challanges.totaljointeams.length < challanges.maximum_user ?
-                            false :
-                            true :
+                        challanges.jointeams.length < challanges.team_limit &&
+                        challanges.totaljointeams.length < challanges.maximum_user ?
+                        false :
+                        true :
                         false;
                 }
                 // ------------count of contest and team------------
-                const total_teams = await JoinQuizTeamModel.countDocuments({ matchkey: req.query.matchkey, userid: req.user._id, });
-                const total_joinedcontestData = await JoinLeaugeModel.aggregate([
-                    {
+                const total_teams = await JoinQuizTeamModel.countDocuments({
+                    matchkey: req.query.matchkey,
+                    userid: req.user._id,
+                });
+                const total_joinedcontestData = await JoinLeaugeModel.aggregate([{
                         $match: {
                             userid: mongoose.Types.ObjectId(req.user._id),
                             matchkey: mongoose.Types.ObjectId(req.query.matchkey)
@@ -3358,15 +3706,19 @@ for await (const rankData of rankArray) {
 
     async quizgetUsableBalance(req) {
         try {
-            const { quizId } = req.query;
-            if (quizId === undefined) { 
+            const {
+                quizId
+            } = req.query;
+            if (quizId === undefined) {
                 return {
                     message: "Quiz Not Found",
                     status: false,
-                    data:{}
+                    data: {}
                 }
             }
-            const quizData = await quizModel.findOne({ _id: mongoose.Types.ObjectId(quizId) });
+            const quizData = await quizModel.findOne({
+                _id: mongoose.Types.ObjectId(quizId)
+            });
             if (!quizData) {
                 return {
                     message: 'Quiz not found',
@@ -3376,8 +3728,12 @@ for await (const rankData of rankArray) {
             }
             req.query.matchkey = quizData.matchkey;
             // await this.updateJoinedusers(req);
-           
-            const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
+
+            const user = await userModel.findOne({
+                _id: req.user._id
+            }, {
+                userbalance: 1
+            });
             const bonus = parseFloat(user.userbalance.bonus.toFixed(2)) || 0;
             const balance = parseFloat(user.userbalance.balance.toFixed(2)) || 0;
             const winning = parseFloat(user.userbalance.winning.toFixed(2)) || 0;
@@ -3405,7 +3761,10 @@ for await (const rankData of rankArray) {
 
     async joinQuiz(req) {
         try {
-            let { quizId, quizAnswer } = req.body
+            let {
+                quizId,
+                quizAnswer
+            } = req.body
             let totalchallenges = 0,
                 totalmatches = 0,
                 totalseries = 0,
@@ -3414,7 +3773,9 @@ for await (const rankData of rankArray) {
                 aggpipe = [];
 
             aggpipe.push({
-                $match: { _id: mongoose.Types.ObjectId(quizId) }
+                $match: {
+                    _id: mongoose.Types.ObjectId(quizId)
+                }
             });
 
             aggpipe.push({
@@ -3425,10 +3786,14 @@ for await (const rankData of rankArray) {
                     as: 'listmatch'
                 }
             });
-            
+
             const quizData = await quizModel.aggregate(aggpipe);
             if (quizData.length == 0) {
-                return { message: 'Match Not Found', success: false, data: {} };
+                return {
+                    message: 'Match Not Found',
+                    success: false,
+                    data: {}
+                };
             }
             let listmatchId = quizData[0].listmatch[0]._id;
             let quizDataId = quizData[0]._id;
@@ -3439,709 +3804,311 @@ for await (const rankData of rankArray) {
             const matchTime = await matchServices.getMatchTime(matchStartDate);
             if (matchTime === false) {
                 return {
-                    message: 'Match has been closed, You cannot join leauge now.', 
+                    message: 'Match has been closed, You cannot join leauge now.',
                     status: false,
                     data: {}
                 }
             }
 
-            // const quizanswers = quizAnswerId.split(',');
-
-            // const quizAnswerCount = await quizUserAnswer.find({ _id: { $in: quizanswers } }).countDocuments();
-            // if (quizanswers.length != quizAnswerCount) return { message: 'Invalid Quiz', status: false, data: {} }
-
-            const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
-            if (!user || !user.userbalance) return { message: 'Insufficient balance', status: false, data: {} };
+            const user = await userModel.findOne({
+                _id: req.user._id
+            }, {
+                userbalance: 1
+            });
+            if (!user || !user.userbalance) return {
+                message: 'Insufficient balance',
+                status: false,
+                data: {}
+            };
 
             const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
             const balance = parseFloat(user.userbalance.balance.toFixed(2));
             const winning = parseFloat(user.userbalance.winning.toFixed(2));
             const totalBalance = bonus + balance + winning;
-                let i = 0,
+            let i = 0,
                 // count = 0,
                 mainbal = 0,
                 mainbonus = 0,
                 mainwin = 0,
                 tranid = '';
-            // for (const quizanswerId of quizanswers) {
-                // const quizAnswerData = await quizUserAnswer.findOne({ _id: quizanswerId })
-               
-                // i++;
+            
             const result = await this.quizfindJoinLeaugeExist(listmatchId, req.user._id, quizAnswer, quiz);
-            let usebalance = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 })
+            let usebalance = await userModel.findOne({
+                _id: req.user._id
+            }, {
+                userbalance: 1
+            })
             if (usebalance.userbalance) {
-                if (usebalance.userbalance?.balance<quiz.entryfee) {
-                    return { message: 'Insufficient balance', status: false, data: {} }
+                if (usebalance.userbalance?.balance < quiz.entryfee) {
+                    return {
+                        message: 'Insufficient balance',
+                        status: false,
+                        data: {}
+                    }
                 }
             }
-                if (result != 1 ) {
-                    const userObj = {
-                        'userbalance.balance': balance - mainbal,
-                        'userbalance.bonus': bonus - mainbonus,
-                        'userbalance.winning': winning - mainwin,
-                        $inc: {
-                            totalchallenges: totalchallenges,
-                            totalmatches: totalmatches,
-                            totalseries: totalseries,
-                        },
-                    };
-                    let randomStr = randomstring.generate({
-                        length: 4,
-                        charset: 'alphabetic',
-                        capitalization: 'uppercase'
-                    });
-
-                    const transactiondata = {
-                        type: 'Quiz Joining Fee',
-                        contestdetail: `${quiz.entryfee}`,
-                        amount: quiz.entryfee,
-                        total_available_amt: totalBalance - quiz.entryfee,
-                        transaction_by: constant.TRANSACTION_BY.WALLET,
-                        quizId: quizId,
-                        userid: req.user._id,
-                        paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                        bal_bonus_amt: bonus - mainbonus,
-                        bal_win_amt: winning - mainwin,
-                        bal_fund_amt: balance - mainbal,
-                        cons_amount: mainbal,
-                        cons_bonus: mainbonus,
-                        cons_win: mainwin,
-                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-                    };
-                    await Promise.all([
-                        userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-                        TransactionModel.create(transactiondata)
-                    ]);
-                    return result;
-                } else if (result != 1) {
+            if (result != 1) {
+                const userObj = {
+                    'userbalance.balance': balance - mainbal,
+                    'userbalance.bonus': bonus - mainbonus,
+                    'userbalance.winning': winning - mainwin,
                     
-                    return result;
-                }
-                const resultForBonus = await this.quizfindUsableBonusMoney(
-                    quiz,
-                    bonus - mainbonus,
-                    winning - mainwin,
-                    balance - mainbal
-                );
-                
-                if (resultForBonus == false) {
-                    // if (i > 1) {
-                        const userObj = {
-                            'userbalance.balance': balance - mainbal,
-                            'userbalance.bonus': bonus - mainbonus,
-                            'userbalance.winning': winning - mainwin,
-                            $inc: {
-                                totalchallenges: totalchallenges,
-                                totalmatches: totalmatches,
-                                totalseries: totalseries,
-                            },
-                        };
-                        let randomStr = randomstring.generate({
-                            length: 4,
-                            charset: 'alphabetic',
-                            capitalization: 'uppercase'
-                        });
-                        const transactiondata = {
-                            type: 'Quiz Joining Fee',
-                            contestdetail: `${quiz.entryfee}`,
-                            amount: quiz.entryfee,
-                            total_available_amt: totalBalance - quiz.entryfee,
-                            transaction_by: constant.TRANSACTION_BY.WALLET,
-                            quizId: quizId,
-                            userid: req.user._id,
-                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                            bal_bonus_amt: bonus - mainbonus,
-                            bal_win_amt: winning - mainwin,
-                            bal_fund_amt: balance - mainbal,
-                            cons_amount: mainbal,
-                            cons_bonus: mainbonus,
-                            cons_win: mainwin,
-                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-                        };
-                        await Promise.all([
-                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-                            TransactionModel.create(transactiondata)
-                        ]);
-                    // }
-                    // return { message: 'Insufficient balance', status: false, data: {} };
-                }
-                
-                const resultForBalance = await this.quizfindUsableBalanceMoney(resultForBonus, balance - mainbal);
-                const resultForWinning = await this.quizfindUsableWinningMoney(resultForBalance, winning - mainwin);
-                // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
-                if (resultForWinning.reminingfee > 0) {
-                    // console.log(`---------------------3RD IF--------${resultForWinning}---------`);
-                    // if (i > 1) {
-                        const userObj = {
-                            'userbalance.balance': balance - mainbal,
-                            'userbalance.bonus': bonus - mainbonus,
-                            'userbalance.winning': winning - mainwin,
-                            $inc: {
-                                totalchallenges: totalchallenges,
-                                totalmatches: totalmatches,
-                                totalseries: totalseries,
-                            },
-                        };
-                        let randomStr = randomstring.generate({
-                            length: 4,
-                            charset: 'alphabetic',
-                            capitalization: 'uppercase'
-                        });
-
-                        const transactiondata = {
-                            type: 'Quiz Joining Fee',
-                            contestdetail: `${quiz.entryfee}`,
-                            amount: quiz.entryfee,
-                            total_available_amt: totalBalance - quiz.entryfee,
-                            transaction_by: constant.TRANSACTION_BY.WALLET,
-                            quizId: quizId,
-                            userid: req.user._id,
-                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                            bal_bonus_amt: bonus - mainbonus,
-                            bal_win_amt: winning - mainwin,
-                            bal_fund_amt: balance - mainbal,
-                            cons_amount: mainbal,
-                            cons_bonus: mainbonus,
-                            cons_win: mainwin,
-                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-                        };
-                        await Promise.all([
-                            userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-                            TransactionModel.create(transactiondata)
-                        ]);
-                    // }
-                    // return { message: 'Insufficient balance', status: false, data: {} };
-                }
+                };
                 let randomStr = randomstring.generate({
                     length: 4,
                     charset: 'alphabetic',
                     capitalization: 'uppercase'
                 });
 
-                const coupon = randomstring.generate({ charset: 'alphanumeric', length: 4, });
-                tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
-                let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
-                if (result == 1) {
-                   console.log("oooo")
-                    let joinedQuiz = await QuizJoinLeaugeModel.find({ matchkey: listmatchId, userid: req.user._id }).limit(1).count();
-                    if (joinedQuiz == 0) {
-                        joinedSeries = await QuizJoinLeaugeModel.find({ seriesid: seriesId, userid: req.user._id }).limit(1).count();
-                    }
-               }
-                const quizjoinedLeauges = await QuizJoinLeaugeModel.find({ quizId: quizDataId }).count();
-                const joinUserCount = quizjoinedLeauges + 1;
-                // if (matchchallenge.contest_type == 'Amount' && joinUserCount > matchchallenge.maximum_user) {
-                //     if (i > 1) {
-                //         const userObj = {
-                //             'userbalance.balance': balance - mainbal,
-                //             'userbalance.bonus': bonus - mainbonus,
-                //             'userbalance.winning': winning - mainwin,
-                //             $inc: {
-                //                 totalchallenges: totalchallenges,
-                //                 totalmatches: totalmatches,
-                //                 totalseries: totalseries,
-                //             },
-                //         };
-                //         let randomStr = randomstring.generate({
-                //             length: 4,
-                //             charset: 'alphabetic',
-                //             capitalization: 'uppercase'
-                //         });
-                //         const transactiondata = {
-                //             type: 'Contest Joining Fee',
-                //             contestdetail: `${matchchallenge.entryfee}-${count}`,
-                //             amount: matchchallenge.entryfee * count,
-                //             total_available_amt: totalBalance - matchchallenge.entryfee * count,
-                //             transaction_by: constant.TRANSACTION_BY.WALLET,
-                //             challengeid: matchchallengeid,
-                //             userid: req.user._id,
-                //             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                //             bal_bonus_amt: bonus - mainbonus,
-                //             bal_win_amt: winning - mainwin,
-                //             bal_fund_amt: balance - mainbal,
-                //             cons_amount: mainbal,
-                //             cons_bonus: mainbonus,
-                //             cons_win: mainwin,
-                //             transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-                //         };
-                //         await Promise.all([
-                //             userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-                //             TransactionModel.create(transactiondata)
-                //         ]);
-                //     }
-                //     return { message: 'League is Closed', status: false, data: {} };
-                // }
-            
-               
-                const quizjoinLeaugeResult = await QuizJoinLeaugeModel.create({
+                const transactiondata = {
+                    type: 'Quiz Joining Fee',
+                    contestdetail: `${quiz.entryfee}`,
+                    amount: quiz.entryfee,
+                    total_available_amt: totalBalance - quiz.entryfee,
+                    transaction_by: constant.TRANSACTION_BY.WALLET,
+                    quizId: quizId,
                     userid: req.user._id,
-                    quizId: quizDataId,
-                    answer:quizAnswer,
-                    matchkey: listmatchId,
-                    seriesid: seriesId,
-                    transaction_id: tranid,
-                    refercode: referCode,
-                    leaugestransaction: {
-                        user_id: req.user._id,
-                        bonus: resultForBonus.cons_bonus,
-                        balance: resultForBalance.cons_amount,
-                        winning: resultForWinning.cons_win,
-                    },
+                    paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                    bal_bonus_amt: bonus - mainbonus,
+                    bal_win_amt: winning - mainwin,
+                    bal_fund_amt: balance - mainbal,
+                    cons_amount: mainbal,
+                    cons_bonus: mainbonus,
+                    cons_win: mainwin,
+                    transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                };
+                await Promise.all([
+                    userModel.findOneAndUpdate({
+                        _id: req.user._id
+                    }, userObj, {
+                        new: true
+                    }),
+                    TransactionModel.create(transactiondata)
+                ]);
+                return result;
+            } else if (result != 1) {
+
+                return result;
+            }
+            const resultForBonus = await this.quizfindUsableBonusMoney(
+                quiz,
+                bonus - mainbonus,
+                winning - mainwin,
+                balance - mainbal
+            );
+
+            if (resultForBonus == false) {
+                // if (i > 1) {
+                const userObj = {
+                    'userbalance.balance': balance - mainbal,
+                    'userbalance.bonus': bonus - mainbonus,
+                    'userbalance.winning': winning - mainwin,
+                    
+                };
+                let randomStr = randomstring.generate({
+                    length: 4,
+                    charset: 'alphabetic',
+                    capitalization: 'uppercase'
                 });
-                const joinedLeaugesCount = await QuizJoinLeaugeModel.find({ quizId: quizDataId ,matchkey:listmatchId}).count();
-                if (result == 1) {
-                    totalchallenges = 1;
-                    if (joinedMatch == 0) {
-                        totalmatches = 1;
-                        if (joinedMatch == 0 && joinedSeries == 0) {
-                            totalseries = 1;
-                        }
+                const transactiondata = {
+                    type: 'Quiz Joining Fee',
+                    contestdetail: `${quiz.entryfee}`,
+                    amount: quiz.entryfee,
+                    total_available_amt: totalBalance - quiz.entryfee,
+                    transaction_by: constant.TRANSACTION_BY.WALLET,
+                    quizId: quizId,
+                    userid: req.user._id,
+                    paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                    bal_bonus_amt: bonus - mainbonus,
+                    bal_win_amt: winning - mainwin,
+                    bal_fund_amt: balance - mainbal,
+                    cons_amount: mainbal,
+                    cons_bonus: mainbonus,
+                    cons_win: mainwin,
+                    transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                };
+                await Promise.all([
+                    userModel.findOneAndUpdate({
+                        _id: req.user._id
+                    }, userObj, {
+                        new: true
+                    }),
+                    TransactionModel.create(transactiondata)
+                ]);
+               
+            }
+
+            const resultForBalance = await this.quizfindUsableBalanceMoney(resultForBonus, balance - mainbal);
+            const resultForWinning = await this.quizfindUsableWinningMoney(resultForBalance, winning - mainwin);
+            // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
+            if (resultForWinning.reminingfee > 0) {
+                
+                const userObj = {
+                    'userbalance.balance': balance - mainbal,
+                    'userbalance.bonus': bonus - mainbonus,
+                    'userbalance.winning': winning - mainwin,
+                    $inc: {
+                        totalchallenges: totalchallenges,
+                        totalmatches: totalmatches,
+                        totalseries: totalseries,
+                    },
+                };
+                let randomStr = randomstring.generate({
+                    length: 4,
+                    charset: 'alphabetic',
+                    capitalization: 'uppercase'
+                });
+
+                const transactiondata = {
+                    type: 'Quiz Joining Fee',
+                    contestdetail: `${quiz.entryfee}`,
+                    amount: quiz.entryfee,
+                    total_available_amt: totalBalance - quiz.entryfee,
+                    transaction_by: constant.TRANSACTION_BY.WALLET,
+                    quizId: quizId,
+                    userid: req.user._id,
+                    paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                    bal_bonus_amt: bonus - mainbonus,
+                    bal_win_amt: winning - mainwin,
+                    bal_fund_amt: balance - mainbal,
+                    cons_amount: mainbal,
+                    cons_bonus: mainbonus,
+                    cons_win: mainwin,
+                    transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
+                };
+                await Promise.all([
+                    userModel.findOneAndUpdate({
+                        _id: req.user._id
+                    }, userObj, {
+                        new: true
+                    }),
+                    TransactionModel.create(transactiondata)
+                ]);
+                
+            }
+            let randomStr = randomstring.generate({
+                length: 4,
+                charset: 'alphabetic',
+                capitalization: 'uppercase'
+            });
+
+            const coupon = randomstring.generate({
+                charset: 'alphanumeric',
+                length: 4,
+            });
+            tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
+            let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
+            if (result == 1) {
+                console.log("oooo")
+                let joinedQuiz = await QuizJoinLeaugeModel.find({
+                    matchkey: listmatchId,
+                    userid: req.user._id
+                }).limit(1).count();
+                if (joinedQuiz == 0) {
+                    joinedSeries = await QuizJoinLeaugeModel.find({
+                        seriesid: seriesId,
+                        userid: req.user._id
+                    }).limit(1).count();
+                }
+            }
+            const quizjoinedLeauges = await QuizJoinLeaugeModel.find({
+                quizId: quizDataId
+            }).count();
+            const joinUserCount = quizjoinedLeauges + 1;
+            const quizjoinLeaugeResult = await QuizJoinLeaugeModel.create({
+                userid: req.user._id,
+                quizId: quizDataId,
+                answer: quizAnswer,
+                matchkey: listmatchId,
+                seriesid: seriesId,
+                transaction_id: tranid,
+                refercode: referCode,
+                leaugestransaction: {
+                    user_id: req.user._id,
+                    bonus: resultForBonus.cons_bonus,
+                    balance: resultForBalance.cons_amount,
+                    winning: resultForWinning.cons_win,
+                },
+            });
+            const joinedLeaugesCount = await QuizJoinLeaugeModel.find({
+                quizId: quizDataId,
+                matchkey: listmatchId
+            }).count();
+            if (result == 1) {
+                totalchallenges = 1;
+                if (joinedMatch == 0) {
+                    totalmatches = 1;
+                    if (joinedMatch == 0 && joinedSeries == 0) {
+                        totalseries = 1;
                     }
                 }
-                if (quizjoinLeaugeResult._id) {
-                    mainbal = mainbal + resultForBalance.cons_amount;
-                    mainbonus = mainbonus + resultForBonus.cons_bonus;
-                    mainwin = mainwin + resultForWinning.cons_win;
-                    // if (matchchallenge.contest_type == 'Amount' && joinedLeaugesCount == matchchallenge.maximum_user && matchchallenge.is_running != 1) {
-                    //     // console.log(`---------------------8TH IF--------${matchchallenge.is_running}---------`);
-                    //     await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
-                    //         status: 'closed',
-                    //         joinedusers: joinedLeaugesCount,
-                    //     }, { new: true });
-                    // } else {
-                        // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
-                        // const gg = await quizModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(quizId) }, {
-                        //     status: 'opened',
-                        //     user: usercount,
-                        // }, { new: true });
-                    // }
-                }
-                // else
-            await quizModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(quizId) }, {
-                        joinedusers: joinedLeaugesCount,
-                    }, { new: true });
-                // if (i == quizanswers.length) {
-                    // console.log(`---------------------9TH IF--------${i}---------`);
-                    const userObj = {
-                        'userbalance.balance': balance - mainbal,
-                        'userbalance.bonus': bonus - mainbonus,
-                        'userbalance.winning': winning - mainwin,
-                        $inc: {
-                            totalchallenges: totalchallenges,
-                            totalmatches: totalmatches,
-                            totalseries: totalseries,
-                        },
-                    };
-                    let randomStrr = randomstring.generate({
-                        length: 4,
-                        charset: 'alphabetic',
-                        capitalization: 'uppercase'
-                    });
-                    const transactiondata = {
-                        type: 'Quiz Joining Fee',
-                        contestdetail: `${quiz.entryfee}`,
-                        amount: quiz.entryfee,
-                        total_available_amt: totalBalance - quiz.entryfee,
-                        transaction_by: constant.TRANSACTION_BY.WALLET,
-                        quizId: quizId,
-                        userid: req.user._id,
-                        paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                        bal_bonus_amt: bonus - mainbonus,
-                        bal_win_amt: winning - mainwin,
-                        bal_fund_amt: balance - mainbal,
-                        cons_amount: mainbal,
-                        cons_bonus: mainbonus,
-                        cons_win: mainwin,
-                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStrr}`,
-                    };
-                    Promise.all([
-                        userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-                        TransactionModel.create(transactiondata)
-                    ]);
-                    // ----------------------------------------------------------------------------------------------------------------------
-
-                    return {
-                        message: 'Quiz Joined',
-                        status: true,
-                        data: {
-                            joinedusers: joinedLeaugesCount,
-                            referCode: referCode
-                        }
-                    };
-                // }
-
-            // }
-            // const { matchchallengeid, jointeamid } = req.body;
-            // let totalchallenges = 0,
-            //     totalmatches = 0,
-            //     totalseries = 0,
-            //     joinedMatch = 0,
-            //     joinedSeries = 0,
-            //     aggpipe = [];
-
-            // aggpipe.push({
-            //     $match: { _id: mongoose.Types.ObjectId(matchchallengeid) }
-            // });
-
-            // aggpipe.push({
-            //     $lookup: {
-            //         from: 'listmatches',
-            //         localField: 'matchkey',
-            //         foreignField: '_id',
-            //         as: 'listmatch'
-            //     }
-            // });
+            }
+            if (quizjoinLeaugeResult._id) {
+                mainbal = mainbal + resultForBalance.cons_amount;
+                mainbonus = mainbonus + resultForBonus.cons_bonus;
+                mainwin = mainwin + resultForWinning.cons_win;
+              
+            }
+            // else
+            await quizModel.findOneAndUpdate({
+                matchkey: listmatchId,
+                _id: mongoose.Types.ObjectId(quizId)
+            }, {
+                joinedusers: joinedLeaugesCount,
+            }, {
+                new: true
+            });
             
-            // const matchchallengesData = await matchchallengesModel.aggregate(aggpipe);
-            // let listmatchId = matchchallengesData[0].listmatch[0]._id;
-            // let matchchallengesDataId = matchchallengesData[0]._id;
-            // let matchchallenge = matchchallengesData[0];
-            // let seriesId = matchchallengesData[0].listmatch[0].series;
-            // let matchStartDate = matchchallengesData[0].listmatch[0].start_date;
+            const userObj = {
+                'userbalance.balance': balance - mainbal,
+                'userbalance.bonus': bonus - mainbonus,
+                'userbalance.winning': winning - mainwin,
+                $inc: {
+                    totalchallenges: totalchallenges,
+                    totalmatches: totalmatches,
+                    totalseries: totalseries,
+                },
+            };
+            let randomStrr = randomstring.generate({
+                length: 4,
+                charset: 'alphabetic',
+                capitalization: 'uppercase'
+            });
+            const transactiondata = {
+                type: 'Quiz Joining Fee',
+                contestdetail: `${quiz.entryfee}`,
+                amount: quiz.entryfee,
+                total_available_amt: totalBalance - quiz.entryfee,
+                transaction_by: constant.TRANSACTION_BY.WALLET,
+                quizId: quizId,
+                userid: req.user._id,
+                paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
+                bal_bonus_amt: bonus - mainbonus,
+                bal_win_amt: winning - mainwin,
+                bal_fund_amt: balance - mainbal,
+                cons_amount: mainbal,
+                cons_bonus: mainbonus,
+                cons_win: mainwin,
+                transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStrr}`,
+            };
+            Promise.all([
+                userModel.findOneAndUpdate({
+                    _id: req.user._id
+                }, userObj, {
+                    new: true
+                }),
+                TransactionModel.create(transactiondata)
+            ]);
+            // ----------------------------------------------------------------------------------------------------------------------
 
-            // if (matchchallengesData.length == 0) {
-            //     return { message: 'Match Not Found', success: false, data: {} };
-            // }
-            // const matchTime = await matchServices.getMatchTime(matchStartDate);
-            // if (matchTime === false) {
-            //     return {
-            //         message: 'Match has been closed, You cannot join leauge now.', 
-            //         status: false,
-            //         data: {}
-            //     }
-            // }
-            // const jointeamids = jointeamid.split(',');
-
-            // const jointeamsCount = await JoinTeamModel.find({ _id: { $in: jointeamids } }).countDocuments();
-            // if (jointeamids.length != jointeamsCount) return { message: 'Invalid Team', status: false, data: {} }
-
-            // const user = await userModel.findOne({ _id: req.user._id }, { userbalance: 1 });
-            // if (!user || !user.userbalance) return { message: 'Insufficient balance', status: false, data: {} };
-
-            // const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
-            // const balance = parseFloat(user.userbalance.balance.toFixed(2));
-            // const winning = parseFloat(user.userbalance.winning.toFixed(2));
-            // const totalBalance = bonus + balance + winning;
-            // let i = 0,
-            //     count = 0,
-            //     mainbal = 0,
-            //     mainbonus = 0,
-            //     mainwin = 0,
-            //     tranid = '';
-            //   for (const jointeamId of jointeamids) {
-            //     const jointeamsData = await JoinTeamModel.findOne({ _id: jointeamId })
-            //     // console.log(`-------------IN ${i} LOOP--------------------`);
-            //     i++;
-            //     const result = await this.findJoinLeaugeExist(listmatchId, req.user._id, jointeamId, matchchallenge);
-
-            //     if (result != 1 && result != 2 && i > 1) {
-
-            //         const userObj = {
-            //             'userbalance.balance': balance - mainbal,
-            //             'userbalance.bonus': bonus - mainbonus,
-            //             'userbalance.winning': winning - mainwin,
-            //             $inc: {
-            //                 totalchallenges: totalchallenges,
-            //                 totalmatches: totalmatches,
-            //                 totalseries: totalseries,
-            //             },
-            //         };
-            //         let randomStr = randomstring.generate({
-            //             length: 4,
-            //             charset: 'alphabetic',
-            //             capitalization: 'uppercase'
-            //         });
-
-            //         const transactiondata = {
-            //             type: 'Contest Joining Fee',
-            //             contestdetail: `${matchchallenge.entryfee}-${count}`,
-            //             amount: matchchallenge.entryfee * count,
-            //             total_available_amt: totalBalance - matchchallenge.entryfee * count,
-            //             transaction_by: constant.TRANSACTION_BY.WALLET,
-            //             challengeid: matchchallengeid,
-            //             userid: req.user._id,
-            //             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-            //             bal_bonus_amt: bonus - mainbonus,
-            //             bal_win_amt: winning - mainwin,
-            //             bal_fund_amt: balance - mainbal,
-            //             cons_amount: mainbal,
-            //             cons_bonus: mainbonus,
-            //             cons_win: mainwin,
-            //             transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-            //         };
-
-            //         await Promise.all([
-            //             userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-            //             TransactionModel.create(transactiondata)
-            //         ]);
-            //         return result;
-            //     } else if (result != 1 && result != 2) {
-
-            //         return result;
-            //     }
-            //     const resultForBonus = await this.findUsableBonusMoney(
-            //         matchchallenge,
-            //         bonus - mainbonus,
-            //         winning - mainwin,
-            //         balance - mainbal
-            //     );
-            //     if (resultForBonus == false) {
-
-            //         if (i > 1) {
-            //             const userObj = {
-            //                 'userbalance.balance': balance - mainbal,
-            //                 'userbalance.bonus': bonus - mainbonus,
-            //                 'userbalance.winning': winning - mainwin,
-            //                 $inc: {
-            //                     totalchallenges: totalchallenges,
-            //                     totalmatches: totalmatches,
-            //                     totalseries: totalseries,
-            //                 },
-            //             };
-            //             let randomStr = randomstring.generate({
-            //                 length: 4,
-            //                 charset: 'alphabetic',
-            //                 capitalization: 'uppercase'
-            //             });
-            //             const transactiondata = {
-            //                 type: 'Contest Joining Fee',
-            //                 contestdetail: `${matchchallenge.entryfee}-${count}`,
-            //                 amount: matchchallenge.entryfee * count,
-            //                 total_available_amt: totalBalance - matchchallenge.entryfee * count,
-            //                 transaction_by: constant.TRANSACTION_BY.WALLET,
-            //                 challengeid: matchchallengeid,
-            //                 userid: req.user._id,
-            //                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-            //                 bal_bonus_amt: bonus - mainbonus,
-            //                 bal_win_amt: winning - mainwin,
-            //                 bal_fund_amt: balance - mainbal,
-            //                 cons_amount: mainbal,
-            //                 cons_bonus: mainbonus,
-            //                 cons_win: mainwin,
-            //                 transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-            //             };
-            //             await Promise.all([
-            //                 userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-            //                 TransactionModel.create(transactiondata)
-            //             ]);
-            //         }
-            //         return { message: 'Insufficient balance', status: false, data: {} };
-            //     }
-            //     const resultForBalance = await this.findUsableBalanceMoney(resultForBonus, balance - mainbal);
-            //     const resultForWinning = await this.findUsableWinningMoney(resultForBalance, winning - mainwin);
-            //     // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
-            //     if (resultForWinning.reminingfee > 0) {
-            //         // console.log(`---------------------3RD IF--------${resultForWinning}---------`);
-            //         if (i > 1) {
-            //             const userObj = {
-            //                 'userbalance.balance': balance - mainbal,
-            //                 'userbalance.bonus': bonus - mainbonus,
-            //                 'userbalance.winning': winning - mainwin,
-            //                 $inc: {
-            //                     totalchallenges: totalchallenges,
-            //                     totalmatches: totalmatches,
-            //                     totalseries: totalseries,
-            //                 },
-            //             };
-            //             let randomStr = randomstring.generate({
-            //                 length: 4,
-            //                 charset: 'alphabetic',
-            //                 capitalization: 'uppercase'
-            //             });
-
-            //             const transactiondata = {
-            //                 type: 'Contest Joining Fee',
-            //                 contestdetail: `${matchchallenge.entryfee}-${count}`,
-            //                 amount: matchchallenge.entryfee * count,
-            //                 total_available_amt: totalBalance - matchchallenge.entryfee * count,
-            //                 transaction_by: constant.TRANSACTION_BY.WALLET,
-            //                 challengeid: matchchallengeid,
-            //                 userid: req.user._id,
-            //                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-            //                 bal_bonus_amt: bonus - mainbonus,
-            //                 bal_win_amt: winning - mainwin,
-            //                 bal_fund_amt: balance - mainbal,
-            //                 cons_amount: mainbal,
-            //                 cons_bonus: mainbonus,
-            //                 cons_win: mainwin,
-            //                 transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-            //             };
-            //             await Promise.all([
-            //                 userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-            //                 TransactionModel.create(transactiondata)
-            //             ]);
-            //         }
-            //         return { message: 'Insufficient balance', status: false, data: {} };
-            //     }
-            //     let randomStr = randomstring.generate({
-            //         length: 4,
-            //         charset: 'alphabetic',
-            //         capitalization: 'uppercase'
-            //     });
-
-            //     const coupon = randomstring.generate({ charset: 'alphanumeric', length: 4, });
-            //     tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
-            //     let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
-            //     if (result == 1) {
-
-            //         joinedMatch = await JoinLeaugeModel.find({ matchkey: listmatchId, userid: req.user._id }).limit(1).count();
-            //         if (joinedMatch == 0) {
-            //             joinedSeries = await JoinLeaugeModel.find({ seriesid: seriesId, userid: req.user._id }).limit(1).count();
-            //         }
-            //     }
-            //     const joinedLeauges = await JoinLeaugeModel.find({ challengeid: matchchallengesDataId }).count();
-            //     const joinUserCount = joinedLeauges + 1;
-            //     if (matchchallenge.contest_type == 'Amount' && joinUserCount > matchchallenge.maximum_user) {
-            //         if (i > 1) {
-            //             const userObj = {
-            //                 'userbalance.balance': balance - mainbal,
-            //                 'userbalance.bonus': bonus - mainbonus,
-            //                 'userbalance.winning': winning - mainwin,
-            //                 $inc: {
-            //                     totalchallenges: totalchallenges,
-            //                     totalmatches: totalmatches,
-            //                     totalseries: totalseries,
-            //                 },
-            //             };
-            //             let randomStr = randomstring.generate({
-            //                 length: 4,
-            //                 charset: 'alphabetic',
-            //                 capitalization: 'uppercase'
-            //             });
-            //             const transactiondata = {
-            //                 type: 'Contest Joining Fee',
-            //                 contestdetail: `${matchchallenge.entryfee}-${count}`,
-            //                 amount: matchchallenge.entryfee * count,
-            //                 total_available_amt: totalBalance - matchchallenge.entryfee * count,
-            //                 transaction_by: constant.TRANSACTION_BY.WALLET,
-            //                 challengeid: matchchallengeid,
-            //                 userid: req.user._id,
-            //                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-            //                 bal_bonus_amt: bonus - mainbonus,
-            //                 bal_win_amt: winning - mainwin,
-            //                 bal_fund_amt: balance - mainbal,
-            //                 cons_amount: mainbal,
-            //                 cons_bonus: mainbonus,
-            //                 cons_win: mainwin,
-            //                 transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-            //             };
-            //             await Promise.all([
-            //                 userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-            //                 TransactionModel.create(transactiondata)
-            //             ]);
-            //         }
-            //         return { message: 'League is Closed', status: false, data: {} };
-            //     }
-            //     const joinLeaugeResult = await JoinLeaugeModel.create({
-            //         userid: req.user._id,
-            //         challengeid: matchchallengesDataId,
-            //         teamid: jointeamId,
-            //         matchkey: listmatchId,
-            //         seriesid: seriesId,
-            //         transaction_id: tranid,
-            //         refercode: referCode,
-            //         leaugestransaction: {
-            //             user_id: req.user._id,
-            //             bonus: resultForBonus.cons_bonus,
-            //             balance: resultForBalance.cons_amount,
-            //             winning: resultForWinning.cons_win,
-            //         },
-            //     });
-            //     await leaderBoardModel.create({
-            //         userId: req.user._id,
-            //         challengeid: matchchallengesDataId,
-            //         teamId: jointeamId,
-            //         matchkey: listmatchId,
-            //         user_team: user.team,
-            //         teamnumber: jointeamsData.teamnumber,
-            //         joinId: joinLeaugeResult._id
-            //     });
-            //     const joinedLeaugesCount = await JoinLeaugeModel.find({ challengeid: matchchallengesDataId }).count();
-            //     if (result == 1) {
-            //         totalchallenges = 1;
-            //         if (joinedMatch == 0) {
-            //             totalmatches = 1;
-            //             if (joinedMatch == 0 && joinedSeries == 0) {
-            //                 totalseries = 1;
-            //             }
-            //         }
-            //     }
-            //     count++;
-
-            //     if (joinLeaugeResult._id) {
-            //         mainbal = mainbal + resultForBalance.cons_amount;
-            //         mainbonus = mainbonus + resultForBonus.cons_bonus;
-            //         mainwin = mainwin + resultForWinning.cons_win;
-            //         if (matchchallenge.contest_type == 'Amount' && joinedLeaugesCount == matchchallenge.maximum_user && matchchallenge.is_running != 1) {
-            //             // console.log(`---------------------8TH IF--------${matchchallenge.is_running}---------`);
-            //             await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
-            //                 status: 'closed',
-            //                 joinedusers: joinedLeaugesCount,
-            //             }, { new: true });
-            //         } else {
-            //             // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
-            //             const gg = await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
-            //                 status: 'opened',
-            //                 joinedusers: joinedLeaugesCount,
-            //             }, { new: true });
-            //         }
-            //     } else
-            //         await matchchallengesModel.findOneAndUpdate({ matchkey: listmatchId, _id: mongoose.Types.ObjectId(matchchallengeid) }, {
-            //             status: 'opened',
-            //             joinedusers: joinedLeaugesCount,
-            //         }, { new: true });
-            //     if (i == jointeamids.length) {
-            //         // console.log(`---------------------9TH IF--------${i}---------`);
-            //         const userObj = {
-            //             'userbalance.balance': balance - mainbal,
-            //             'userbalance.bonus': bonus - mainbonus,
-            //             'userbalance.winning': winning - mainwin,
-            //             $inc: {
-            //                 totalchallenges: totalchallenges,
-            //                 totalmatches: totalmatches,
-            //                 totalseries: totalseries,
-            //             },
-            //         };
-            //         let randomStr = randomstring.generate({
-            //             length: 4,
-            //             charset: 'alphabetic',
-            //             capitalization: 'uppercase'
-            //         });
-            //         const transactiondata = {
-            //             type: 'Contest Joining Fee',
-            //             contestdetail: `${matchchallenge.entryfee}-${count}`,
-            //             amount: matchchallenge.entryfee * count,
-            //             total_available_amt: totalBalance - matchchallenge.entryfee * count,
-            //             transaction_by: constant.TRANSACTION_BY.WALLET,
-            //             challengeid: matchchallengeid,
-            //             userid: req.user._id,
-            //             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-            //             bal_bonus_amt: bonus - mainbonus,
-            //             bal_win_amt: winning - mainwin,
-            //             bal_fund_amt: balance - mainbal,
-            //             cons_amount: mainbal,
-            //             cons_bonus: mainbonus,
-            //             cons_win: mainwin,
-            //             transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-            //         };
-            //         Promise.all([
-            //             userModel.findOneAndUpdate({ _id: req.user._id }, userObj, { new: true }),
-            //             TransactionModel.create(transactiondata)
-            //         ]);
-            //         // ----------------------------------------------------------------------------------------------------------------------
-
-            //         return {
-            //             message: 'Contest Joined',
-            //             status: true,
-            //             data: {
-            //                 joinedusers: joinedLeaugesCount,
-            //                 referCode: referCode
-            //             }
-            //         };
-            //     }
-
-            // }
-
+            return {
+                message: 'Quiz Joined',
+                status: true,
+                data: {
+                    joinedusers: joinedLeaugesCount,
+                    referCode: referCode
+                }
+            };
         } catch (error) {
             console.log(error)
             throw error;

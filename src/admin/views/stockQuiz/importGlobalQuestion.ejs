@@ -1,0 +1,319 @@
+<%- include("../../partials/head") %>
+
+  <%- include("../../partials/bodyStartWithNavBar/") %>
+    <%- include("../../partials/sideNav") %>
+      <div id="layoutSidenav_content">
+        <main>
+          <%- include("../../partials/alertMsg") %>
+          <div class="page-header pb-10 page-header-dark bg-info">
+            <div class="container-fluid">
+              <div class="row align-items-center">
+                <div class="col">
+                  <div class="page-header-content">
+                    <h1 class="page-header-title fs-md-35 fs-20">
+
+                      <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
+                      <span class=" text-capitalize">
+                        Quiz Manager
+                      </span>
+                    </h1>
+                    <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
+                      View all custom quiz
+                    </div>
+                  </div>
+                </div>
+                <div class="col-auto mb-md-0 mb-3">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="container-fluid mt-n10">
+            <div class="row">
+              <div class="col-lg-12">
+          
+                  <div class="card">
+                      <div class="card-header">Choose Match</div>
+                      <div class="card-body">
+          
+                          <form method="GET" action="/stock/Import-global-questions" accept-charset="UTF-8">
+                              <div class="sbp-preview">
+                                  <div class="sbp-preview-content p-2">
+                                      <div class="row mx-0 align-items-end">
+                                          <!-- over fantasy end -->
+                                          <label for="Select Match*" style="color:black;">Select Match*</label>
+                                          <select class="form-control form-control-solid " title="Select Match" id="matchkey"
+                                              data-container="body" name="matchkey" onchange="this.form.submit()">
+                                              <option value="" disabled selected> Select Match </option>
+                                              <% if(typeof listmatches !=="undefined" && listmatches){%>
+                                                  <% for(let key of listmatches){%>
+                                                  <option value="<%=key._id %>"<%= matchkey==key._id ? 'selected' : '' %>> <%=key.name %></option>
+                                                  <%}%>           
+                                            <%}%>
+                                          </select>
+                                      </div>
+                                  </div>
+                                  <% if(typeof matchkey!=="undefined" && matchkey) {%>
+                                  <div class="col-12">
+                                    <div class="form-group my-3">
+                                        <label for="job-title">Add Question*</label>
+                                        <input class="form-control form-control-solid" id="add_questions" type="number" placeholder="Add Questions" name="add_question" required>
+                                    </div>
+                                </div>
+                                <% }%>
+                                  <div class="col-md-auto mb-md-3">
+                                      <% if(typeof matchkey!=="undefined" && matchkey) {%>
+                                          <a href="javascript:void(0)"
+                                              class="btn btn-sm btn-warning font-weight-bold text-uppercase h-35px" title="" onclick="importQuestions(`<%=matchkey%>`)"><i
+                                                  class="fas fa-download"></i> &nbsp;Import</a>
+                                          <% }%>
+                                  </div>
+                                  <div class="col-md-auto mb-md-3">
+                                      <a href="/stock/add_quiz"
+                                          class="btn btn-sm btn-primary font-weight-bold text-uppercase h-35px"
+                                          data-toggle='tooltip' title='Add New Custom Question'><i class="fas fa-plus"></i>
+                                          &nbsp;Add</a>
+                                  </div>
+                              </div>
+                          </form>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          
+
+
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header">Quiz Manager - Quiz List</div>
+                <div class="card-body">
+                  <% let i=0 %>
+                  <div class="row" row>
+                    <% if(quizData) {%>
+                      <% for(let key of quizData) {%>
+                        <div
+                          class="row shadow border-0 mx-0 p2 h-100 rounded-10 border border-primary bg-primary pt-1 m-2">
+                          <div class="datatable table-responsive bg-white rounded-10">
+                            <table class="table mb-0 table-hover text-nowrap w-100 fs-12" id="global_index_datatable"
+                              cellspacing="0">
+                              <tbody>
+                                <tr>
+                                  <td class="font-weight-bold text-primary fs-15">Question</td>
+                                  <td class="font-weight-bold text-success fs-17 text-right"><%=key.question %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Option A</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.option_A %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Option B</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.option_B %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Option C</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.option_C %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Option D</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.option_D %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Answer</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.answer %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Point</td>
+                                  <td class="font-weight-bold text-gray text-right"><%=key.point %></td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Created By</td>
+                                  <td class="font-weight-bold text-gray text-right">Admin</td>
+                                </tr>
+                                <tr>
+                                  <td class="font-weight-bold text-black">Action</td>
+                                  <td class="font-weight-bold text-gray text-right position-relative">
+                                    <div class="btn-group dropdown position-absolute bottom-6px right-8px">
+                                      <button
+                                        class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-icon border-0 shadow-none overflow-hidden"
+                                        data-toggle="dropdown" type="button" aria-expanded="true">
+                                        Action <i class="dropdown-caret"></i>
+                                      </button>
+                                      <ul class="dropdown-menu" style="opacity: 1;">
+
+                                      <li><a class="nav-link"
+                                            href='/stock/edit-global-question/<%=key._id %>'>Edit Quiz</a></li>
+                                      </ul>
+                                    </div>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <% i++ %>
+                        <% }%>
+                      <% }%>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+            <!-- <script>
+              $('matchkey').change(function(){
+                let inputOfMatchkey=$(input[name=inputMatchkey]).val();
+                
+                  alert(inputOfMatchkey)
+                  $.ajax({
+                    type: 'POST',
+                    url: '/getTheValuematchChallengers',
+                    data:{mKey:inputOfMatchkey},
+                    success: function (data) {
+  
+                    }
+                  });
+              })
+              
+              
+            </script> -->
+            <!-------------- End of panel body -------------->
+            <script>
+              function importQuestions(matchkey){
+               let question_count = document.getElementById('add_questions').value
+               window.location = `/stock/importmatchQuestion/${matchkey}?question_count=${question_count}`
+              }
+              function delete_confirmation(url, msg) {
+                // sweet alert
+                const swalWithBootstrapButtons = Swal.mixin({
+                  customClass: {
+                    confirmButton: 'btn btn-sm btn-success ml-2',
+                    cancelButton: 'btn btn-sm btn-danger'
+                  },
+                  buttonsStyling: false
+                })
+
+                swalWithBootstrapButtons.fire({
+                  title: msg,
+                  text: "You won't be able to revert this!",
+                  icon: 'success',
+                  showCancelButton: true,
+                  confirmButtonText: 'Yes',
+                  cancelButtonText: 'No',
+                  reverseButtons: true
+                }).then((result) => {
+                  if (result.isConfirmed) {
+
+                    swalWithBootstrapButtons.fire(
+                      '',
+                      'Successfully Done',
+                      'success'
+                    );
+
+                    window.location.href = url;
+
+
+                  } else if (
+                    /* Read more about handling dismissals below */
+                    result.dismiss === Swal.DismissReason.cancel
+                  ) {
+                    swalWithBootstrapButtons.fire(
+                      'Cancelled',
+                      'Cancelled successfully :)',
+                      'error'
+                    );
+                    return false;
+                  }
+                })
+              }
+            </script>
+
+          </div>
+        </main>
+        <%- include("../../partials/footer") %>
+
+          <script>
+
+            $(window).on('load', function () {
+
+              $('#preloader_admin').hide();
+
+            })
+          </script>
+
+
+          <script>
+            $('#b1').click(function () {
+              const swalWithBootstrapButtons = Swal.mixin({
+                customClass: {
+                  confirmButton: 'btn btn-sm btn-success',
+                  cancelButton: 'btn btn-sm btn-danger'
+                },
+                buttonsStyling: false
+              })
+
+              swalWithBootstrapButtons.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'No, cancel!',
+                reverseButtons: true
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  swalWithBootstrapButtons.fire(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                  )
+                } else if (
+                  /* Read more about handling dismissals below */
+                  result.dismiss === Swal.DismissReason.cancel
+                ) {
+                  swalWithBootstrapButtons.fire(
+                    'Cancelled',
+                    'Your imaginary file is safe :)',
+                    'error'
+                  )
+                }
+              })
+            });
+          </script>
+
+          <script>
+            $(document).ready(function () {
+
+              if ($('#accordionSidenavPages a').hasClass('active')) {
+                $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
+                $('#accordionSidenavPages a.active').parent().parent().addClass('show');
+                // console.log(id);
+              } else {
+                $('#takeonebar').addClass('slamdown');
+              }
+            });
+
+          </script>
+   
+          <script>
+            function isNumberKey(evt) {
+              //var e = evt || window.event;
+
+              var charCode = (evt.which) ? evt.which : evt.keyCode
+              if (charCode != 46 && charCode > 31
+                && (charCode < 48 || charCode > 57))
+
+                return false;
+              else {
+                var itemdecimal = evt.srcElement.value.split('.');
+                if (itemdecimal.length > 1 && charCode == 46)
+                  return false;
+
+                return true;
+              }
+            }
+
+</script>
+  
+
+        

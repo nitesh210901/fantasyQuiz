@@ -16,7 +16,7 @@ const randomizePlayerSelectionClassic = require('../admin/controller/randomizePl
 // const randomizePlayerSelectionBowling = require('../admin/controller/randomizePlayerSelectionBowling');
 // const randomizePlayerSelectionReverse = require('../admin/controller/randomizePlayerSelectionReverse');
 const autoWinnerDeclared = require('../admin/controller/resultController');
-const stockController = require('../api/controller/stockController');
+const stockController = require('../admin/controller/stockController');
 
 const adminModel = require('../models/adminModel');
 const stockModel = require('../models/stockModel');
