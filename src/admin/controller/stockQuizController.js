@@ -54,7 +54,6 @@ class quizController {
       try {
       let curTime = moment().format("YYYY-MM-DD HH:mm:ss");
       const listmatch = await stockContestModel.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime }}, { contest_name: 1 });  
-      console.log(listmatch);
       res.locals.message = req.flash();
       res.render("stockQuiz/add_quiz", {
         sessiondata: req.session.data,
@@ -89,7 +88,6 @@ class quizController {
   async ViewQuiz(req, res, next) {
     try {
       let pipeline = [];
-
       pipeline.push({
         $group: {
           _id: "$contestId",
@@ -164,46 +162,46 @@ class quizController {
       if (matchkey !== "undefined") {
         conditions.matchkey =  matchkey;
       }
-        quizModel.countDocuments(conditions).exec((err, rows) => {
+      stockQuizModel.countDocuments(conditions).exec((err, rows) => {
             // console.log("rows....................",rows)
             let totalFiltered = rows;
             let data = [];
             let count = 1;
-            quizModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').exec((err, rows1) => {
+            stockQuizModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').exec((err, rows1) => {
                 // console.log('--------rows1-------------', rows1);
                 if (err) console.log(err);
               rows1.forEach(async(index) => {
                 let pipeline = []
                 pipeline.push({
                   '$match': {
-                    '_id': mongoose.Types.ObjectId(index._id)
+                    '_id': new mongoose.Types.ObjectId(index._id)
                   }
                 }, {
                   '$lookup': {
-                    'from': 'listmatches', 
-                    'localField': 'matchkey', 
+                    'from': 'stock_contests', 
+                    'localField': 'contestId', 
                     'foreignField': '_id', 
-                    'as': 'match'
+                    'as': 'stockContest'
                   }
                 }, {
                   '$addFields': {
-                    'match_name': {
+                    'stock_name': {
                       '$arrayElemAt': [
-                        '$match', 0
+                        '$stockContest', 0
                       ]
                     }
                   }
                 }, {
                   '$addFields': {
-                    'match_name': '$match_name.name'
+                    'stock_name': '$stock_name.contest_name'
                   }
                 }, {
                   '$project': {
                     '_id': 0, 
-                    'match_name': 1
+                    'stock_name': 1
                   }
                 })
-                let matchName = await quizModel.aggregate(pipeline)
+                let matchName = await stockQuizModel.aggregate(pipeline)
                 let option = '<ol>'
                 let answer = ''
                 let showopt = ''
@@ -219,7 +217,7 @@ class quizController {
                 option += "</ol>"
                     data.push({
                       "count": count,
-                      "Match Name":matchName[0].match_name,
+                      "Match Name":matchName[0].stock_name,
                         "question": index.question,
                         "options": `${option}`,
                       "answer": `${answer}` || `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key${count}"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${index.answer}</span></a>

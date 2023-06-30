@@ -93,12 +93,12 @@ class quizServices {
             if (savequiz) {
                 return {
                     status:true,
-                    message:'quiz add successfully'
+                    message:'stock quiz add successfully'
                 }
             }else{
                 return {
                     status:false,
-                    message:'quiz not add error..'
+                    message:'stock quiz not add error..'
                 }
             }
         } catch (error) {

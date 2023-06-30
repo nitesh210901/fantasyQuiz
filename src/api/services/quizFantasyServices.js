@@ -45,7 +45,6 @@ class quizfantasyServices {
             quizViewTeam: this.quizViewTeam.bind(this),
             updateIsViewedForBoatTeam: this.updateIsViewedForBoatTeam.bind(this),
             quizLivematches: this.quizLivematches.bind(this),
-            pointcount: this.pointcount.bind(this),
             getQuiz: this.getQuiz.bind(this),
             getSingleQuiz: this.getSingleQuiz.bind(this),
             quizGiveAnswer: this.quizGiveAnswer.bind(this),
@@ -53,11 +52,8 @@ class quizfantasyServices {
             joinQuiz: this.joinQuiz.bind(this),
             findArrayIntersection: this.findArrayIntersection.bind(this),
             quizAnswerMatch: this.quizAnswerMatch.bind(this),
-            // quiz_refund_amount: this.quiz_refund_amount.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
             joinQuizContest: this.joinQuizContest.bind(this),
-            findUsableBonusMoney: this.findUsableBonusMoney.bind(this),
-            findUsableBalanceMoney: this.findUsableBalanceMoney.bind(this),
             findJoinLeaugeExist: this.findJoinLeaugeExist.bind(this),
             getMatchTime: this.getMatchTime.bind(this),
             getAllNewContests: this.getAllNewContests.bind(this),
@@ -499,7 +495,7 @@ class quizfantasyServices {
                     $count: "total_count"
                 }
             ])
-            let count_JoinContest = total_joinedcontestData[0] ? .total_count;
+            let count_JoinContest = total_joinedcontestData[0] ?.total_count;
             // ---------------------//
             let i = 0;
             for (let element of createTeams) {

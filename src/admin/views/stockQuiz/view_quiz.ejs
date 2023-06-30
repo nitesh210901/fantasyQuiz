@@ -47,7 +47,7 @@
                                 <%if(contest){%>
                                 <div class="form-group my-3">
                                     <label for="Match" class="control-label text-bold ">Match</label>
-                                      <select class="form-control form-control-solid input-sm p-1 selectpicker show-tick" data-container="body" data-live-search="true" title="Select Match" data-hide-disabled="true" name="matchkey" id="matchName" tabindex="-98">
+                                      <select class="form-control form-control-solid input-sm p-1 selectpicker show-tick" data-container="body" data-live-search="true" title="Select Match" data-hide-disabled="true" name="contestId" id="matchName" tabindex="-98">
                                         <% if(typeof listmatch !=="undefined" && listmatch) {%>
                                           <%for(let match of listmatch[0]) {%>
                                           <option value=""><%= match.contestname%></option>
@@ -56,11 +56,10 @@
                                     </select>                       
                                 </div>
                                 <% }else{
-                                  console.log("iiiiii")
                                   %>
                                   <div class="form-group my-3">
                                     <label for="Match" class="control-label text-bold ">Match</label>
-                                      <select class="form-control form-control-solid input-sm p-1 selectpicker show-tick" data-container="body" data-live-search="true" title="Select Match" data-hide-disabled="true" name="matchkey" tabindex="-98">
+                                      <select class="form-control form-control-solid input-sm p-1 selectpicker show-tick" data-container="body" data-live-search="true" title="Select Match" data-hide-disabled="true" name="contestId" tabindex="-98">
                                         <% if(typeof listmatch !=="undefined" && listmatch) {%>
                                           <%for(let match of listmatch) {%>
                                           <option value="<%=match._id%>"><%= match.matchname%></option>
