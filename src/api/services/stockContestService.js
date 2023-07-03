@@ -2893,6 +2893,248 @@ class overfantasyServices {
           throw error;
       }
   }
+
+  async AllCompletedContest(req) {
+    try {
+      let today = moment().format('YYYY-MM-DD HH:mm:ss')
+      console.log(req.user._id)
+      const JoiendMatches = await joinStockLeagueModel.aggregate([
+        {
+          '$match': {
+            'userid': mongoose.Types.ObjectId(req.user._id)
+          }
+        }, {
+          '$group': {
+            '_id': '$contestId',
+            'contestId': {
+              '$first': '$contestId'
+            },
+            'joinedleaugeId': {
+              '$first': '$_id'
+            },
+            'userid': {
+              '$first': '$userid'
+            },
+            'matchchallengeid': {
+              '$first': '$challengeid'
+            },
+            'jointeamid': {
+              '$first': '$teamid'
+            }
+          }
+        }, {
+          '$lookup': {
+            'from': 'stock_contests',
+            'localField': 'contestId',
+            'foreignField': '_id',
+            'as': 'contestData'
+          }
+        }, {
+          '$unwind': {
+            'path': '$contestData'
+          }
+        }, {
+          '$match': {
+            'contestData.fantasy_type': req.query.stock_contest_cat,
+            'contestData.isEnable': true,
+            'contestData.isCancelled': false
+          }
+        }, {
+          '$match': {
+            'contestData.final_status': 'winnerdeclared'
+          }
+        }, {
+          '$lookup': {
+            'from': 'stockfinalresults',
+            'let': {
+              'contestId': '$contestId'
+            },
+            'pipeline': [
+              {
+                '$match': {
+                  '$expr': {
+                    '$and': [
+                      {
+                        '$eq': [
+                          '$$contestId', '$contestId'
+                        ]
+                      }, {
+                        '$eq': [
+                          '$userId', mongoose.Types.ObjectId(req.user._id)
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }, {
+                '$group': {
+                  '_id': null,
+                  'finalvalue': {
+                    '$sum': '$finalvalue'
+                  }
+                }
+              }
+            ],
+            'as': 'finalresultsTotalAmount'
+          }
+        }, {
+          '$lookup': {
+            'from': 'join_stock_leagues',
+            'let': {
+              'contestId': '$contestId',
+              'userid': '$userid'
+            },
+            'pipeline': [
+              {
+                '$match': {
+                  '$expr': {
+                    '$and': [
+                      {
+                        '$eq': [
+                          '$contestId', '$$contestId'
+                        ]
+                      }, {
+                        '$eq': [
+                          '$userid', '$$userid'
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            'as': 'joinedleauges'
+          }
+        }, {
+          '$unwind': {
+            'path': '$joinedleauges'
+          }
+        }, {
+          '$group': {
+            '_id': '$joinedleauges.challengeid',
+            'joinedleaugeId': {
+              '$first': '$joinedleauges._id'
+            },
+            'contestData': {
+              '$first': '$contestData'
+            },
+            'jointeamid': {
+              '$first': '$jointeamid'
+            },
+            'match': {
+              '$first': '$match'
+            },
+            'finalresultsTotalAmount': {
+              '$first': '$finalresultsTotalAmount'
+            }
+          }
+        }, {
+          '$addFields': {
+            'date': {
+              'dateString': '$contestData.start_date'
+            },
+            'curDate': today
+          }
+        }, {
+          '$match': {
+            '$expr': {
+              '$and': [
+                {
+                  '$lte': [
+                    '$date.dateString', today
+                  ]
+                }
+              ]
+            }
+          }
+        }, {
+          '$project': {
+            'jointeamid': 1,
+            'joinTeamId': '$joinedleauges.teamid',
+            'date': 1,
+            'curDate': 1,
+            'matchkey': 1,
+            'contestName': {
+              '$ifNull': [
+                '$contestData.contest_name', ''
+              ]
+            },
+            'win_amount' : '$contestData.win_amount',
+            '_id' : '$contestData._id',
+            'winning_percentage' : '$contestData.winning_percentage',
+            'maximum_user' : '$contestData.maximum_user',
+            'joinedusers' : '$contestData.joinedusers',
+            'end_date': '$contestData.end_date',
+            'entryfee': '$contestData.entryfee',
+
+            'start_date': '$contestData.start_date',
+            'start_date': {
+              '$ifNull': [
+                '$contestData.start_date', '0000-00-00 00:00:00'
+              ]
+            },
+            'status': {
+              '$ifNull': [
+                {
+                  '$cond': {
+                    'if': {
+                      '$lt': [
+                        '$contestData.start_date', today
+                      ]
+                    },
+                    'then': 'closed',
+                    'else': 'opened'
+                  }
+                }, 'opened'
+              ]
+            },
+            'launch_status': {
+              '$ifNull': [
+                '$contestData.launch_status', ''
+              ]
+            },
+            'final_status': {
+              '$ifNull': [
+                '$contestData.final_status', ''
+              ]
+            },
+            'type': {
+              '$ifNull': [
+                '$contestData.fantasy_type', req.query.stock_contest_cat
+              ]
+            },
+            'available_status': {
+              '$ifNull': [
+                1, 1
+              ]
+            },
+            'joinedcontest': {
+              '$ifNull': [
+                '$count', 0
+              ]
+            }
+          }
+        }
+      ]);
+
+      if (JoiendMatches.length > 0) {
+        return {
+          message: 'User Joiend All Completed Contest Data..',
+          status: true,
+          data: JoiendMatches,
+
+        };
+      } else {
+        return {
+          message: 'No Data Found..',
+          status: false,
+          data: []
+        };
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = new overfantasyServices();

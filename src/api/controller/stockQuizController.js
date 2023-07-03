@@ -13,6 +13,10 @@ class stockQuizController {
             stockquizgetUsableBalance:this.stockquizgetUsableBalance.bind(this),
             joinStockQuiz:this.joinStockQuiz.bind(this),
             quizAnswerMatch: this.quizAnswerMatch.bind(this),
+            NewjoinedStockQuiz: this.NewjoinedStockQuiz.bind(this),
+            NewjoinedStockQuizLive: this.NewjoinedStockQuizLive.bind(this),
+            AllCompletedStockQuiz: this.AllCompletedStockQuiz.bind(this),
+
         }
     }
 
@@ -102,6 +106,32 @@ class stockQuizController {
             }
         } catch (error) {
             console.log(error);
+            next(error);
+        }
+    }
+
+    async NewjoinedStockQuiz(req, res, next) {
+        try {
+            const data = await stockQuizService.NewjoinedStockQuiz(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    async NewjoinedStockQuizLive(req,res,next){
+        try{
+            const data = await stockQuizService.NewjoinedStockQuizLive(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+
+        }catch(error){
+            next(error);
+        }
+    }
+    async AllCompletedStockQuiz(req, res, next) {
+        try {
+            const data = await stockQuizService.AllCompletedStockQuiz(req);
+            return res.status(200).json(Object.assign({ success: true }, data));
+        } catch (error) {
             next(error);
         }
     }

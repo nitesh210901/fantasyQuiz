@@ -59,9 +59,15 @@ include("../../partials/sideNav") %>
             >
               <input
                 type="hidden"
-                id="seriesID"
-                name="seriesID"
-                value="<%= matchID %> "
+                id="matchID"
+                name="matchID"
+                value="<%= matchID %>"
+              />
+              <input
+                type="hidden"
+                id="seriesId"
+                name="seriesId"
+                value="<%= seriesId %>"
               />
               <thead>
                 <tr>
@@ -91,14 +97,16 @@ include("../../partials/sideNav") %>
       <script type="text/javascript">
         $(document).ready(function () {
           $.fn.dataTable.ext.errMode = "none";
-          let seriesID = $("#seriesID").val();
+          let matchID = $("#matchID").val();
+          console.log()
+          let seriesId = $("#seriesId").val();
           $("#match_all_contest").DataTable({
             searching: false,
             language: {
               zeroRecords: "No records to display",
             },
             ajax: {
-              url: `/allquiz-table/${seriesID}`,
+              url: `/allquiz-table/${matchID}?seriesId=${seriesId}`,
               type: "POST",
             },
             lengthMenu: [
