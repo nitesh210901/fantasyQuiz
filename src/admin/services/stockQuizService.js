@@ -18,7 +18,7 @@ const finalQuizResultModel = require('../../models/finalQuizResultModel')
 const constant = require('../../config/const_credential');
 const LevelServices = require("./LevelServices");
 const randomstring = require("randomstring");
-class quizServices {
+class StockquizServices {
     constructor() {
         return {
             AddQuiz: this.AddQuiz.bind(this),
@@ -46,7 +46,8 @@ class quizServices {
             cancelQuiz: this.cancelQuiz.bind(this),
             quizdistributeWinningAmountWithAnswerMatch: this.quizdistributeWinningAmountWithAnswerMatch.bind(this),
             quizCancel: this.quizCancel.bind(this),
-            viewtransactions: this.viewtransactions.bind(this)
+            viewtransactions: this.viewtransactions.bind(this),
+            EnableStockQuiz: this.EnableStockQuiz.bind(this),
         }
     }
 
@@ -57,14 +58,14 @@ class quizServices {
 
     async AddQuiz(req) {
         try {
-            let { question, option_1, option_2,option_3,answer, entryfee,start_date,end_date} = req.body
+            let { question,option_1,option_2,option_3, entryfee,winning_amount,start_date,end_date} = req.body
             let addquiz = new stockQuizModel({
                 question: question,
                 option_1: option_1,
                 option_2: option_2,
                 option_3: option_3,
-                answer: answer,
                 entryfee: entryfee,
+                winning_amount: winning_amount * entryfee,
                 start_date: start_date,
                 end_date:end_date
             });
@@ -134,6 +135,28 @@ class quizServices {
                     });
                 });
             });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async EnableStockQuiz(req) {
+        try {
+            let { stockQuiztId } = req.query
+            let savequiz = await stockQuizModel.findOne({ _id: stockQuiztId })
+            if (savequiz) {
+                savequiz.is_enabled = true
+                await savequiz.save();
+                return {
+                    status:true,
+                    message:'stock quiz enable successfully'
+                }
+            }else{
+                return {
+                    status:false,
+                    message:'stock quiz not found error..'
+                }
+            }
         } catch (error) {
             throw error;
         }
@@ -266,15 +289,15 @@ class quizServices {
         let whereObj ={
             _id:req.params.id
         }
-        let { question, option_1, option_2,option_3,answer, entryfee,start_date,end_date} = req.body
+        let { question, option_1, option_2,option_3,entryfee,winning_amount,start_date,end_date} = req.body
            let doc
                  doc = {
                     question: question,
                     option_1: option_1,
                     option_2: option_2,
                     option_3: option_3,
-                    answer: answer,
                     entryfee: entryfee,
+                    winning_amount: winning_amount * entryfee,
                     start_date: start_date,
                     end_date:end_date
                 }
@@ -1759,4 +1782,4 @@ class quizServices {
         }
     }
 }
-module.exports = new quizServices();
+module.exports = new StockquizServices();

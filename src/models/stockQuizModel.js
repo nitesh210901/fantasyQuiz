@@ -8,21 +8,21 @@ let quizSchema = new Schema({
     },
     option_1: {
         type: String,
-        default:" "
+        default:""
     },
     option_2: {
         type: String,
-        default:" "
+        default:""
     },
     option_3: {
         type: String,
-        default:" "
-    },
-    answer: {
-        type: String,
-        default:"Please Give Answer"
+        default:""
     },
     entryfee: {
+        type: Number,
+        default: 0
+    },
+    winning_amount: {
         type: Number,
         default: 0
     },
@@ -33,6 +33,10 @@ let quizSchema = new Schema({
     end_date: {
         type: String,
         default: " "
+    },
+    is_enabled: {
+        type: Boolean,
+        default: false
     },
 }, {
     timestamps: true,
