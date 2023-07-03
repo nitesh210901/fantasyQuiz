@@ -758,6 +758,7 @@ class quizController {
       res.render("quiz/matchAllQuiz", {
         sessiondata: req.session.data,
         matchID: req.params.id,
+        seriesId: req.query.seriesId
       });
     } catch (error) {
       next(error);
@@ -765,19 +766,19 @@ class quizController {
   }
   async matchAllquizData(req, res, next) {
     try {
+      let series_id = req.query.seriesId
+      console.log(series_id,"999")
       let limit = req.query.length;
       let start = req.query.start;
       let sortObj = {},
-        dir,
-        join;
-  
+      dir,
+      join;
       let condition = [];
-  
       condition.push({
         $match: {
-          matchkey: mongoose.Types.ObjectId(req.params.id),
-        },
-      });
+          matchkey: new mongoose.Types.ObjectId(req.params.id)
+        }
+      })
       quizModel.countDocuments(condition).exec((err, rows) => {
         let totalFiltered = rows;
         let data = [];
@@ -802,7 +803,7 @@ class quizController {
             }
             
               if(doc.quiz_status != 'canceled'){
-                actions += `<a href="/quizcancel/${doc._id}?matchkey=${doc.matchkey}" class="btn btn-sm btn-secondary w-35px h-35px" data-toggle="tooltip" title="Cancel Quiz" data-original-title="Cancel Contest" aria-describedby="tooltip768867"><i class="fas fa-window-close"></i></a></div>`
+                actions += `<a href="/cancelQuiz/${series_id}?matchkey=${doc.matchkey}&status=IsCanceled" class="btn btn-sm btn-secondary w-35px h-35px" data-toggle="tooltip" title="Cancel Quiz" data-original-title="Cancel Contest" aria-describedby="tooltip768867"><i class="fas fa-window-close"></i></a></div>`
               }else{
                 actions += " | <tagname style='color:red;'>Canceled"
               }
@@ -853,7 +854,7 @@ class quizController {
         });
       });
     } catch (error) {
-      
+      console.log(error);
     }
   }
 

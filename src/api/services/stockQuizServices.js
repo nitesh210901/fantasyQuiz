@@ -62,7 +62,10 @@ class quizfantasyServices {
             stockquizfindJoinLeaugeExist: this.stockquizfindJoinLeaugeExist.bind(this),
             stockquizfindUsableBonusMoney: this.stockquizfindUsableBonusMoney.bind(this),
             stockquizfindUsableBalanceMoney: this.stockquizfindUsableBalanceMoney.bind(this),
-            stockquizfindUsableWinningMoney: this.stockquizfindUsableWinningMoney.bind(this)
+            stockquizfindUsableWinningMoney: this.stockquizfindUsableWinningMoney.bind(this),
+            NewjoinedStockQuiz: this.NewjoinedStockQuiz.bind(this),
+            NewjoinedStockQuizLive: this.NewjoinedStockQuizLive.bind(this),
+            AllCompletedStockQuiz: this.AllCompletedStockQuiz.bind(this)
         }
     }
 
@@ -88,9 +91,7 @@ class quizfantasyServices {
         try {
 
             let date = moment().format('YYYY-MM-DD HH:mm:ss');
-            console.log(date,"pp")
             let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
-            console.log(EndDate,"llll")
             let pipeline = []
              pipeline.push({
                 '$match': {
@@ -2813,5 +2814,535 @@ class quizfantasyServices {
             throw error;
         }
     }
+
+    async NewjoinedStockQuiz(req) {
+        let today = moment().format('YYYY-MM-DD HH:mm:ss');
+        let userId = req.user._id
+        const JoiendMatches = await StockQuizJoinLeaugeModel.aggregate([
+            {
+                '$match': {
+                  'userid': new mongoose.Types.ObjectId(userId)
+                }
+              }, {
+                '$group': {
+                  '_id': '$stockquizId', 
+                  'stockquizId': {
+                    '$first': '$stockquizId'
+                  }, 
+                  'joinedleaugeId': {
+                    '$first': '$_id'
+                  }, 
+                  'userid': {
+                    '$first': '$userid'
+                  }
+                }
+              }, {
+                '$lookup': {
+                  'from': 'stockquizzes', 
+                  'localField': 'stockquizId', 
+                  'foreignField': '_id', 
+                  'as': 'contestData'
+                }
+              }, {
+                '$unwind': {
+                  'path': '$contestData'
+                }
+              }, {
+                '$match': {
+                  'contestData.is_enabled': true
+                }
+              }, {
+                '$match': {
+                  '$and': [
+                    {
+                      'contestData.final_status': 'pending'
+                    }
+                  ]
+                }
+              }, {
+                '$lookup': {
+                  'from': 'stockquizjoinedleauges', 
+                  'let': {
+                    'contestId': '$stockquizId', 
+                    'userid': '$userid'
+                  }, 
+                  'pipeline': [
+                    {
+                      '$match': {
+                        '$expr': {
+                          '$and': [
+                            {
+                              '$eq': [
+                                '$stockquizId', '$$contestId'
+                              ]
+                            }, {
+                              '$eq': [
+                                '$userid', '$$userid'
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ], 
+                  'as': 'joinedleauges'
+                }
+              }, {
+                '$unwind': {
+                  'path': '$joinedleauges'
+                }
+              }, {
+                '$group': {
+                  '_id': '$joinedleauges.stockquizId', 
+                  'joinedleaugeId': {
+                    '$first': '$joinedleauges._id'
+                  }, 
+                  'stockquizId': {
+                    '$first': '$stockquizId'
+                  }, 
+                  'userid': {
+                    '$first': '$userid'
+                  }, 
+                  'stockQuizData': {
+                    '$first': '$contestData'
+                  }
+                }
+            },
+            {
+                '$match':{"stockQuizData.start_date":{$gt:today}}
+              },
+            {
+                '$project': {
+                  'question': {
+                    '$ifNull': [
+                      '$stockQuizData.question', ''
+                    ]
+                  }, 
+                  'win_amount': '$stockQuizData.winning_amount', 
+                  '_id': '$stockQuizData._id', 
+                  'joinedusers': '$stockQuizData.joinedusers', 
+                  'start_date': '$stockQuizData.start_date', 
+                  'end_date': '$stockQuizData.end_date', 
+                  'entryfee': '$stockQuizData.entryfee', 
+                  'start_date': {
+                    '$ifNull': [
+                      '$stockQuizData.start_date', '0000-00-00 00:00:00'
+                    ]
+                  }, 
+                  'status': {
+                    '$ifNull': [
+                      {
+                        '$cond': {
+                          'if': {
+                            '$lt': [
+                              '$stockQuizData.start_date', today
+                            ]
+                          }, 
+                          'then': 'opened', 
+                          'else': 'closed'
+                        }
+                      }, 'opened'
+                    ]
+                  }, 
+                  'final_status': {
+                    '$ifNull': [
+                      '$stockQuizData.final_status', ''
+                    ]
+                  }, 
+                  'joinedcontest': {
+                    '$ifNull': [
+                      '$count', 0
+                    ]
+                  }
+                }
+            }
+        ]);
+    
+        if (JoiendMatches.length > 0) {
+          return {
+            message: 'User Joiend latest 5 Upcoming and live Stock Quiz data..',
+            status: true,
+            data: JoiendMatches
+          };
+        } else {
+          return {
+            message: 'No Data Found..',
+            status: false,
+            data: []
+          };
+        }
+    }
+    
+    async NewjoinedStockQuizLive(req) {
+        let today = moment().format('YYYY-MM-DD HH:mm:ss');
+        let userId = req.user._id
+        const JoiendMatches = await StockQuizJoinLeaugeModel.aggregate(
+          [
+            {
+                '$match': {
+                  'userid': new mongoose.Types.ObjectId(userId),
+                }
+              }, {
+                '$group': {
+                  '_id': '$stockquizId', 
+                  'stockquizId': {
+                    '$first': '$stockquizId'
+                  }, 
+                  'joinedleaugeId': {
+                    '$first': '$_id'
+                  }, 
+                  'userid': {
+                    '$first': '$userid'
+                  }
+                }
+              }, {
+                '$lookup': {
+                  'from': 'stockquizzes', 
+                  'localField': 'stockquizId', 
+                  'foreignField': '_id', 
+                  'as': 'contestData'
+                }
+              }, {
+                '$unwind': {
+                  'path': '$contestData'
+                }
+              }, {
+                '$match': {
+                  'contestData.is_enabled': true
+                }
+              }, {
+                '$match': {
+                  '$or': [
+                    {
+                      'contestData.final_status': 'pending'
+                    }, {
+                      'contestData.final_status': 'IsReviewed'
+                    }
+                  ]
+                }
+              }, {
+                '$lookup': {
+                  'from': 'stockquizjoinedleauges', 
+                  'let': {
+                    'contestId': '$stockquizId', 
+                    'userid': '$userid'
+                  }, 
+                  'pipeline': [
+                    {
+                      '$match': {
+                        '$expr': {
+                          '$and': [
+                            {
+                              '$eq': [
+                                '$stockquizId', '$$contestId'
+                              ]
+                            }, {
+                              '$eq': [
+                                '$userid', '$$userid'
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ], 
+                  'as': 'joinedleauges'
+                }
+              }, {
+                '$unwind': {
+                  'path': '$joinedleauges'
+                }
+              }, {
+                '$group': {
+                  '_id': '$joinedleauges.stockquizId', 
+                  'joinedleaugeId': {
+                    '$first': '$joinedleauges._id'
+                  }, 
+                  'stockquizId': {
+                    '$first': '$stockquizId'
+                  }, 
+                  'userid': {
+                    '$first': '$userid'
+                  }, 
+                  'stockQuizData': {
+                    '$first': '$contestData'
+                  }
+                }
+              }, {
+                '$match': {
+                  'contestData.start_date': {
+                    '$lte': today
+                  }
+                }
+              }, {
+                '$project': {
+                  'question': {
+                    '$ifNull': [
+                      '$stockQuizData.question', ''
+                    ]
+                  }, 
+                  'win_amount': '$stockQuizData.winning_amount', 
+                  '_id': '$stockQuizData._id', 
+                  'joinedusers': '$stockQuizData.joinedusers', 
+                  'end_date': '$stockQuizData.end_date', 
+                  'entryfee': '$stockQuizData.entryfee', 
+                  'start_date': '$stockQuizData.start_date', 
+                  'start_date': {
+                    '$ifNull': [
+                      '$stockQuizData.start_date', '0000-00-00 00:00:00'
+                    ]
+                  }, 
+                  'status': {
+                    '$ifNull': [
+                      {
+                        '$cond': {
+                          'if': {
+                            '$lt': [
+                              '$stockQuizData.start_date', today
+                            ]
+                          }, 
+                          'then': 'closed', 
+                          'else': 'opened'
+                        }
+                      }, 'opened'
+                    ]
+                  }, 
+                  'final_status': {
+                    '$ifNull': [
+                      '$stockQuizData.final_status', ''
+                    ]
+                  }, 
+                  'joinedcontest': {
+                    '$ifNull': [
+                      '$count', 0
+                    ]
+                  }
+                }
+              }
+          ]
+        );
+        if (JoiendMatches.length > 0) {
+          return {
+            message: 'User Joiend latest 5  live Stock Quiz  data..',
+            status: true,
+            data: JoiendMatches,
+    
+          };
+        } else {
+          return {
+            message: 'No Data Found..',
+            status: false,
+            data: []
+          };
+        }
+    }
+    
+    async AllCompletedStockQuiz(req) {
+        try {
+            let today = moment().format('YYYY-MM-DD HH:mm:ss')
+            let userId = req.user._id
+          const JoiendMatches = await StockQuizJoinLeaugeModel.aggregate([
+            {
+                '$match': {
+                  'userid': new mongoose.Types.ObjectId(userId)
+                }
+              }, {
+                '$group': {
+                  '_id': '$stockquizId', 
+                  'stockquizId': {
+                    '$first': '$stockquizId'
+                  }, 
+                  'joinedleaugeId': {
+                    '$first': '$_id'
+                  }, 
+                  'userid': {
+                    '$first': '$userid'
+                  }
+                }
+              }, {
+                '$lookup': {
+                  'from': 'stockquizzes', 
+                  'localField': 'stockquizId', 
+                  'foreignField': '_id', 
+                  'as': 'contestData'
+                }
+              }, {
+                '$unwind': {
+                  'path': '$contestData'
+                }
+              }, {
+                '$match': {
+                  'contestData.is_enabled': true
+                }
+              }, {
+                '$match': {
+                  'contestData.final_status': 'winnerdeclared'
+                }
+              }, {
+                '$lookup': {
+                  'from': 'stockfinalresults', 
+                  'let': {
+                    'contestId': '$contestId'
+                  }, 
+                  'pipeline': [
+                    {
+                      '$match': {
+                        '$expr': {
+                          '$and': [
+                            {
+                              '$eq': [
+                                '$$contestId', '$contestId'
+                              ]
+                            }, {
+                              '$eq': [
+                                '$userId', new mongoose.Types.ObjectId(userId)
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }, {
+                      '$group': {
+                        '_id': null, 
+                        'finalvalue': {
+                          '$sum': '$finalvalue'
+                        }
+                      }
+                    }
+                  ], 
+                  'as': 'finalresultsTotalAmount'
+                }
+              }, {
+                '$lookup': {
+                  'from': 'stockquizjoinedleauges', 
+                  'let': {
+                    'contestId': '$stockquizId', 
+                    'userid': '$userid'
+                  }, 
+                  'pipeline': [
+                    {
+                      '$match': {
+                        '$expr': {
+                          '$and': [
+                            {
+                              '$eq': [
+                                '$stockquizId', '$$contestId'
+                              ]
+                            }, {
+                              '$eq': [
+                                '$userid', '$$userid'
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ], 
+                  'as': 'joinedleauges'
+                }
+              }, {
+                '$unwind': {
+                  'path': '$joinedleauges'
+                }
+              }, {
+                '$group': {
+                  '_id': '$joinedleauges.stockquizId', 
+                  'joinedleaugeId': {
+                    '$first': '$joinedleauges._id'
+                  }, 
+                  'stockQuizData': {
+                    '$first': '$contestData'
+                  }, 
+                  'match': {
+                    '$first': '$match'
+                  }, 
+                  'finalresultsTotalAmount': {
+                    '$first': '$finalresultsTotalAmount'
+                  }
+                }
+              }, {
+                '$addFields': {
+                  'date': {
+                    'dateString': '$stockQuizData.start_date'
+                  }, 
+                  'curDate': today
+                }
+              }, {
+                '$match': {
+                  '$expr': {
+                    '$and': [
+                      {
+                        '$lte': [
+                          '$date.dateString', today
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }, {
+                '$project': {
+                  'question': {
+                    '$ifNull': [
+                      '$stockQuizData.question', ''
+                    ]
+                  }, 
+                  'win_amount': '$stockQuizData.winning_amount', 
+                  '_id': '$stockQuizData._id', 
+                  'joinedusers': '$stockQuizData.joinedusers', 
+                  'end_date': '$stockQuizData.end_date', 
+                  'entryfee': '$stockQuizData.entryfee', 
+                  'start_date': '$stockQuizData.start_date', 
+                  'start_date': {
+                    '$ifNull': [
+                      '$stockQuizData.start_date', '0000-00-00 00:00:00'
+                    ]
+                  }, 
+                  'status': {
+                    '$ifNull': [
+                      {
+                        '$cond': {
+                          'if': {
+                            '$lt': [
+                              '$stockQuizData.start_date', today
+                            ]
+                          }, 
+                          'then': 'closed', 
+                          'else': 'opened'
+                        }
+                      }, 'opened'
+                    ]
+                  }, 
+                  'final_status': {
+                    '$ifNull': [
+                      '$stockQuizData.final_status', ''
+                    ]
+                  }, 
+                  'joinedcontest': {
+                    '$ifNull': [
+                      '$count', 0
+                    ]
+                  }
+                }
+              }
+          ]);
+    
+          if (JoiendMatches.length > 0) {
+            return {
+              message: 'User Joiend All Completed Stock Quiz Data..',
+              status: true,
+              data: JoiendMatches,
+    
+            };
+          } else {
+            return {
+              message: 'No Data Found..',
+              status: false,
+              data: []
+            };
+          }
+        } catch (error) {
+          throw error;
+        }
+      }
 }
 module.exports = new quizfantasyServices();

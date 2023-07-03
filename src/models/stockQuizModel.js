@@ -41,6 +41,10 @@ let quizSchema = new Schema({
     joinedusers: {
         type: Number,
         default: 0
+    },
+    final_status: {
+        type: String,
+        default: "pending"
     }
 }, {
     timestamps: true,
