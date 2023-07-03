@@ -161,6 +161,7 @@ class stockController {
             next(error);
         }
     }
+    
     async getStockMyTeams(req, res, next) {
         try {
             const data = await stockContestService.getStockMyTeams(req);

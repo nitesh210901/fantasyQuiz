@@ -361,7 +361,7 @@ router.get("/get-stock-usable-balance", auth, stockController.getStockUsableBala
 router.get("/rankupdate", auth, stockController.rankUpdateInMatch1);
 
 router.get('/getStockMyTeams', auth, stockController.getStockMyTeams);
-router.get("/live-stock-rank-leaderboard", auth, stockController.liveStockRanksLeaderboard)
+router.get("/live-stock-rank-leaderboard", auth, stockController.liveStockRanksLeaderboard);
 router.get('/newjoinedcontest', auth, stockController.Newjoinedcontest);
 router.get('/newjoinedcontestlive', auth, stockController.NewjoinedcontestLive);
 router.get('/all-completed-contest', auth, stockController.AllCompletedContest);

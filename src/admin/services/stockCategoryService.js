@@ -43,6 +43,7 @@ class stockCategory {
             throw error;
         }
     }
+
     async editStockCategoryData(req) {
         try {
             if(req.fileValidationError){
@@ -79,7 +80,7 @@ class stockCategory {
                             }
                         }
                     }
-                    const addStockCategory =await stockCategoryModel.updateOne({_id:req.params.stockId},{
+                    const addStockCategory = await stockCategoryModel.updateOne({_id:req.params.stockId},{
                         $set:insertObj
                     })
                     if(addStockCategory.modifiedCount == 1){
