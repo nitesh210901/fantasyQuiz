@@ -1126,6 +1126,7 @@ class challengersService {
         });
         
         let contest = await stockContestModel.aggregate(pipeline);
+        
         if (contest.length > 0) {
             for (let challenge of contest) {
                 let joinedusers = await joinStockLeagueModel.aggregate([
@@ -1457,7 +1458,7 @@ class challengersService {
                                                 'totalwinning': totalwinning + amount
                                             };
                                             const transactiondata = {
-                                                type: 'Contest Winning Amount',
+                                                type: `${contest.fantasy_type} Winning Amount`,
                                                 amount: amount,
                                                 total_available_amt: totalBalance + amount,
                                                 transaction_by: constant.APP_SHORT_NAME,
@@ -1492,7 +1493,6 @@ class challengersService {
                                             let bal_win_amt ;
                                             let type ;
                                             let transactiondata ;
-                                            // console.log("--------fpusv['gift_type']----///----",fpusv)
                                             if(fpusv['gift_type'] == "gift"){
                                                 type = "Contest Winning Gift"
                                                 total_available_amt = totalBalance
@@ -1504,7 +1504,7 @@ class challengersService {
                                                     'totalwinning': totalwinning
                                                 };
                                                 transactiondata = {
-                                                    type: type,
+                                                    type: `${contest.fantasy_type} Winning Amount`,
                                                     amount: 0,
                                                     prize:amount,
                                                     total_available_amt:total_available_amt,
@@ -1520,7 +1520,7 @@ class challengersService {
                                                 };
                                                 
                                             }else{
-                                                type ="Challenge Winning Amount"
+                                                type =`${contest.fantasy_type} Winning Amount`
                                                 total_available_amt = totalBalance + amount ;
                                                 bal_win_amt =  winning + amount ;
                                                  userObj = {
@@ -1530,7 +1530,7 @@ class challengersService {
                                                     'totalwinning': total_available_amt
                                                 };
                                                 transactiondata = {
-                                                    type: type,
+                                                    type: `${contest.fantasy_type} Winning Amount`,
                                                     amount: amount,
                                                     total_available_amt:total_available_amt,
                                                     transaction_by: constant.APP_SHORT_NAME,

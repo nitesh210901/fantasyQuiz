@@ -876,7 +876,7 @@ class overfantasyServices {
       if (data.length > 0) {
         return {
           status: true,
-          message: "Stock Fatch Successfully",
+          message: "Stock Fetch Successfully",
           data: data[0].stocks
         }
       } else {
