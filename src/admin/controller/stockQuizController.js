@@ -45,6 +45,7 @@ class quizController {
       quizUserDetailsData:this.quizUserDetailsData.bind(this),
       quizviewtransactions:this.quizviewtransactions.bind(this),
       quizviewTransactionsDataTable:this.quizviewTransactionsDataTable.bind(this),
+      EnableStockQuiz:this.EnableStockQuiz.bind(this),
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -54,7 +55,6 @@ class quizController {
       try {
       let curTime = moment().format("YYYY-MM-DD HH:mm:ss");
       const listmatch = await stockContestModel.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime }}, { contest_name: 1 });  
-      console.log(listmatch);
       res.locals.message = req.flash();
       res.render("stockQuiz/add_quiz", {
         sessiondata: req.session.data,
@@ -80,7 +80,7 @@ class quizController {
                 res.redirect("/stock/add_quiz");
             }
         } catch (error) {
-          console.log(error);
+           console.log(error);
             req.flash('error','something is wrong please try again later');
             res.redirect('/add_quiz');
         }
@@ -89,7 +89,6 @@ class quizController {
   async ViewQuiz(req, res, next) {
     try {
       let pipeline = [];
-
       pipeline.push({
         $group: {
           _id: "$contestId",
@@ -159,100 +158,31 @@ class quizController {
       if (req.query.Question) {
         conditions.question = { $regex: req.query.Question };
       }
-      let matchkey = req.query.matchkey
-      
-      if (matchkey !== "undefined") {
-        conditions.matchkey =  matchkey;
-      }
-        quizModel.countDocuments(conditions).exec((err, rows) => {
+      stockQuizModel.countDocuments(conditions).exec((err, rows) => {
             // console.log("rows....................",rows)
             let totalFiltered = rows;
             let data = [];
             let count = 1;
-            quizModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').exec((err, rows1) => {
+            stockQuizModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').exec((err, rows1) => {
                 // console.log('--------rows1-------------', rows1);
                 if (err) console.log(err);
-              rows1.forEach(async(index) => {
-                let pipeline = []
-                pipeline.push({
-                  '$match': {
-                    '_id': mongoose.Types.ObjectId(index._id)
-                  }
-                }, {
-                  '$lookup': {
-                    'from': 'listmatches', 
-                    'localField': 'matchkey', 
-                    'foreignField': '_id', 
-                    'as': 'match'
-                  }
-                }, {
-                  '$addFields': {
-                    'match_name': {
-                      '$arrayElemAt': [
-                        '$match', 0
-                      ]
-                    }
-                  }
-                }, {
-                  '$addFields': {
-                    'match_name': '$match_name.name'
-                  }
-                }, {
-                  '$project': {
-                    '_id': 0, 
-                    'match_name': 1
-                  }
-                })
-                let matchName = await quizModel.aggregate(pipeline)
-                let option = '<ol>'
-                let answer = ''
-                let showopt = ''
-                let k=1
-                for (let item in index.options[0]) {
-                  showopt += `<option value="${item}">Option ${k}</option>`;
-                  if (item === index.answer) {
-                    answer += index.options[0][`${item}`]
-                  }
-                  option += `<li>${index.options[0][`${item}`]}</li>`
-                  k++
-                }
-                option += "</ol>"
+                  rows1.forEach(async (index) => {
+                       let check_stock_enable;
+                        if (index.is_enabled) {
+                          check_stock_enable = `<a href="" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank" style="pointer-events: none">Enabled</a>`
+                        } else {
+                          check_stock_enable = `<a href="/stock/enable_quiz?stockQuiztId=${index._id}" class="btn btn-sm btn-danger  text-uppercase" data-toggle="tooltip" title="Check Rank">Enable Quiz</a>`
+                        }
                     data.push({
-                      "count": count,
-                      "Match Name":matchName[0].match_name,
+                        "count": count,
                         "question": index.question,
-                        "options": `${option}`,
-                      "answer": `${answer}` || `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key${count}"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${index.answer}</span></a>
-                      <div class="modal fade" id="key${count}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                      <div class="modal-dialog col-6">
-                      <div class="modal-content">
-                          <div class="modal-header">
-                          <h5 class="modal-title" id="exampleModalLabel">Answer</h5>
-                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                              <span aria-hidden="true">×</span>
-                          </button>
-                          </div>
-                          <div class="modal-body">
-                              <form action="/quiz_give_answer/${index._id}" method="post">
-                                  <div class="col-md-12 col-sm-12 form-group">
-                                      <label>Give Your Answer</label>
-                                      <select class="form-control" style="text-align:center;" name="answer">
-                                      ${showopt}
-                                      </select>
-                                  </div>
-                                  <div class="col-md-12 col-sm-12 form-group">
-                                      <input type="submit" class="btn btn-info btn-sm text-uppercase" value="Submit">
-                                  </div>
-                                  </form>
-                          </div>
-                          <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary btn-sm text-uppercase" data-dismiss="modal">Close</button>
-                          </div>
-                      </div>
-                      </div>
-                </div>`,
-                        "Action": `<a href="/edit-quiz/${index._id}" class="btn btn-sm btn-orange w-35px h-35px text-uppercase text-nowrap" data-toggle="tooltip" title="Edit"><i class="fad fa-pencil"></i></a>
-                        <a  onclick="delete_sweet_alert('/deletequiz?quizId=${index._id}', 'Are you sure you want to delete this data?')" class="btn btn-sm btn-danger w-35px h-35px text-uppercase"><i class='fas fa-trash-alt'></i></a>`
+                        "option_1": index.option_1,
+                        "option_2": index.option_2,
+                        "option_3": index.option_3,
+                        "is_enabled": `${check_stock_enable}`,
+                        "entryfee": index.entryfee,
+                        "Action": `<a href="/stock/edit-quiz/${index._id}" class="btn btn-sm btn-orange w-35px h-35px text-uppercase text-nowrap" data-toggle="tooltip" title="Edit"><i class="fad fa-pencil"></i></a>
+                        <a  onclick="delete_sweet_alert('/stock/deletequiz?quizId=${index._id}', 'Are you sure you want to delete this data?')" class="btn btn-sm btn-danger w-35px h-35px text-uppercase"><i class='fas fa-trash-alt'></i></a>`
                     });
                     count++;
                     if (count > rows1.length) {
@@ -270,41 +200,54 @@ class quizController {
     } catch (error) {
       
     }
+  }
+  
+  async EnableStockQuiz(req, res, next) {
+    try {
+        const data = await stockQuizService.EnableStockQuiz(req);
+        if (data.status) {
+            req.flash('success',data.message)
+            res.redirect("/stock/view_quiz");
+        }else if (data.status == false) {
+            req.flash('error',data.message)
+            res.redirect("/stock/view_quiz");
+        }
+    } catch (error) {
+        console.log(error);
+        req.flash('error','something is wrong please try again later');
+        res.redirect('/stock/add_quiz');
     }
+}
     
     async editQuiz(req, res, next) {
         try {
           res.locals.message = req.flash();
-          let curTime = moment().format("YYYY-MM-DD HH:mm:ss");
-          //   const listmatch = await listMatchModel.find({ status: "notstarted", launch_status: "launched", start_date: { $gt: curTime } ,isQuiz:1}, { name: 1 });  
-          const data = await stockQuizService.editQuiz(req);
-          const listmatch = await listMatchModel.findOne({_id:data.matchkey},{ name: 1 });  
-            if (data) {
-                res.render("stockQuiz/editQuiz", { sessiondata: req.session.data, msg: undefined, data ,listmatch});
-            }
-        } catch (error) {
-            console.log(error)
+          let data = await stockQuizService.editQuiz(req);
+          if (data) {
+             res.render("stockQuiz/editQuiz", { sessiondata: req.session.data, msg: undefined, data})
+          }
+        } catch(error) {
             req.flash('error','something is wrong please try again later');
             res.redirect("/view-teams");
         }
-    }
-
+  }
+  
     async editQuizData(req, res, next) {
         try {
             const data = await stockQuizService.editQuizData(req);
-          
             if (data.status == true) {
                 req.flash("success",data.message )
-                res.redirect("/view_quiz");
-            }
+                res.redirect("/stock/view_quiz");
+            } 
             if (data.status == false) {
                 req.flash("error",data.message );
-                return res.redirect(`/edit-quiz/${req.params.id}`);
+                return res.redirect(`/stock/edit-quiz/${req.params.id}`);
             }
         } catch (error) {
+          console.log(error);
             // next(error);
             req.flash('error','something is wrong please try again later');
-            res.redirect("/view_quiz");
+            res.redirect("/stock/add_quiz");
         }
     }
 

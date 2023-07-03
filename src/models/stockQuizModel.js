@@ -2,49 +2,45 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 let quizSchema = new Schema({
-    contestId: {
-        type : mongoose.Types.ObjectId
-    },
     question: {
         type: String,
         default:""
     },
-    options: [],
-    answer: {
+    option_1: {
         type: String,
-        default:"Please Give Answer"
+        default:""
+    },
+    option_2: {
+        type: String,
+        default:""
+    },
+    option_3: {
+        type: String,
+        default:""
     },
     entryfee: {
         type: Number,
         default: 0
     },
-    winning_amount : {
+    winning_amount: {
         type: Number,
         default: 0
     },
-    is_bonus: {
-        type: Number,
-        default: 0
-    },
-    bonus_percentage: {
-        type: Number,
-        default: 0
-    },
-    image: {
+    start_date: {
         type: String,
-        default:""
+        default: " "
     },
-    quiz_status: {
+    end_date: {
         type: String,
-        default:"pending"
+        default: " "
+    },
+    is_enabled: {
+        type: Boolean,
+        default: false
     },
     joinedusers: {
         type: Number,
         default: 0
-    },
-    is_selected: {
-        type: Boolean,
-        default: false
     }
 }, {
     timestamps: true,

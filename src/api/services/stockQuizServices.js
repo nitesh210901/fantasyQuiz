@@ -9,6 +9,7 @@ require('../../models/playerModel');
 require('../../models/teamModel');
 const matchchallengesModel = require('../../models/matchChallengersModel');
 const QuizJoinLeaugeModel = require('../../models/QuizJoinLeaugeModel');
+const StockQuizJoinLeaugeModel = require('../../models/StockQuizJoinLeaugeModel');
 const contestCategory = require('../../models/contestcategoryModel');
 const TransactionModel = require('../../models/transactionModel');
 const leaderBoardModel = require(`../../models/leaderboardModel`)
@@ -27,6 +28,8 @@ const userModel = require("../../models/userModel");
 const constant = require('../../config/const_credential');
 const Redis = require('../../utils/redis');
 const matchServices = require("./matchServices");
+const stockQuizModel = require('../../models/stockQuizModel');
+
 const {
     quiz
 } = require('../../admin/services/matchServices');
@@ -45,24 +48,21 @@ class quizfantasyServices {
             quizViewTeam: this.quizViewTeam.bind(this),
             updateIsViewedForBoatTeam: this.updateIsViewedForBoatTeam.bind(this),
             quizLivematches: this.quizLivematches.bind(this),
-            getQuiz: this.getQuiz.bind(this),
-            getSingleQuiz: this.getSingleQuiz.bind(this),
+            getStockQuiz: this.getStockQuiz.bind(this),
+            getStockSingleQuiz: this.getStockSingleQuiz.bind(this),
             quizGiveAnswer: this.quizGiveAnswer.bind(this),
-            quizgetUsableBalance: this.quizgetUsableBalance.bind(this),
-            joinQuiz: this.joinQuiz.bind(this),
+            stockquizgetUsableBalance: this.stockquizgetUsableBalance.bind(this),
+            joinStockQuiz: this.joinStockQuiz.bind(this),
             findArrayIntersection: this.findArrayIntersection.bind(this),
             quizAnswerMatch: this.quizAnswerMatch.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
-            joinQuizContest: this.joinQuizContest.bind(this),
             findJoinLeaugeExist: this.findJoinLeaugeExist.bind(this),
             getMatchTime: this.getMatchTime.bind(this),
-            getAllNewContests: this.getAllNewContests.bind(this),
-            getMyQuizJoinedContest: this.getMyQuizJoinedContest.bind(this),
             getUserRank: this.getUserRank.bind(this),
-            quizfindJoinLeaugeExist: this.quizfindJoinLeaugeExist.bind(this),
-            quizfindUsableBonusMoney: this.quizfindUsableBonusMoney.bind(this),
-            quizfindUsableBalanceMoney: this.quizfindUsableBalanceMoney.bind(this),
-            quizfindUsableWinningMoney: this.quizfindUsableWinningMoney.bind(this)
+            stockquizfindJoinLeaugeExist: this.stockquizfindJoinLeaugeExist.bind(this),
+            stockquizfindUsableBonusMoney: this.stockquizfindUsableBonusMoney.bind(this),
+            stockquizfindUsableBalanceMoney: this.stockquizfindUsableBalanceMoney.bind(this),
+            stockquizfindUsableWinningMoney: this.stockquizfindUsableWinningMoney.bind(this)
         }
     }
 
@@ -84,161 +84,37 @@ class quizfantasyServices {
         return total_joinedcontestData[0]?.total_count;
     }
 
-    async getQuiz(req) {
+    async getStockQuiz(req) {
         try {
-            let {
-                matchkey
-            } = req.query;
-            let userId = req.user._id
+
+            let date = moment().format('YYYY-MM-DD HH:mm:ss');
+            console.log(date,"pp")
+            let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
+            console.log(EndDate,"llll")
             let pipeline = []
-            pipeline.push({
-                '$addFields': {
-                    'options': {
-                        '$objectToArray': {
-                            '$arrayElemAt': [
-                                '$options', 0
-                            ]
-                        }
-                    }
-                }
-            }, {
-                '$addFields': {
-                    'options': {
-                        '$map': {
-                            'input': '$options',
-                            'as': 'option',
-                            'in': {
-                                'answer': '$$option.v'
-                            }
-                        }
-                    }
-                }
-            }, {
+             pipeline.push({
                 '$match': {
-                    'matchkey': new mongoose.Types.ObjectId(matchkey)
+                  'is_enabled': true
                 }
-            }, {
-                $lookup: {
-                    from: "quizjoinedleauges",
-                    let: {
-                        matchkey: "$matchkey",
-                        quizId: "$_id",
-                        userid: new mongoose.Types.ObjectId(userId)
-                    },
-                    pipeline: [{
-                        $match: {
-                            $expr: {
-                                $and: [{
-                                        $eq: [
-                                            "$matchkey",
-                                            "$$matchkey",
-                                        ],
-                                    },
-                                    {
-                                        $eq: ["$quizId", "$$quizId"],
-                                    },
-                                    {
-                                        $eq: ["$userid", "$$userid"],
-                                    },
-                                ],
-                            },
-                        },
-                    }, ],
-                    as: "quizjoin",
-                },
-            }, {
-                '$addFields': {
-                    'is_selected': {
-                        '$cond': {
-                            'if': {
-                                '$eq': [{
-                                    '$size': '$quizjoin'
-                                }, 1]
-                            },
-                            'then': true,
-                            'else': false
-                        }
-                    },
-                    'image': {
-                        '$concat': [
-                            `${process.env.BASE_URL}`, '$image'
-                        ]
-                    }
-                }
-            }, {
-                '$lookup': {
-                    'from': 'quizjoinedleauges',
-                    'let': {
-                        'matchkey': '$matchkey',
-                        'id': '$_id'
-                    },
-                    'pipeline': [{
-                        '$match': {
-                            '$expr': {
-                                '$eq': [
-                                    '$matchkey', '$$matchkey'
-                                ],
-                                '$eq': [
-                                    '$quizId', '$$id'
-                                ]
-                            }
-                        }
-                    }],
-                    'as': 'userArray'
-                }
-            }, {
-                '$addFields': {
-                    'userIdArray': {
-                        '$map': {
-                            'input': '$userArray',
-                            'as': 'item',
-                            'in': '$$item.userid'
-                        }
-                    }
-                }
-            }, {
-                '$lookup': {
-                    'from': 'users',
-                    'let': {
-                        'id': '$userIdArray'
-                    },
-                    'pipeline': [{
-                        '$match': {
-                            '$expr': {
-                                '$in': [
-                                    '$_id', '$$id'
-                                ]
-                            }
-                        }
-                    }, {
-                        '$project': {
-                            'image': 1
-                        }
-                    }],
-                    'as': 'userAnswer'
-                }
-            }, {
-                '$project': {
-                    'userArray': 0,
-                    'userIdArray': 0,
-                    'answer': 0,
-                    'bonus_percentage': 0,
-                    'is_bonus': 0,
-                    'quiz_status': 0,
-                    'quizjoin': 0
-                }
+             })
+            
+            pipeline.push({
+                $match: {
+                    $and: [{ start_date: { $gt: date } }, { start_date: { $lt: EndDate } }]
+                  }
             })
-            let data = await quizModel.aggregate(pipeline)
+            let data = await stockQuizModel.aggregate(pipeline)
+            console.log(data)
             if (data.length === 0) {
                 return {
                     status: false,
-                    message: "Quiz  not Found",
+                    message: " Stock Quiz  not Found",
                     data: []
                 }
             }
             return {
                 status: true,
-                message: "Quiz fatch Successfully",
+                message: "Stock Quiz fatch Successfully",
                 data: data
             }
         } catch (error) {
@@ -247,22 +123,30 @@ class quizfantasyServices {
         }
     }
 
-    async getSingleQuiz(req) {
+    async getStockSingleQuiz(req) {
         try {
             let {
-                quizId,
-                matchkey
+                stockquizId,
             } = req.query
-            let data = await quizModel.findOne({
-                _id: quizId,
-                matchkey
-            }, {
-                answer: 0
+            let date = moment().format('YYYY-MM-DD HH:mm:ss');
+            let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
+            let pipeline = []
+             pipeline.push({
+                '$match': {
+                     'is_enabled': true,
+                     '_id':mongoose.Types.ObjectId(stockquizId)
+                }
+             })
+            pipeline.push({
+                $match: {
+                    $and: [{ start_date: { $gt: date } }, { start_date: { $lt: EndDate } }]
+                  }
             })
+            let data = await stockQuizModel.aggregate(pipeline)
             if (!data) {
                 return {
                     status: false,
-                    message: "Match Not Found",
+                    message: "Stock Quiz  Not Found",
                     data: {}
                 }
             }
@@ -2322,12 +2206,11 @@ class quizfantasyServices {
         }
     }
 
-    async quizfindJoinLeaugeExist(matchkey, userId, quizAnswer, quiz) {
+    async stockquizfindJoinLeaugeExist(userId, stockquizAnswer, quiz) {
         if (!quiz || quiz == null || quiz == undefined) return 4;
 
-        const quizjoinedLeauges = await QuizJoinLeaugeModel.find({
-            matchkey: matchkey,
-            quizId: quiz._id,
+        const quizjoinedLeauges = await StockQuizJoinLeaugeModel.find({
+            stockquizId: quiz._id,
             userid: userId,
         });
         if (quizjoinedLeauges.length == 0) return 1;
@@ -2341,13 +2224,13 @@ class quizfantasyServices {
 
     }
 
-    async quizfindUsableBonusMoney(quiz, bonus, winning, balance) {
-        if (quiz.is_bonus != 1)
-            return {
-                bonus: bonus,
-                cons_bonus: 0,
-                reminingfee: quiz.entryfee
-            };
+    async stockquizfindUsableBonusMoney(quiz, bonus, winning, balance) {
+        // if (quiz.is_bonus != 1)
+        //     return {
+        //         bonus: bonus,
+        //         cons_bonus: 0,
+        //         reminingfee: quiz.entryfee
+        //     };
         let totalQuizBonus = 0;
         totalQuizBonus = (quiz.bonus_percentage / 100) * quiz.entryfee;
         const finduserbonus = bonus;
@@ -2372,7 +2255,7 @@ class quizfantasyServices {
         }
     }
 
-    async quizfindUsableBalanceMoney(resultForBonus, balance) {
+    async stockquizfindUsableBalanceMoney(resultForBonus, balance) {
         if (balance >= resultForBonus.reminingfee)
             return {
                 balance: balance - resultForBonus.reminingfee,
@@ -2387,7 +2270,7 @@ class quizfantasyServices {
             };
     }
 
-    async quizfindUsableWinningMoney(resultForBalance, winning) {
+    async stockquizfindUsableWinningMoney(resultForBalance, winning) {
         if (winning >= resultForBalance.reminingfee) {
             return {
                 winning: winning - resultForBalance.reminingfee,
@@ -2400,473 +2283,6 @@ class quizfantasyServices {
                 cons_win: winning,
                 reminingfee: resultForBalance.reminingfee - winning
             };
-        }
-    }
-
-    async joinQuizContest(req) {
-        try {
-            const {
-                matchchallengeid,
-                jointeamid
-            } = req.body;
-            let totalchallenges = 0,
-                totalmatches = 0,
-                totalseries = 0,
-                joinedMatch = 0,
-                joinedSeries = 0,
-                aggpipe = [];
-
-
-            aggpipe.push({
-                $match: {
-                    _id: mongoose.Types.ObjectId(matchchallengeid)
-                }
-            });
-
-            aggpipe.push({
-                $lookup: {
-                    from: 'listmatches',
-                    localField: 'matchkey',
-                    foreignField: '_id',
-                    as: 'listmatch'
-                }
-            });
-
-            const matchchallengesData = await matchchallengesModel.aggregate(aggpipe);
-            let listmatchId = matchchallengesData[0].listmatch[0]._id;
-            let matchchallengesDataId = matchchallengesData[0]._id;
-            let matchchallenge = matchchallengesData[0];
-            let seriesId = matchchallengesData[0].listmatch[0].series;
-            let matchStartDate = matchchallengesData[0].listmatch[0].start_date;
-
-            if (matchchallengesData.length == 0) {
-                return {
-                    message: 'Match Not Found',
-                    success: false,
-                    data: {}
-                };
-            }
-            const matchTime = await matchServices.getMatchTime(matchStartDate);
-            if (matchTime === false) {
-                return {
-                    message: 'Match has been closed, You cannot join leauge now.',
-                    status: false,
-                    data: {}
-                }
-            }
-            const jointeamids = jointeamid.split(',');
-
-            const jointeamsCount = await JoinQuizTeamModel.find({
-                _id: {
-                    $in: jointeamids
-                }
-            }).countDocuments();
-            if (jointeamids.length != jointeamsCount) return {
-                message: 'Invalid Team',
-                status: false,
-                data: {}
-            }
-
-            const user = await userModel.findOne({
-                _id: req.user._id
-            }, {
-                userbalance: 1
-            });
-            if (!user || !user.userbalance) return {
-                message: 'Insufficient balance',
-                status: false,
-                data: {}
-            };
-
-            const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
-            const balance = parseFloat(user.userbalance.balance.toFixed(2));
-            const winning = parseFloat(user.userbalance.winning.toFixed(2));
-            const totalBalance = bonus + balance + winning;
-            let i = 0,
-                count = 0,
-                mainbal = 0,
-                mainbonus = 0,
-                mainwin = 0,
-                tranid = '';
-            for (const jointeamId of jointeamids) {
-                const jointeamsData = await JoinQuizTeamModel.findOne({
-                    _id: jointeamId
-                })
-                // console.log(`-------------IN ${i} LOOP--------------------`);
-                i++;
-                const result = await this.findJoinLeaugeExist(listmatchId, req.user._id, jointeamId, matchchallenge);
-
-                if (result != 1 && result != 2 && i > 1) {
-
-                    const userObj = {
-                        'userbalance.balance': balance - mainbal,
-                        'userbalance.bonus': bonus - mainbonus,
-                        'userbalance.winning': winning - mainwin,
-                        $inc: {
-                            totalchallenges: totalchallenges,
-                            totalmatches: totalmatches,
-                            totalseries: totalseries,
-                        },
-                    };
-                    let randomStr = randomstring.generate({
-                        length: 4,
-                        charset: 'alphabetic',
-                        capitalization: 'uppercase'
-                    });
-
-                    const transactiondata = {
-                        type: 'Contest Joining Fee',
-                        contestdetail: `${matchchallenge.entryfee}-${count}`,
-                        amount: matchchallenge.entryfee * count,
-                        total_available_amt: totalBalance - matchchallenge.entryfee * count,
-                        transaction_by: constant.TRANSACTION_BY.WALLET,
-                        challengeid: matchchallengeid,
-                        userid: req.user._id,
-                        paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                        bal_bonus_amt: bonus - mainbonus,
-                        bal_win_amt: winning - mainwin,
-                        bal_fund_amt: balance - mainbal,
-                        cons_amount: mainbal,
-                        cons_bonus: mainbonus,
-                        cons_win: mainwin,
-                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-                    };
-
-                    await Promise.all([
-                        userModel.findOneAndUpdate({
-                            _id: req.user._id
-                        }, userObj, {
-                            new: true
-                        }),
-                        TransactionModel.create(transactiondata)
-                    ]);
-                    return result;
-                } else if (result != 1 && result != 2) {
-
-                    return result;
-                }
-                const resultForBonus = await this.findUsableBonusMoney(
-                    matchchallenge,
-                    bonus - mainbonus,
-                    winning - mainwin,
-                    balance - mainbal
-                );
-                console.log('resultForBonus', resultForBonus);
-                if (resultForBonus == false) {
-
-                    if (i > 1) {
-                        const userObj = {
-                            'userbalance.balance': balance - mainbal,
-                            'userbalance.bonus': bonus - mainbonus,
-                            'userbalance.winning': winning - mainwin,
-                            $inc: {
-                                totalchallenges: totalchallenges,
-                                totalmatches: totalmatches,
-                                totalseries: totalseries,
-                            },
-                        };
-                        let randomStr = randomstring.generate({
-                            length: 4,
-                            charset: 'alphabetic',
-                            capitalization: 'uppercase'
-                        });
-                        const transactiondata = {
-                            type: 'Contest Joining Fee',
-                            contestdetail: `${matchchallenge.entryfee}-${count}`,
-                            amount: matchchallenge.entryfee * count,
-                            total_available_amt: totalBalance - matchchallenge.entryfee * count,
-                            transaction_by: constant.TRANSACTION_BY.WALLET,
-                            challengeid: matchchallengeid,
-                            userid: req.user._id,
-                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                            bal_bonus_amt: bonus - mainbonus,
-                            bal_win_amt: winning - mainwin,
-                            bal_fund_amt: balance - mainbal,
-                            cons_amount: mainbal,
-                            cons_bonus: mainbonus,
-                            cons_win: mainwin,
-                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-                        };
-                        await Promise.all([
-                            userModel.findOneAndUpdate({
-                                _id: req.user._id
-                            }, userObj, {
-                                new: true
-                            }),
-                            TransactionModel.create(transactiondata)
-                        ]);
-                    }
-                    return {
-                        message: 'Insufficient balance',
-                        status: false,
-                        data: {}
-                    };
-                }
-                const resultForBalance = await this.findUsableBalanceMoney(resultForBonus, balance - mainbal);
-                const resultForWinning = await this.findUsableWinningMoney(resultForBalance, winning - mainwin);
-                // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
-                if (resultForWinning.reminingfee > 0) {
-                    // console.log(`---------------------3RD IF--------${resultForWinning}---------`);
-                    if (i > 1) {
-                        const userObj = {
-                            'userbalance.balance': balance - mainbal,
-                            'userbalance.bonus': bonus - mainbonus,
-                            'userbalance.winning': winning - mainwin,
-                            $inc: {
-                                totalchallenges: totalchallenges,
-                                totalmatches: totalmatches,
-                                totalseries: totalseries,
-                            },
-                        };
-                        let randomStr = randomstring.generate({
-                            length: 4,
-                            charset: 'alphabetic',
-                            capitalization: 'uppercase'
-                        });
-
-                        const transactiondata = {
-                            type: 'Contest Joining Fee',
-                            contestdetail: `${matchchallenge.entryfee}-${count}`,
-                            amount: matchchallenge.entryfee * count,
-                            total_available_amt: totalBalance - matchchallenge.entryfee * count,
-                            transaction_by: constant.TRANSACTION_BY.WALLET,
-                            challengeid: matchchallengeid,
-                            userid: req.user._id,
-                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                            bal_bonus_amt: bonus - mainbonus,
-                            bal_win_amt: winning - mainwin,
-                            bal_fund_amt: balance - mainbal,
-                            cons_amount: mainbal,
-                            cons_bonus: mainbonus,
-                            cons_win: mainwin,
-                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-                        };
-                        await Promise.all([
-                            userModel.findOneAndUpdate({
-                                _id: req.user._id
-                            }, userObj, {
-                                new: true
-                            }),
-                            TransactionModel.create(transactiondata)
-                        ]);
-                    }
-                    return {
-                        message: 'Insufficient balance',
-                        status: false,
-                        data: {}
-                    };
-                }
-                let randomStr = randomstring.generate({
-                    length: 4,
-                    charset: 'alphabetic',
-                    capitalization: 'uppercase'
-                });
-
-                const coupon = randomstring.generate({
-                    charset: 'alphanumeric',
-                    length: 4,
-                });
-                tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
-                let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
-                if (result == 1) {
-
-                    joinedMatch = await JoinLeaugeModel.find({
-                        matchkey: listmatchId,
-                        userid: req.user._id
-                    }).limit(1).count();
-                    if (joinedMatch == 0) {
-                        joinedSeries = await JoinLeaugeModel.find({
-                            seriesid: seriesId,
-                            userid: req.user._id
-                        }).limit(1).count();
-                    }
-                }
-                const joinedLeauges = await JoinLeaugeModel.find({
-                    challengeid: matchchallengesDataId
-                }).count();
-                const joinUserCount = joinedLeauges + 1;
-                if (matchchallenge.contest_type == 'Amount' && joinUserCount > matchchallenge.maximum_user) {
-                    if (i > 1) {
-                        const userObj = {
-                            'userbalance.balance': balance - mainbal,
-                            'userbalance.bonus': bonus - mainbonus,
-                            'userbalance.winning': winning - mainwin,
-                            $inc: {
-                                totalchallenges: totalchallenges,
-                                totalmatches: totalmatches,
-                                totalseries: totalseries,
-                            },
-                        };
-                        let randomStr = randomstring.generate({
-                            length: 4,
-                            charset: 'alphabetic',
-                            capitalization: 'uppercase'
-                        });
-                        const transactiondata = {
-                            type: 'Contest Joining Fee',
-                            contestdetail: `${matchchallenge.entryfee}-${count}`,
-                            amount: matchchallenge.entryfee * count,
-                            total_available_amt: totalBalance - matchchallenge.entryfee * count,
-                            transaction_by: constant.TRANSACTION_BY.WALLET,
-                            challengeid: matchchallengeid,
-                            userid: req.user._id,
-                            paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                            bal_bonus_amt: bonus - mainbonus,
-                            bal_win_amt: winning - mainwin,
-                            bal_fund_amt: balance - mainbal,
-                            cons_amount: mainbal,
-                            cons_bonus: mainbonus,
-                            cons_win: mainwin,
-                            transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-                        };
-                        await Promise.all([
-                            userModel.findOneAndUpdate({
-                                _id: req.user._id
-                            }, userObj, {
-                                new: true
-                            }),
-                            TransactionModel.create(transactiondata)
-                        ]);
-                    }
-                    return {
-                        message: 'League is Closed',
-                        status: false,
-                        data: {}
-                    };
-                }
-                const joinLeaugeResult = await JoinLeaugeModel.create({
-                    userid: req.user._id,
-                    challengeid: matchchallengesDataId,
-                    teamid: jointeamId,
-                    matchkey: listmatchId,
-                    seriesid: seriesId,
-                    transaction_id: tranid,
-                    refercode: referCode,
-                    leaugestransaction: {
-                        user_id: req.user._id,
-                        bonus: resultForBonus.cons_bonus,
-                        balance: resultForBalance.cons_amount,
-                        winning: resultForWinning.cons_win,
-                    },
-                });
-                await leaderBoardModel.create({
-                    userId: req.user._id,
-                    challengeid: matchchallengesDataId,
-                    teamId: jointeamId,
-                    matchkey: listmatchId,
-                    user_team: user.team,
-                    teamnumber: jointeamsData.teamnumber,
-                    joinId: joinLeaugeResult._id
-                });
-                const joinedLeaugesCount = await JoinLeaugeModel.find({
-                    challengeid: matchchallengesDataId
-                }).count();
-                if (result == 1) {
-                    totalchallenges = 1;
-                    if (joinedMatch == 0) {
-                        totalmatches = 1;
-                        if (joinedMatch == 0 && joinedSeries == 0) {
-                            totalseries = 1;
-                        }
-                    }
-                }
-                count++;
-
-                if (joinLeaugeResult._id) {
-                    mainbal = mainbal + resultForBalance.cons_amount;
-                    mainbonus = mainbonus + resultForBonus.cons_bonus;
-                    mainwin = mainwin + resultForWinning.cons_win;
-                    if (matchchallenge.contest_type == 'Amount' && joinedLeaugesCount == matchchallenge.maximum_user && matchchallenge.is_running != 1) {
-                        // console.log(`---------------------8TH IF--------${matchchallenge.is_running}---------`);
-                        await matchchallengesModel.findOneAndUpdate({
-                            matchkey: listmatchId,
-                            _id: mongoose.Types.ObjectId(matchchallengeid)
-                        }, {
-                            status: 'closed',
-                            joinedusers: joinedLeaugesCount,
-                        }, {
-                            new: true
-                        });
-                    } else {
-                        // console.log(`---------------------8TH IF/ELSE--------${matchchallenge.is_running}---------`);
-                        const gg = await matchchallengesModel.findOneAndUpdate({
-                            matchkey: listmatchId,
-                            _id: mongoose.Types.ObjectId(matchchallengeid)
-                        }, {
-                            status: 'opened',
-                            joinedusers: joinedLeaugesCount,
-                        }, {
-                            new: true
-                        });
-                    }
-                } else
-                    await matchchallengesModel.findOneAndUpdate({
-                        matchkey: listmatchId,
-                        _id: mongoose.Types.ObjectId(matchchallengeid)
-                    }, {
-                        status: 'opened',
-                        joinedusers: joinedLeaugesCount,
-                    }, {
-                        new: true
-                    });
-                if (i == jointeamids.length) {
-                    // console.log(`---------------------9TH IF--------${i}---------`);
-                    const userObj = {
-                        'userbalance.balance': balance - mainbal,
-                        'userbalance.bonus': bonus - mainbonus,
-                        'userbalance.winning': winning - mainwin,
-                        $inc: {
-                            totalchallenges: totalchallenges,
-                            totalmatches: totalmatches,
-                            totalseries: totalseries,
-                        },
-                    };
-                    let randomStr = randomstring.generate({
-                        length: 4,
-                        charset: 'alphabetic',
-                        capitalization: 'uppercase'
-                    });
-                    const transactiondata = {
-                        type: 'Contest Joining Fee',
-                        contestdetail: `${matchchallenge.entryfee}-${count}`,
-                        amount: matchchallenge.entryfee * count,
-                        total_available_amt: totalBalance - matchchallenge.entryfee * count,
-                        transaction_by: constant.TRANSACTION_BY.WALLET,
-                        challengeid: matchchallengeid,
-                        userid: req.user._id,
-                        paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
-                        bal_bonus_amt: bonus - mainbonus,
-                        bal_win_amt: winning - mainwin,
-                        bal_fund_amt: balance - mainbal,
-                        cons_amount: mainbal,
-                        cons_bonus: mainbonus,
-                        cons_win: mainwin,
-                        transaction_id: tranid != '' ? tranid : `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`,
-                    };
-                    Promise.all([
-                        userModel.findOneAndUpdate({
-                            _id: req.user._id
-                        }, userObj, {
-                            new: true
-                        }),
-                        TransactionModel.create(transactiondata)
-                    ]);
-                    // ----------------------------------------------------------------------------------------------------------------------
-
-                    return {
-                        message: 'Contest Joined',
-                        status: true,
-                        data: {
-                            joinedusers: joinedLeaugesCount,
-                            referCode: referCode
-                        }
-                    };
-                }
-
-            }
-
-        } catch (error) {
-            throw error;
         }
     }
 
@@ -2961,184 +2377,6 @@ class quizfantasyServices {
 
     };
 
-    async getAllNewContests(req) {
-        try {
-            await this.updateJoinedusers(req);
-            let finalData = [],
-                contest_arr = [],
-                aggpipe = [];
-            aggpipe.push({
-                $lookup: {
-                    from: "matchchallenges",
-                    let: {
-                        contestcat: "$_id",
-                        matchkey: mongoose.Types.ObjectId(req.query.matchkey),
-                    },
-                    pipeline: [{
-                            $match: {
-                                $expr: {
-                                    $and: [{
-                                            $eq: ["$$matchkey", "$matchkey"],
-                                        },
-                                        {
-                                            $eq: [
-                                                "$$contestcat",
-                                                "$contest_cat",
-                                            ],
-                                        }, {
-                                            $eq: ["opened", "$status"],
-                                        },
-                                        {
-                                            $eq: [0, '$is_private'],
-                                        }
-                                    ],
-                                },
-                            },
-                        },
-                        {
-                            $lookup: {
-                                from: "joinedleauges",
-                                let: {
-                                    challengeId: "$_id",
-                                    matchkey: '$matchkey',
-                                    userId: mongoose.Types.ObjectId(req.user._id),
-                                },
-                                pipeline: [{
-                                    $match: {
-                                        $expr: {
-                                            $and: [{
-                                                    $eq: [
-                                                        "$$matchkey",
-                                                        "$matchkey",
-                                                    ],
-                                                },
-                                                {
-                                                    $eq: [
-                                                        "$$challengeId",
-                                                        "$challengeid",
-                                                    ],
-                                                },
-
-                                                {
-                                                    $eq: [
-                                                        "$$userId",
-                                                        "$userid",
-                                                    ],
-                                                },
-                                            ],
-                                        },
-                                    },
-                                }, {
-                                    $project: {
-                                        refercode: 1
-                                    }
-                                }, ],
-                                as: 'joinedleauge'
-                            },
-                        },
-                        {
-                            $sort: {
-                                win_amount: -1
-                            },
-                        },
-                    ],
-                    as: "contest",
-                }
-            });
-            aggpipe.push({
-                $addFields: {
-                    challengeSize: {
-                        $size: "$contest"
-                    }
-                }
-            })
-            aggpipe.push({
-                $match: {
-                    challengeSize: {
-                        $gt: 0
-                    }
-                }
-            })
-
-            aggpipe.push({
-                $sort: {
-                    Order: 1
-                }
-            })
-            const categoryData = await contestCategory.aggregate(aggpipe);
-            if (categoryData.length == 0) {
-                return {
-                    message: "No Challenge Available For This Match",
-                    status: true,
-                    data: []
-                }
-            }
-            let [total_teams, total_joinedcontestData] = await Promise.all([
-                JoinQuizTeamModel.countDocuments({
-                    userid: req.user._id,
-                    matchkey: req.query.matchkey
-                }),
-                this.getJoinleague(req.user._id, req.query.matchkey)
-            ]);
-            for (let cat of categoryData) {
-                let i = 0;
-                cat.catid = cat._id;
-                cat.cat_order = cat.Order;
-                cat.catname = cat.name;
-                cat.image = cat.image ? `${constant.BASE_URL}${cat.image}` : `${constant.BASE_URL}logo.png`;
-                for (let matchchallenge of cat.contest) {
-                    i++;
-                    let isselected = false,
-                        refercode = '',
-                        winners = 0;
-                    const price_card = [];
-                    if (matchchallenge?.joinedleauge && matchchallenge.joinedleauge.length > 0) {
-                        refercode = matchchallenge?.joinedleauge[0].refercode;
-                        if (matchchallenge.multi_entry == 1 && matchchallenge.joinedleauge.length < 11) {
-                            if (matchchallenge.contest_type == 'Amount') {
-                                if (matchchallenge.joinedleauge.length == 11 || matchchallenge.joinedusers == matchchallenge.maximum_user)
-                                    isselected = true;
-                            } else if (matchchallenge.contest_type == 'Percentage') {
-                                if (matchchallenge.joinedleauge.length == 11) isselected = true;
-                            } else isselected = false;
-                        } else isselected = true;
-                    }
-                    matchchallenge.gift_image = "";
-                    matchchallenge.gift_type = "amount";
-                    let find_gift = matchchallenge.matchpricecards.find(function (x) {
-                        return x.gift_type == "gift"
-                    });
-                    if (find_gift) {
-                        matchchallenge.gift_image = `${constant.BASE_URL}${find_gift.image}`;
-                        matchchallenge.gift_type = find_gift.gift_type;
-                    }
-                    let team_limits;
-                    if (matchchallenge.multi_entry == 0) {
-                        team_limits = 1
-                    } else {
-                        team_limits = matchchallenge.team_limit
-                    }
-                    matchchallenge.isselected = isselected;
-                    matchchallenge.team_limits = team_limits;
-                    matchchallenge.refercode = refercode;
-                    matchchallenge.matchchallengeid = matchchallenge._id;
-                    matchchallenge.status = 1;
-                    matchchallenge.joinedleauges = matchchallenge.joinedleauge.length;
-                    matchchallenge.total_joinedcontest = total_joinedcontestData || 0;
-                    matchchallenge.total_teams = total_teams || 0;
-
-                }
-            }
-            return {
-                message: 'Contest of A Perticular Match',
-                status: true,
-                data: categoryData
-            }
-        } catch (error) {
-            console.log('error', error);
-        }
-    }
-
     async getUserRank(rankArray) {
 
         if (rankArray.length == 0) return [];
@@ -3176,554 +2414,29 @@ class quizfantasyServices {
         return true;
     };
     //overviewendteam    
-    async getMyQuizJoinedContest(req) {
+
+    async stockquizgetUsableBalance(req) {
         try {
             const {
-                matchkey
+                stockquizId
             } = req.query;
-            const aggPipe = [];
-            aggPipe.push({
-                $match: {
-                    userid: mongoose.Types.ObjectId(req.user._id),
-                    matchkey: mongoose.Types.ObjectId(matchkey),
-                }
-            });
-
-
-            aggPipe.push({
-                $group: {
-                    _id: '$challengeid',
-                    joinedleaugeId: {
-                        $first: '$_id'
-                    },
-                    matchkey: {
-                        $first: '$matchkey'
-                    },
-                    jointeamid: {
-                        $first: '$teamid'
-                    },
-                    userid: {
-                        $first: '$userid'
-                    },
-                },
-            });
-            aggPipe.push({
-                $lookup: {
-                    from: 'matchchallenges',
-                    localField: '_id',
-                    foreignField: '_id',
-                    as: 'matchchallenge'
-                }
-            });
-            aggPipe.push({
-                $addFields: {
-                    matchchallengestatus: {
-                        $arrayElemAt: ['$matchchallenge.status', 0]
-                    }
-                }
-            });
-            aggPipe.push({
-                $match: {
-                    matchchallengestatus: {
-                        $ne: "canceled"
-                    }
-                }
-            });
-            aggPipe.push({
-                $project: {
-                    _id: 0,
-                    matchchallengeid: "$_id",
-                    amount_type: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.amount_type', 0]
-                        }, 0]
-                    },
-                    jointeamid: 1,
-                    joinedleaugeId: 1,
-                    userid: 1,
-                    win_amount: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.win_amount', 0]
-                        }, 0]
-                    },
-                    contest_cat: {
-                        $arrayElemAt: ['$matchchallenge.contest_cat', 0]
-                    },
-                    is_bonus: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.is_bonus', 0]
-                        }, 0]
-                    },
-                    bonus_percentage: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.bonus_percentage', 0]
-                        }, 0]
-                    },
-                    is_private: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.is_private', 0]
-                        }, 0]
-                    },
-                    winning_percentage: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.winning_percentage', 0]
-                        }, 0]
-                    },
-                    contest_type: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.contest_type', 0]
-                        }, 0]
-                    },
-                    contest_name: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.contest_name', 0]
-                        }, 0]
-                    },
-                    multi_entry: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.multi_entry', 0]
-                        }, 0]
-                    },
-                    confirmed_challenge: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.confirmed_challenge', 0]
-                        }, 0]
-                    },
-                    matchkey: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.matchkey', 0]
-                        }, 0]
-                    },
-                    entryfee: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.entryfee', 0]
-                        }, 0]
-                    },
-                    maximum_user: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.maximum_user', 0]
-                        }, 0]
-                    },
-                    joinedusers: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.joinedusers', 0]
-                        }, 0]
-                    },
-                    pricecard_type: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.pricecard_type', 0]
-                        }, 0]
-                    },
-                    status: {
-                        $arrayElemAt: ['$matchchallenge.status', 0]
-                    },
-                    team_limit: {
-                        $arrayElemAt: [{
-                            $ifNull: ['$matchchallenge.team_limit', 0]
-                        }, 0]
-                    },
-                    matchpricecards: {
-                        $arrayElemAt: ['$matchchallenge.matchpricecards', 0]
-                    },
-                }
-            });
-            aggPipe.push({
-                $lookup: {
-                    from: 'joinedleauges',
-                    let: {
-                        matchchallengeid: '$matchchallengeid'
-                    },
-                    pipeline: [{
-                            $match: {
-                                $expr: {
-                                    $and: [{
-                                        $eq: ['$$matchchallengeid', '$challengeid'],
-                                    }, ],
-                                },
-                            },
-                        },
-                        {
-                            $lookup: {
-                                from: 'joinquizteams',
-                                let: {
-                                    teamid: '$teamid'
-                                },
-                                pipeline: [{
-                                        $match: {
-                                            $expr: {
-                                                $and: [{
-                                                    $eq: ['$$teamid', '$_id'],
-                                                }, ],
-                                            },
-                                        },
-                                    },
-                                    {
-                                        $project: {
-                                            _id: 0,
-                                            points: 1,
-                                            userid: 1,
-                                            teamnumber: 1,
-                                        },
-                                    },
-                                ],
-                                as: 'jointeam',
-                            },
-                        },
-                        {
-                            $unwind: {
-                                path: '$jointeam',
-                            },
-                        },
-                        {
-                            $project: {
-                                _id: 0,
-                                jointeam: 1,
-                                refercode: {
-                                    $ifNull: ['$refercode', 0]
-                                },
-                            },
-                        },
-                    ],
-
-                    as: 'jointeamids',
-                },
-            });
-            aggPipe.push({
-                $lookup: {
-                    from: 'finalresults',
-                    let: {
-                        matchchallengeid: '$matchchallengeid'
-                    },
-                    pipeline: [{
-                            $match: {
-                                $expr: {
-                                    $and: [{
-                                            $eq: ['$$matchchallengeid', '$challengeid']
-                                        },
-                                        {
-                                            $eq: ['$userid', mongoose.Types.ObjectId(req.user._id)]
-                                        },
-                                    ],
-                                },
-                            },
-                        },
-                        {
-                            $group: {
-                                _id: null,
-                                amount: {
-                                    $sum: '$amount'
-                                },
-                            },
-                        },
-                    ],
-                    as: 'finalresults',
-                },
-            });
-            aggPipe.push({
-                $sort: {
-                    'win_amount': -1,
-                }
-            });
-            aggPipe.push({
-                $lookup: {
-                    from: 'listmatches',
-                    localField: 'matchkey',
-                    foreignField: '_id',
-                    as: 'listmatch'
-                }
-            });
-
-            aggPipe.push({
-                $project: {
-                    // amount_type:"$amount_type",
-                    jointeamid: 1,
-                    matchchallengeid: 1,
-
-                    userid: 1,
-                    joinedleaugeId: 1,
-                    win_amount: '$win_amount',
-                    contest_cat: '$contest_cat',
-                    is_bonus: {
-                        $ifNull: ['$is_bonus', 0]
-                    },
-                    bonus_percentage: {
-                        $ifNull: ['$bonus_percentage', 0]
-                    },
-                    is_private: {
-                        $ifNull: ['$is_private', 0]
-                    },
-                    winning_percentage: '$winning_percentage',
-                    contest_type: {
-                        $ifNull: ['$contest_type', '']
-                    },
-                    multi_entry: {
-                        $ifNull: ['$multi_entry', '']
-                    },
-                    contest_name: {
-                        $ifNull: ['$contest_name', '']
-                    },
-                    confirmed: {
-                        $ifNull: ['$confirmed_challenge', 0]
-                    },
-                    matchkey: {
-                        $ifNull: ['$matchkey', 0]
-                    },
-                    joinedusers: {
-                        $ifNull: ['$joinedusers', 0]
-                    },
-                    entryfee: {
-                        $ifNull: ['$entryfee', 0]
-                    },
-                    pricecard_type: {
-                        $ifNull: ['$pricecard_type', 0]
-                    },
-                    maximum_user: {
-                        $ifNull: ['$maximum_user', 0]
-                    },
-                    team_limit: {
-                        $ifNull: ['$team_limit', 11]
-                    },
-                    matchFinalstatus: {
-                        $ifNull: [{
-                            $arrayElemAt: ['$listmatch.final_status', 0]
-                        }, '']
-                    },
-                    matchpricecards: '$matchpricecards',
-                    //-------------Comment for bleow commented code----------//
-                    matchChallengeStatus: '$status',
-                    jointeams: {
-                        $filter: {
-                            input: '$jointeamids.jointeam',
-                            as: 'team',
-                            cond: {
-                                $eq: ['$$team.userid', mongoose.Types.ObjectId(req.user._id)]
-                            },
-                        },
-                    },
-                    bonus_date: '',
-                    totaljointeams: '$jointeamids.jointeam',
-                    refercode: {
-                        $ifNull: [{
-                            $arrayElemAt: ['$jointeamids.refercode', 0]
-                        }, 0]
-                    },
-                    finalresultsAmount: {
-                        $ifNull: [{
-                            $arrayElemAt: ['$finalresults.amount', 0]
-                        }, 0]
-                    },
-                    amount_type: {
-                        $ifNull: ['$amount_type', '']
-                    },
-                },
-            });
-
-            const JoinContestData = await JoinLeaugeModel.aggregate(aggPipe);
-
-            let i = 0;
-            const finalData = [];
-            if (JoinContestData.length == 0) return {
-                message: 'Data Not Found',
-                status: true,
-                data: []
-            };
-            for await (const challanges of JoinContestData) {
-                //console.log("challanges",challanges)
-                const getCurrentRankArray = [];
-                for await (const element of challanges.totaljointeams) {
-                    getCurrentRankArray.push({
-                        points: element.points,
-                        userid: element.userid,
-                        userjoinedleaugeId: challanges.joinedleaugeId,
-                        userTeamNumber: element.teamnumber,
-                    });
-                }
-                getCurrentRankArray.sort((a, b) => {
-                    return b.points - a.points;
-                });
-                const getUserCurrentRank = await this.getUserRank(getCurrentRankArray);
-                const getRank = getUserCurrentRank.find(item => {
-                    return item.userid.toString() == req.user._id.toString();
-                });
-
-
-                const tmpObj = {
-                    userrank: getRank.rank,
-                    userpoints: getRank.points,
-                    userteamnumber: getRank.userTeamNumber,
-                    win_amount_str: challanges.win_amount != 0 ? `Win ₹${challanges.win_amount}` : '',
-                    jointeamid: challanges.jointeamid,
-                    joinedleaugeId: challanges.joinedleaugeId,
-                    matchchallengeid: challanges.matchchallengeid,
-                    matchkey: challanges.matchkey,
-                    challenge_id: challanges.challangeid,
-                    refercode: challanges.refercode,
-                    contest_name: challanges.contest_name,
-                    winamount: challanges.win_amount != 0 ? challanges.win_amount : 0,
-                    is_private: challanges.is_private != 0 ? challanges.is_private : 0,
-                    is_bonus: challanges.is_bonus != 0 ? challanges.is_bonus : 0,
-                    bonus_percentage: challanges.bonus_percentage != 0 ? challanges.bonus_percentage : 0,
-                    winning_percentage: challanges.winning_percentage != 0 ? challanges.winning_percentage : 0,
-                    contest_type: challanges.contest_type != '' ? challanges.contest_type : '',
-                    confirmed_challenge: challanges.confirmed != 0 ? challanges.confirmed : 0,
-                    multi_entry: challanges.multi_entry != 0 ? challanges.multi_entry : 0,
-                    joinedusers: challanges.joinedusers != 0 ? challanges.joinedusers : 0,
-                    entryfee: challanges.entryfee != 0 ? challanges.entryfee : 0,
-                    pricecard_type: challanges.pricecard_type != 0 ? challanges.pricecard_type : 0,
-                    maximum_user: challanges.maximum_user != 0 ? challanges.maximum_user : 0,
-                    matchFinalstatus: challanges.matchFinalstatus,
-                    matchChallengeStatus: challanges.matchChallengeStatus,
-                    bonus_date: challanges.bonus_date,
-                    totalwinning: Number(challanges.finalresultsAmount).toFixed(2),
-                    isselected: true,
-                    totalwinners: 1,
-                    price_card: [],
-                    pricecardstatus: 0,
-                };
-
-
-                if (challanges.multi_entry != 0) {
-                    tmpObj['team_limit'] = challanges.team_limit;
-                    tmpObj['plus'] = '+';
-                }
-                let k = 0,
-                    winners = 0;
-                const price_card = [];
-                tmpObj['amount_type'] = `${challanges.amount_type}`;
-                if (challanges.matchpricecards && challanges.matchpricecards != '') {
-                    const matchpricecards = challanges.matchpricecards;
-                    for await (const pricecard of matchpricecards) {
-                        k++;
-                        winners = Number(pricecard.winners) + Number(winners);
-                        const totalPrice = (Number(pricecard.total) / Number(pricecard.winners)).toFixed(2);
-                        const priceCard = {
-                            pricecard_id: pricecard._id,
-                            price: pricecard.type == 'Percentage' ? totalPrice : `${pricecard.price}`,
-                            winners: pricecard.winners,
-                            start_position: Number(pricecard.min_position) + 1 != Number(pricecard.max_position) ?
-                                `${Number(pricecard.min_position) + 1}-${pricecard.max_position}` : `${pricecard.max_position}`,
-                            amount_type: `${challanges.amount_type}`,
-                        };
-                        priceCard.gift_type = pricecard.gift_type;
-                        if (challanges.amount_type == 'prize') {
-                            if (pricecard.gift_type == "gift") {
-                                priceCard.image = `${constant.BASE_URL}/${pricecard.image}`;
-                                priceCard.price = pricecard.prize_name;
-                            } else {
-                                priceCard.price = pricecard.price;
-                                priceCard.image = '';
-                            }
-                        } else {
-                            priceCard.price = pricecard.price;
-                            priceCard.image = '';
-                        }
-                        if (pricecard.type == 'Percentage')
-                            priceCard['price_percent'] = `${pricecard.price_percent} %`;
-                        price_card.push(priceCard);
-                        if (k == matchpricecards.length) {
-                            tmpObj['totalwinners'] = winners;
-                            tmpObj['price_card'] = price_card;
-                            tmpObj['pricecardstatus'] = 1;
-                        }
-                    }
-                } else {
-                    tmpObj['totalwinners'] = 1;
-                    tmpObj['price_card'] = [{
-                        start_position: 1,
-                        price: `${challanges.win_amount}`,
-                        amount_type: `${challanges.amount_type}`,
-                        gift_type: "amount"
-                    }];
-                    tmpObj['pricecardstatus'] = 0;
-                }
-                let gift_image = "";
-                let gift_type = "amount";
-                let prize_name = "";
-                let find_gift = challanges.matchpricecards.find(function (x) {
-                    return x.gift_type == "gift"
-                });
-                if (find_gift) {
-                    gift_image = `${constant.BASE_URL}${find_gift.image}`;
-                    gift_type = find_gift.gift_type;
-                    prize_name = find_gift.prize_name;
-                }
-                tmpObj.gift_image = gift_image;
-                tmpObj.gift_type = gift_type;
-                tmpObj.prize_name = prize_name;
-                //------------------------------------------Hide Is selected value alway send true-------------------//
-                if (challanges.contest_type == 'Percentage') {
-                    tmpObj['isselected'] = challanges.jointeams ?
-                        challanges.multi_entry == 1 && challanges.jointeams.length < challanges.team_limit ?
-                        false :
-                        true :
-                        false;
-                } else {
-                    tmpObj['isselected'] = challanges.jointeams ?
-                        challanges.multi_entry == 1 &&
-                        challanges.jointeams.length < challanges.team_limit &&
-                        challanges.totaljointeams.length < challanges.maximum_user ?
-                        false :
-                        true :
-                        false;
-                }
-                // ------------count of contest and team------------
-                const total_teams = await JoinQuizTeamModel.countDocuments({
-                    matchkey: req.query.matchkey,
-                    userid: req.user._id,
-                });
-                const total_joinedcontestData = await JoinLeaugeModel.aggregate([{
-                        $match: {
-                            userid: mongoose.Types.ObjectId(req.user._id),
-                            matchkey: mongoose.Types.ObjectId(req.query.matchkey)
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: "$challengeid",
-                        }
-                    }, {
-                        $count: "total_count"
-                    }
-                ])
-                tmpObj['total_teams'] = total_teams || 0;
-                tmpObj['total_joinedcontest'] = total_joinedcontestData[0]?.total_count || 0;
-                finalData.push(tmpObj);
-                i++;
-                if (i == JoinContestData.length) return {
-                    message: 'Join Contest Data...!',
-                    status: true,
-                    data: finalData
-                };
-            }
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async quizgetUsableBalance(req) {
-        try {
-            const {
-                quizId
-            } = req.query;
-            if (quizId === undefined) {
+            if (stockquizId === undefined) {
                 return {
-                    message: "Quiz Not Found",
+                    message: "Stock Quiz Not Found",
                     status: false,
                     data: {}
                 }
             }
-            const quizData = await quizModel.findOne({
-                _id: mongoose.Types.ObjectId(quizId)
+            const quizData = await stockQuizModel.findOne({
+                _id: mongoose.Types.ObjectId(stockquizId)
             });
             if (!quizData) {
                 return {
-                    message: 'Quiz not found',
+                    message: 'Stock Quiz not found',
                     status: false,
                     data: {}
                 }
             }
-            req.query.matchkey = quizData.matchkey;
-            // await this.updateJoinedusers(req);
 
             const user = await userModel.findOne({
                 _id: req.user._id
@@ -3755,11 +2468,11 @@ class quizfantasyServices {
         }
     }
 
-    async joinQuiz(req) {
+    async joinStockQuiz(req) {
         try {
             let {
-                quizId,
-                quizAnswer
+                stockquizId,
+                stockquizAnswer
             } = req.body
             let totalchallenges = 0,
                 totalmatches = 0,
@@ -3770,37 +2483,29 @@ class quizfantasyServices {
 
             aggpipe.push({
                 $match: {
-                    _id: mongoose.Types.ObjectId(quizId)
+                    _id: mongoose.Types.ObjectId(stockquizId)
                 }
             });
-
-            aggpipe.push({
-                $lookup: {
-                    from: 'listmatches',
-                    localField: 'matchkey',
-                    foreignField: '_id',
-                    as: 'listmatch'
-                }
-            });
-
-            const quizData = await quizModel.aggregate(aggpipe);
+            const quizData = await stockQuizModel.aggregate(aggpipe);
+            console.log(quizData,"lllllllll")
             if (quizData.length == 0) {
                 return {
-                    message: 'Match Not Found',
+                    message: 'Stock Quiz Not Found',
                     success: false,
                     data: {}
                 };
             }
-            let listmatchId = quizData[0].listmatch[0]._id;
+            // let listmatchId = quizData[0].listmatch[0]._id;
             let quizDataId = quizData[0]._id;
             let quiz = quizData[0];
-            let seriesId = quizData[0].listmatch[0].series;
-            let matchStartDate = quizData[0].listmatch[0].start_date;
+            // let seriesId = quizData[0].listmatch[0].series;
+            // let matchStartDate = quizData[0].listmatch[0].start_date;
+            let matchStartDate = quizData[0].start_date;
 
             const matchTime = await matchServices.getMatchTime(matchStartDate);
             if (matchTime === false) {
                 return {
-                    message: 'Match has been closed, You cannot join leauge now.',
+                    message: 'Stock Quiz has been closed, You cannot join leauge now.',
                     status: false,
                     data: {}
                 }
@@ -3828,7 +2533,7 @@ class quizfantasyServices {
                 mainwin = 0,
                 tranid = '';
             
-            const result = await this.quizfindJoinLeaugeExist(listmatchId, req.user._id, quizAnswer, quiz);
+            const result = await this.stockquizfindJoinLeaugeExist(req.user._id, stockquizAnswer, quiz);
             let usebalance = await userModel.findOne({
                 _id: req.user._id
             }, {
@@ -3857,12 +2562,12 @@ class quizfantasyServices {
                 });
 
                 const transactiondata = {
-                    type: 'Quiz Joining Fee',
+                    type: 'Stock Quiz Joining Fee',
                     contestdetail: `${quiz.entryfee}`,
                     amount: quiz.entryfee,
                     total_available_amt: totalBalance - quiz.entryfee,
                     transaction_by: constant.TRANSACTION_BY.WALLET,
-                    quizId: quizId,
+                    stockquizId: stockquizId,
                     userid: req.user._id,
                     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                     bal_bonus_amt: bonus - mainbonus,
@@ -3886,7 +2591,7 @@ class quizfantasyServices {
 
                 return result;
             }
-            const resultForBonus = await this.quizfindUsableBonusMoney(
+            const resultForBonus = await this.stockquizfindUsableBonusMoney(
                 quiz,
                 bonus - mainbonus,
                 winning - mainwin,
@@ -3907,12 +2612,12 @@ class quizfantasyServices {
                     capitalization: 'uppercase'
                 });
                 const transactiondata = {
-                    type: 'Quiz Joining Fee',
+                    type: 'Stock Quiz Joining Fee',
                     contestdetail: `${quiz.entryfee}`,
                     amount: quiz.entryfee,
                     total_available_amt: totalBalance - quiz.entryfee,
                     transaction_by: constant.TRANSACTION_BY.WALLET,
-                    quizId: quizId,
+                    stockquizId: stockquizId,
                     userid: req.user._id,
                     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                     bal_bonus_amt: bonus - mainbonus,
@@ -3934,8 +2639,8 @@ class quizfantasyServices {
                
             }
 
-            const resultForBalance = await this.quizfindUsableBalanceMoney(resultForBonus, balance - mainbal);
-            const resultForWinning = await this.quizfindUsableWinningMoney(resultForBalance, winning - mainwin);
+            const resultForBalance = await this.stockquizfindUsableBalanceMoney(resultForBonus, balance - mainbal);
+            const resultForWinning = await this.stockquizfindUsableWinningMoney(resultForBalance, winning - mainwin);
             // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
             if (resultForWinning.reminingfee > 0) {
                 
@@ -3961,7 +2666,7 @@ class quizfantasyServices {
                     amount: quiz.entryfee,
                     total_available_amt: totalBalance - quiz.entryfee,
                     transaction_by: constant.TRANSACTION_BY.WALLET,
-                    quizId: quizId,
+                    stockquizId: stockquizId,
                     userid: req.user._id,
                     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                     bal_bonus_amt: bonus - mainbonus,
@@ -3995,28 +2700,27 @@ class quizfantasyServices {
             tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
             let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
             if (result == 1) {
-                console.log("oooo")
-                let joinedQuiz = await QuizJoinLeaugeModel.find({
-                    matchkey: listmatchId,
+                let joinedQuiz = await StockQuizJoinLeaugeModel.find({
+                    // matchkey: listmatchId,
                     userid: req.user._id
                 }).limit(1).count();
                 if (joinedQuiz == 0) {
-                    joinedSeries = await QuizJoinLeaugeModel.find({
-                        seriesid: seriesId,
+                    joinedSeries = await StockQuizJoinLeaugeModel.find({
+                        // seriesid: seriesId,
                         userid: req.user._id
                     }).limit(1).count();
                 }
             }
-            const quizjoinedLeauges = await QuizJoinLeaugeModel.find({
-                quizId: quizDataId
+            const quizjoinedLeauges = await StockQuizJoinLeaugeModel.find({
+                stockquizId: quizDataId
             }).count();
             const joinUserCount = quizjoinedLeauges + 1;
-            const quizjoinLeaugeResult = await QuizJoinLeaugeModel.create({
+            const quizjoinLeaugeResult = await StockQuizJoinLeaugeModel.create({
                 userid: req.user._id,
-                quizId: quizDataId,
-                answer: quizAnswer,
-                matchkey: listmatchId,
-                seriesid: seriesId,
+                stockquizId: quizDataId,
+                answer: stockquizAnswer,
+                // matchkey: listmatchId,
+                // seriesid: seriesId,
                 transaction_id: tranid,
                 refercode: referCode,
                 leaugestransaction: {
@@ -4026,9 +2730,9 @@ class quizfantasyServices {
                     winning: resultForWinning.cons_win,
                 },
             });
-            const joinedLeaugesCount = await QuizJoinLeaugeModel.find({
-                quizId: quizDataId,
-                matchkey: listmatchId
+            const joinedLeaugesCount = await StockQuizJoinLeaugeModel.find({
+                stockquizId: quizDataId,
+                // matchkey: listmatchId
             }).count();
             if (result == 1) {
                 totalchallenges = 1;
@@ -4046,9 +2750,8 @@ class quizfantasyServices {
               
             }
             // else
-            await quizModel.findOneAndUpdate({
-                matchkey: listmatchId,
-                _id: mongoose.Types.ObjectId(quizId)
+            await stockQuizModel.findOneAndUpdate({
+                _id: mongoose.Types.ObjectId(stockquizId)
             }, {
                 joinedusers: joinedLeaugesCount,
             }, {
@@ -4071,12 +2774,12 @@ class quizfantasyServices {
                 capitalization: 'uppercase'
             });
             const transactiondata = {
-                type: 'Quiz Joining Fee',
+                type: 'Stock Quiz Joining Fee',
                 contestdetail: `${quiz.entryfee}`,
                 amount: quiz.entryfee,
                 total_available_amt: totalBalance - quiz.entryfee,
                 transaction_by: constant.TRANSACTION_BY.WALLET,
-                quizId: quizId,
+                stockquizId: stockquizId,
                 userid: req.user._id,
                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                 bal_bonus_amt: bonus - mainbonus,
@@ -4098,7 +2801,7 @@ class quizfantasyServices {
             // ----------------------------------------------------------------------------------------------------------------------
 
             return {
-                message: 'Quiz Joined',
+                message: 'Stock Quiz Joined',
                 status: true,
                 data: {
                     joinedusers: joinedLeaugesCount,
