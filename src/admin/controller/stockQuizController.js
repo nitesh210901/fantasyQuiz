@@ -80,7 +80,7 @@ class quizController {
                 res.redirect("/stock/add_quiz");
             }
         } catch (error) {
-          console.log(error);
+           console.log(error);
             req.flash('error','something is wrong please try again later');
             res.redirect('/add_quiz');
         }

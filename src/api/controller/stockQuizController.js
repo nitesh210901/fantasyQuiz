@@ -8,10 +8,10 @@ class stockQuizController {
         return {
             
             getStockQuiz:this.getStockQuiz.bind(this),
-            getSingleQuiz:this.getSingleQuiz.bind(this),
+            getStockSingleQuiz:this.getStockSingleQuiz.bind(this),
             quizGiveAnswer:this.quizGiveAnswer.bind(this),
-            quizgetUsableBalance:this.quizgetUsableBalance.bind(this),
-            joinQuiz:this.joinQuiz.bind(this),
+            stockquizgetUsableBalance:this.stockquizgetUsableBalance.bind(this),
+            joinStockQuiz:this.joinStockQuiz.bind(this),
             quizAnswerMatch: this.quizAnswerMatch.bind(this),
         }
     }
@@ -29,9 +29,9 @@ class stockQuizController {
         }
     }
 
-    async getSingleQuiz(req, res, next) {
+    async getStockSingleQuiz(req, res, next) {
         try {
-            const data = await quizfantasyServices.getSingleQuiz(req);
+            const data = await stockQuizService.getStockSingleQuiz(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
@@ -84,17 +84,17 @@ class stockQuizController {
         }
     }
 
-    async quizgetUsableBalance(req, res, next) {
+    async stockquizgetUsableBalance(req, res, next) {
         try {
-            const data = await quizfantasyServices.quizgetUsableBalance(req);
+            const data = await stockQuizService.stockquizgetUsableBalance(req);
             return res.status(200).json(Object.assign({ success: true }, data));
         } catch (error) {
             next(error);
         }
     }
-    async joinQuiz(req, res, next) {
+    async joinStockQuiz(req, res, next) {
         try {
-            const data = await quizfantasyServices.joinQuiz(req);
+            const data = await stockQuizService.joinStockQuiz(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: data.status }, data));
             } else {

@@ -347,6 +347,10 @@ router.get('/my-joined-quiz-contest', auth, quizFantasyController.getMyQuizJoine
 
 // Stock Quiz
 router.get('/getStockQuiz', auth, stockQuizController.getStockQuiz);
+router.get('/getStockSingleQuiz', auth, stockQuizController.getStockSingleQuiz);
+router.get('/stockquizGetUsableBalance', auth, stockQuizController.stockquizgetUsableBalance);
+router.post('/joinStockQuiz', auth, stockQuizController.joinStockQuiz);
+
 
 
 

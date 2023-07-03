@@ -50,6 +50,11 @@ let Transaction = new Schema({
         ref: 'quiz', //quiz,
         index:true
     },
+    stockquizId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'stockquiz', //quiz,
+        index:true
+    },
     seriesid: {
         type: mongoose.Types.ObjectId,
         ref: 'series' //Series
