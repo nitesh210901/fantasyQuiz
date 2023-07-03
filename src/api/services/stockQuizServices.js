@@ -9,6 +9,7 @@ require('../../models/playerModel');
 require('../../models/teamModel');
 const matchchallengesModel = require('../../models/matchChallengersModel');
 const QuizJoinLeaugeModel = require('../../models/QuizJoinLeaugeModel');
+const StockQuizJoinLeaugeModel = require('../../models/StockQuizJoinLeaugeModel');
 const contestCategory = require('../../models/contestcategoryModel');
 const TransactionModel = require('../../models/transactionModel');
 const leaderBoardModel = require(`../../models/leaderboardModel`)
@@ -27,6 +28,8 @@ const userModel = require("../../models/userModel");
 const constant = require('../../config/const_credential');
 const Redis = require('../../utils/redis');
 const matchServices = require("./matchServices");
+const stockQuizModel = require('../../models/stockQuizModel');
+
 const {
     quiz
 } = require('../../admin/services/matchServices');
@@ -45,21 +48,21 @@ class quizfantasyServices {
             quizViewTeam: this.quizViewTeam.bind(this),
             updateIsViewedForBoatTeam: this.updateIsViewedForBoatTeam.bind(this),
             quizLivematches: this.quizLivematches.bind(this),
-            getQuiz: this.getQuiz.bind(this),
-            getSingleQuiz: this.getSingleQuiz.bind(this),
+            getStockQuiz: this.getStockQuiz.bind(this),
+            getStockSingleQuiz: this.getStockSingleQuiz.bind(this),
             quizGiveAnswer: this.quizGiveAnswer.bind(this),
-            quizgetUsableBalance: this.quizgetUsableBalance.bind(this),
-            joinQuiz: this.joinQuiz.bind(this),
+            stockquizgetUsableBalance: this.stockquizgetUsableBalance.bind(this),
+            joinStockQuiz: this.joinStockQuiz.bind(this),
             findArrayIntersection: this.findArrayIntersection.bind(this),
             quizAnswerMatch: this.quizAnswerMatch.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
             findJoinLeaugeExist: this.findJoinLeaugeExist.bind(this),
             getMatchTime: this.getMatchTime.bind(this),
             getUserRank: this.getUserRank.bind(this),
-            quizfindJoinLeaugeExist: this.quizfindJoinLeaugeExist.bind(this),
-            quizfindUsableBonusMoney: this.quizfindUsableBonusMoney.bind(this),
-            quizfindUsableBalanceMoney: this.quizfindUsableBalanceMoney.bind(this),
-            quizfindUsableWinningMoney: this.quizfindUsableWinningMoney.bind(this)
+            stockquizfindJoinLeaugeExist: this.stockquizfindJoinLeaugeExist.bind(this),
+            stockquizfindUsableBonusMoney: this.stockquizfindUsableBonusMoney.bind(this),
+            stockquizfindUsableBalanceMoney: this.stockquizfindUsableBalanceMoney.bind(this),
+            stockquizfindUsableWinningMoney: this.stockquizfindUsableWinningMoney.bind(this)
         }
     }
 
@@ -81,161 +84,37 @@ class quizfantasyServices {
         return total_joinedcontestData[0]?.total_count;
     }
 
-    async getQuiz(req) {
+    async getStockQuiz(req) {
         try {
-            let {
-                matchkey
-            } = req.query;
-            let userId = req.user._id
+
+            let date = moment().format('YYYY-MM-DD HH:mm:ss');
+            console.log(date,"pp")
+            let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
+            console.log(EndDate,"llll")
             let pipeline = []
-            pipeline.push({
-                '$addFields': {
-                    'options': {
-                        '$objectToArray': {
-                            '$arrayElemAt': [
-                                '$options', 0
-                            ]
-                        }
-                    }
-                }
-            }, {
-                '$addFields': {
-                    'options': {
-                        '$map': {
-                            'input': '$options',
-                            'as': 'option',
-                            'in': {
-                                'answer': '$$option.v'
-                            }
-                        }
-                    }
-                }
-            }, {
+             pipeline.push({
                 '$match': {
-                    'matchkey': new mongoose.Types.ObjectId(matchkey)
+                  'is_enabled': true
                 }
-            }, {
-                $lookup: {
-                    from: "quizjoinedleauges",
-                    let: {
-                        matchkey: "$matchkey",
-                        quizId: "$_id",
-                        userid: new mongoose.Types.ObjectId(userId)
-                    },
-                    pipeline: [{
-                        $match: {
-                            $expr: {
-                                $and: [{
-                                        $eq: [
-                                            "$matchkey",
-                                            "$$matchkey",
-                                        ],
-                                    },
-                                    {
-                                        $eq: ["$quizId", "$$quizId"],
-                                    },
-                                    {
-                                        $eq: ["$userid", "$$userid"],
-                                    },
-                                ],
-                            },
-                        },
-                    }, ],
-                    as: "quizjoin",
-                },
-            }, {
-                '$addFields': {
-                    'is_selected': {
-                        '$cond': {
-                            'if': {
-                                '$eq': [{
-                                    '$size': '$quizjoin'
-                                }, 1]
-                            },
-                            'then': true,
-                            'else': false
-                        }
-                    },
-                    'image': {
-                        '$concat': [
-                            `${process.env.BASE_URL}`, '$image'
-                        ]
-                    }
-                }
-            }, {
-                '$lookup': {
-                    'from': 'quizjoinedleauges',
-                    'let': {
-                        'matchkey': '$matchkey',
-                        'id': '$_id'
-                    },
-                    'pipeline': [{
-                        '$match': {
-                            '$expr': {
-                                '$eq': [
-                                    '$matchkey', '$$matchkey'
-                                ],
-                                '$eq': [
-                                    '$quizId', '$$id'
-                                ]
-                            }
-                        }
-                    }],
-                    'as': 'userArray'
-                }
-            }, {
-                '$addFields': {
-                    'userIdArray': {
-                        '$map': {
-                            'input': '$userArray',
-                            'as': 'item',
-                            'in': '$$item.userid'
-                        }
-                    }
-                }
-            }, {
-                '$lookup': {
-                    'from': 'users',
-                    'let': {
-                        'id': '$userIdArray'
-                    },
-                    'pipeline': [{
-                        '$match': {
-                            '$expr': {
-                                '$in': [
-                                    '$_id', '$$id'
-                                ]
-                            }
-                        }
-                    }, {
-                        '$project': {
-                            'image': 1
-                        }
-                    }],
-                    'as': 'userAnswer'
-                }
-            }, {
-                '$project': {
-                    'userArray': 0,
-                    'userIdArray': 0,
-                    'answer': 0,
-                    'bonus_percentage': 0,
-                    'is_bonus': 0,
-                    'quiz_status': 0,
-                    'quizjoin': 0
-                }
+             })
+            
+            pipeline.push({
+                $match: {
+                    $and: [{ start_date: { $gt: date } }, { start_date: { $lt: EndDate } }]
+                  }
             })
-            let data = await quizModel.aggregate(pipeline)
+            let data = await stockQuizModel.aggregate(pipeline)
+            console.log(data)
             if (data.length === 0) {
                 return {
                     status: false,
-                    message: "Quiz  not Found",
+                    message: " Stock Quiz  not Found",
                     data: []
                 }
             }
             return {
                 status: true,
-                message: "Quiz fatch Successfully",
+                message: "Stock Quiz fatch Successfully",
                 data: data
             }
         } catch (error) {
@@ -244,22 +123,30 @@ class quizfantasyServices {
         }
     }
 
-    async getSingleQuiz(req) {
+    async getStockSingleQuiz(req) {
         try {
             let {
-                quizId,
-                matchkey
+                stockquizId,
             } = req.query
-            let data = await quizModel.findOne({
-                _id: quizId,
-                matchkey
-            }, {
-                answer: 0
+            let date = moment().format('YYYY-MM-DD HH:mm:ss');
+            let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
+            let pipeline = []
+             pipeline.push({
+                '$match': {
+                     'is_enabled': true,
+                     '_id':mongoose.Types.ObjectId(stockquizId)
+                }
+             })
+            pipeline.push({
+                $match: {
+                    $and: [{ start_date: { $gt: date } }, { start_date: { $lt: EndDate } }]
+                  }
             })
+            let data = await stockQuizModel.aggregate(pipeline)
             if (!data) {
                 return {
                     status: false,
-                    message: "Match Not Found",
+                    message: "Stock Quiz  Not Found",
                     data: {}
                 }
             }
@@ -2319,12 +2206,11 @@ class quizfantasyServices {
         }
     }
 
-    async quizfindJoinLeaugeExist(matchkey, userId, quizAnswer, quiz) {
+    async stockquizfindJoinLeaugeExist(userId, stockquizAnswer, quiz) {
         if (!quiz || quiz == null || quiz == undefined) return 4;
 
-        const quizjoinedLeauges = await QuizJoinLeaugeModel.find({
-            matchkey: matchkey,
-            quizId: quiz._id,
+        const quizjoinedLeauges = await StockQuizJoinLeaugeModel.find({
+            stockquizId: quiz._id,
             userid: userId,
         });
         if (quizjoinedLeauges.length == 0) return 1;
@@ -2338,13 +2224,13 @@ class quizfantasyServices {
 
     }
 
-    async quizfindUsableBonusMoney(quiz, bonus, winning, balance) {
-        if (quiz.is_bonus != 1)
-            return {
-                bonus: bonus,
-                cons_bonus: 0,
-                reminingfee: quiz.entryfee
-            };
+    async stockquizfindUsableBonusMoney(quiz, bonus, winning, balance) {
+        // if (quiz.is_bonus != 1)
+        //     return {
+        //         bonus: bonus,
+        //         cons_bonus: 0,
+        //         reminingfee: quiz.entryfee
+        //     };
         let totalQuizBonus = 0;
         totalQuizBonus = (quiz.bonus_percentage / 100) * quiz.entryfee;
         const finduserbonus = bonus;
@@ -2369,7 +2255,7 @@ class quizfantasyServices {
         }
     }
 
-    async quizfindUsableBalanceMoney(resultForBonus, balance) {
+    async stockquizfindUsableBalanceMoney(resultForBonus, balance) {
         if (balance >= resultForBonus.reminingfee)
             return {
                 balance: balance - resultForBonus.reminingfee,
@@ -2384,7 +2270,7 @@ class quizfantasyServices {
             };
     }
 
-    async quizfindUsableWinningMoney(resultForBalance, winning) {
+    async stockquizfindUsableWinningMoney(resultForBalance, winning) {
         if (winning >= resultForBalance.reminingfee) {
             return {
                 winning: winning - resultForBalance.reminingfee,
@@ -2529,30 +2415,28 @@ class quizfantasyServices {
     };
     //overviewendteam    
 
-    async quizgetUsableBalance(req) {
+    async stockquizgetUsableBalance(req) {
         try {
             const {
-                quizId
+                stockquizId
             } = req.query;
-            if (quizId === undefined) {
+            if (stockquizId === undefined) {
                 return {
-                    message: "Quiz Not Found",
+                    message: "Stock Quiz Not Found",
                     status: false,
                     data: {}
                 }
             }
-            const quizData = await quizModel.findOne({
-                _id: mongoose.Types.ObjectId(quizId)
+            const quizData = await stockQuizModel.findOne({
+                _id: mongoose.Types.ObjectId(stockquizId)
             });
             if (!quizData) {
                 return {
-                    message: 'Quiz not found',
+                    message: 'Stock Quiz not found',
                     status: false,
                     data: {}
                 }
             }
-            req.query.matchkey = quizData.matchkey;
-            // await this.updateJoinedusers(req);
 
             const user = await userModel.findOne({
                 _id: req.user._id
@@ -2584,11 +2468,11 @@ class quizfantasyServices {
         }
     }
 
-    async joinQuiz(req) {
+    async joinStockQuiz(req) {
         try {
             let {
-                quizId,
-                quizAnswer
+                stockquizId,
+                stockquizAnswer
             } = req.body
             let totalchallenges = 0,
                 totalmatches = 0,
@@ -2599,37 +2483,29 @@ class quizfantasyServices {
 
             aggpipe.push({
                 $match: {
-                    _id: mongoose.Types.ObjectId(quizId)
+                    _id: mongoose.Types.ObjectId(stockquizId)
                 }
             });
-
-            aggpipe.push({
-                $lookup: {
-                    from: 'listmatches',
-                    localField: 'matchkey',
-                    foreignField: '_id',
-                    as: 'listmatch'
-                }
-            });
-
-            const quizData = await quizModel.aggregate(aggpipe);
+            const quizData = await stockQuizModel.aggregate(aggpipe);
+            console.log(quizData,"lllllllll")
             if (quizData.length == 0) {
                 return {
-                    message: 'Match Not Found',
+                    message: 'Stock Quiz Not Found',
                     success: false,
                     data: {}
                 };
             }
-            let listmatchId = quizData[0].listmatch[0]._id;
+            // let listmatchId = quizData[0].listmatch[0]._id;
             let quizDataId = quizData[0]._id;
             let quiz = quizData[0];
-            let seriesId = quizData[0].listmatch[0].series;
-            let matchStartDate = quizData[0].listmatch[0].start_date;
+            // let seriesId = quizData[0].listmatch[0].series;
+            // let matchStartDate = quizData[0].listmatch[0].start_date;
+            let matchStartDate = quizData[0].start_date;
 
             const matchTime = await matchServices.getMatchTime(matchStartDate);
             if (matchTime === false) {
                 return {
-                    message: 'Match has been closed, You cannot join leauge now.',
+                    message: 'Stock Quiz has been closed, You cannot join leauge now.',
                     status: false,
                     data: {}
                 }
@@ -2657,7 +2533,7 @@ class quizfantasyServices {
                 mainwin = 0,
                 tranid = '';
             
-            const result = await this.quizfindJoinLeaugeExist(listmatchId, req.user._id, quizAnswer, quiz);
+            const result = await this.stockquizfindJoinLeaugeExist(req.user._id, stockquizAnswer, quiz);
             let usebalance = await userModel.findOne({
                 _id: req.user._id
             }, {
@@ -2686,12 +2562,12 @@ class quizfantasyServices {
                 });
 
                 const transactiondata = {
-                    type: 'Quiz Joining Fee',
+                    type: 'Stock Quiz Joining Fee',
                     contestdetail: `${quiz.entryfee}`,
                     amount: quiz.entryfee,
                     total_available_amt: totalBalance - quiz.entryfee,
                     transaction_by: constant.TRANSACTION_BY.WALLET,
-                    quizId: quizId,
+                    stockquizId: stockquizId,
                     userid: req.user._id,
                     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                     bal_bonus_amt: bonus - mainbonus,
@@ -2715,7 +2591,7 @@ class quizfantasyServices {
 
                 return result;
             }
-            const resultForBonus = await this.quizfindUsableBonusMoney(
+            const resultForBonus = await this.stockquizfindUsableBonusMoney(
                 quiz,
                 bonus - mainbonus,
                 winning - mainwin,
@@ -2736,12 +2612,12 @@ class quizfantasyServices {
                     capitalization: 'uppercase'
                 });
                 const transactiondata = {
-                    type: 'Quiz Joining Fee',
+                    type: 'Stock Quiz Joining Fee',
                     contestdetail: `${quiz.entryfee}`,
                     amount: quiz.entryfee,
                     total_available_amt: totalBalance - quiz.entryfee,
                     transaction_by: constant.TRANSACTION_BY.WALLET,
-                    quizId: quizId,
+                    stockquizId: stockquizId,
                     userid: req.user._id,
                     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                     bal_bonus_amt: bonus - mainbonus,
@@ -2763,8 +2639,8 @@ class quizfantasyServices {
                
             }
 
-            const resultForBalance = await this.quizfindUsableBalanceMoney(resultForBonus, balance - mainbal);
-            const resultForWinning = await this.quizfindUsableWinningMoney(resultForBalance, winning - mainwin);
+            const resultForBalance = await this.stockquizfindUsableBalanceMoney(resultForBonus, balance - mainbal);
+            const resultForWinning = await this.stockquizfindUsableWinningMoney(resultForBalance, winning - mainwin);
             // console.log(`---------------------3RD IF--BEFORE------${resultForWinning}---------`);
             if (resultForWinning.reminingfee > 0) {
                 
@@ -2790,7 +2666,7 @@ class quizfantasyServices {
                     amount: quiz.entryfee,
                     total_available_amt: totalBalance - quiz.entryfee,
                     transaction_by: constant.TRANSACTION_BY.WALLET,
-                    quizId: quizId,
+                    stockquizId: stockquizId,
                     userid: req.user._id,
                     paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                     bal_bonus_amt: bonus - mainbonus,
@@ -2824,28 +2700,27 @@ class quizfantasyServices {
             tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
             let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
             if (result == 1) {
-                console.log("oooo")
-                let joinedQuiz = await QuizJoinLeaugeModel.find({
-                    matchkey: listmatchId,
+                let joinedQuiz = await StockQuizJoinLeaugeModel.find({
+                    // matchkey: listmatchId,
                     userid: req.user._id
                 }).limit(1).count();
                 if (joinedQuiz == 0) {
-                    joinedSeries = await QuizJoinLeaugeModel.find({
-                        seriesid: seriesId,
+                    joinedSeries = await StockQuizJoinLeaugeModel.find({
+                        // seriesid: seriesId,
                         userid: req.user._id
                     }).limit(1).count();
                 }
             }
-            const quizjoinedLeauges = await QuizJoinLeaugeModel.find({
-                quizId: quizDataId
+            const quizjoinedLeauges = await StockQuizJoinLeaugeModel.find({
+                stockquizId: quizDataId
             }).count();
             const joinUserCount = quizjoinedLeauges + 1;
-            const quizjoinLeaugeResult = await QuizJoinLeaugeModel.create({
+            const quizjoinLeaugeResult = await StockQuizJoinLeaugeModel.create({
                 userid: req.user._id,
-                quizId: quizDataId,
-                answer: quizAnswer,
-                matchkey: listmatchId,
-                seriesid: seriesId,
+                stockquizId: quizDataId,
+                answer: stockquizAnswer,
+                // matchkey: listmatchId,
+                // seriesid: seriesId,
                 transaction_id: tranid,
                 refercode: referCode,
                 leaugestransaction: {
@@ -2855,9 +2730,9 @@ class quizfantasyServices {
                     winning: resultForWinning.cons_win,
                 },
             });
-            const joinedLeaugesCount = await QuizJoinLeaugeModel.find({
-                quizId: quizDataId,
-                matchkey: listmatchId
+            const joinedLeaugesCount = await StockQuizJoinLeaugeModel.find({
+                stockquizId: quizDataId,
+                // matchkey: listmatchId
             }).count();
             if (result == 1) {
                 totalchallenges = 1;
@@ -2875,9 +2750,8 @@ class quizfantasyServices {
               
             }
             // else
-            await quizModel.findOneAndUpdate({
-                matchkey: listmatchId,
-                _id: mongoose.Types.ObjectId(quizId)
+            await stockQuizModel.findOneAndUpdate({
+                _id: mongoose.Types.ObjectId(stockquizId)
             }, {
                 joinedusers: joinedLeaugesCount,
             }, {
@@ -2900,12 +2774,12 @@ class quizfantasyServices {
                 capitalization: 'uppercase'
             });
             const transactiondata = {
-                type: 'Quiz Joining Fee',
+                type: 'Stock Quiz Joining Fee',
                 contestdetail: `${quiz.entryfee}`,
                 amount: quiz.entryfee,
                 total_available_amt: totalBalance - quiz.entryfee,
                 transaction_by: constant.TRANSACTION_BY.WALLET,
-                quizId: quizId,
+                stockquizId: stockquizId,
                 userid: req.user._id,
                 paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                 bal_bonus_amt: bonus - mainbonus,
@@ -2927,7 +2801,7 @@ class quizfantasyServices {
             // ----------------------------------------------------------------------------------------------------------------------
 
             return {
-                message: 'Quiz Joined',
+                message: 'Stock Quiz Joined',
                 status: true,
                 data: {
                     joinedusers: joinedLeaugesCount,

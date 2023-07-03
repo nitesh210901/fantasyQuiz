@@ -38,6 +38,10 @@ let quizSchema = new Schema({
         type: Boolean,
         default: false
     },
+    joinedusers: {
+        type: Number,
+        default: 0
+    }
 }, {
     timestamps: true,
     versionKey: false

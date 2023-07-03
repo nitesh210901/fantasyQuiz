@@ -58,7 +58,15 @@ class StockquizServices {
 
     async AddQuiz(req) {
         try {
-            let { question,option_1,option_2,option_3, entryfee,winning_amount,start_date,end_date} = req.body
+            let { question, option_1, option_2, option_3, entryfee, winning_amount } = req.body;
+            let start_date
+            if (req.body.start_date) {
+            start_date = moment(req.body.start_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD HH:mm:ss');
+            }
+            let end_date
+            if (req.body.end_date) {
+                end_date = moment(req.body.end_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD HH:mm:ss');
+                }
             let addquiz = new stockQuizModel({
                 question: question,
                 option_1: option_1,
@@ -289,7 +297,15 @@ class StockquizServices {
         let whereObj ={
             _id:req.params.id
         }
-        let { question, option_1, option_2,option_3,entryfee,winning_amount,start_date,end_date} = req.body
+        let { question, option_1, option_2, option_3, entryfee, winning_amount } = req.body
+        let start_date
+        if (req.body.start_date) {
+        start_date = moment(req.body.start_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD HH:mm:ss');
+        }
+        let end_date
+        if (req.body.end_date) {
+            end_date = moment(req.body.end_date, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD HH:mm:ss');
+        }
            let doc
                  doc = {
                     question: question,
