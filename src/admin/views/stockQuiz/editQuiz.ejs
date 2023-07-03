@@ -81,17 +81,6 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-12">
-                                                        <div class="form-group my-3">
-                                                            <label for="job-title">Entry Fee*</label>
-                                                            <% if(data.entryfee) {%>
-                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" value="<%=data.entryfee %>" name="entryfee">
-                                                            <%}else{ %>
-                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" value="" name="entryfee">
-                                                            <% }%>
-                                                        </div>
-                                                    </div>
-
                                                     <div class="col-md-6 col-12">
                                                         <div class="form-group my-3">
                                                             <label for="example-datetime-local-input">Start Date*</label>
@@ -113,6 +102,29 @@
                                                             <% }%>
                                                         </div>
                                                     </div>
+
+                                                    <div class="col-12">
+                                                        <div class="form-group my-3">
+                                                            <label for="job-title">Entry Fee*</label>
+                                                            <% if(data.entryfee) {%>
+                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" value="<%=data.entryfee %>" name="entryfee">
+                                                            <%}else{ %>
+                                                            <input class="form-control form-control-solid" id="job-title" type="number" placeholder="Enter Entry Fee" value="" name="entryfee">
+                                                            <% }%>
+                                                        </div>
+                                                    </div>
+
+                                                    <% let entryfee = data.winning_amount/data.entryfee %>
+                                
+                                                    <div class="col-6">
+                                                        <div class="form-group my-2">
+                                                            <label class="control-label text-bold">Multiply*</label>
+                                                            <div style="display: flex;">
+                                                            <input required="" class="form-control form-control-solid" name="winning_amount" value="<%= entryfee%>" type="number">
+                                                            <label class="control-label col-3 text-bold" >*Entry Fee</label></div>
+                                                        </div>
+                                                    </div>
+
                                                     <div class="col-12 text-right mt-4 mb-2">
                                                         <button class="btn btn-sm btn-success text-uppercase"><i class="far fa-check-circle"></i>&nbsp;Submit</button>
                                                     </div>

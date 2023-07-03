@@ -574,6 +574,10 @@ router.post("/stock/quiz_give_answer/:id", auth, stockQuizController.QuizGIveAns
 router.get("/stock/edit-quiz/:id", auth, getUrl, stockQuizController.editQuiz);
 router.post("/stock/edit-quiz-data/:id", auth,stockQuizController.editQuizData);
 router.get("/stock/deletequiz", auth, stockQuizController.deletequiz);
+
+router.get("/stock/enable_quiz", auth, getUrl, stockQuizController.EnableStockQuiz);
+
+
 router.get("/stock/view-all-global-questions", auth, stockQuizController.ViewallGlobalQuestions_page);
 router.post("/stock/global-questions-datatable", auth, stockQuizController.globalQuestionsDatatable);
 router.get("/stock/add-global-question", auth, stockQuizController.addGlobalQuestionPage);
@@ -586,5 +590,7 @@ router.get("/stock/Import-global-questions", auth, stockQuizController.importGlo
 router.get("/stock/importmatchQuestion/:matchKey", auth, getUrl, stockQuizController.importQuestionData);
 router.get("/stock/Import-global-contest", auth, getUrl, stockQuizController.importGlobalContestPage);
 router.get("/stock/quizimportmatchData/:matchKey", auth, getUrl, stockQuizController.quizimportchallengersData);
+
+
 
 module.exports = router;
