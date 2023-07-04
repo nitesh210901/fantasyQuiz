@@ -33,7 +33,11 @@ let refundSchema = new Schema({
         ref: 'quiz',
         index:true
     },
-    
+    stockquizId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'stockquiz',
+        index:true
+    },
     reason: {
         type: String
     },
