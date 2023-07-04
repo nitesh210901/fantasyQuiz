@@ -584,6 +584,8 @@ router.get('/total-stock-quiz-joined-user/:stockquizId', auth, getUrl, stockQuiz
 router.post('/total-stock-quiz-user-details-table', auth, stockQuizController.totalStockQuizUserDetailsData);
 router.get('/stockquizviewtransactions/:id', auth, getUrl, stockQuizController.stockquizviewtransactions);
 router.post('/stockquizviewTransactions-Data-Table/:id', auth, stockQuizController.stockquizviewTransactionsDataTable);
+router.post("/updateStockQuizStatus/:id/:status", auth, stockQuizController.updateStockQuizStatus);
+
 
 router.get("/stock/view-all-global-questions", auth, stockQuizController.ViewallGlobalQuestions_page);
 router.post("/stock/global-questions-datatable", auth, stockQuizController.globalQuestionsDatatable);

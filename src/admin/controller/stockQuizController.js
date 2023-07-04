@@ -37,7 +37,7 @@ class quizController {
       importGlobalContestPage:this.importGlobalContestPage.bind(this),
       quizimportchallengersData:this.quizimportchallengersData.bind(this),
       quizRefundAmount:this.quizRefundAmount.bind(this),
-      updateMatchQuizStatus:this.updateMatchQuizStatus.bind(this),
+      updateStockQuizStatus:this.updateStockQuizStatus.bind(this),
       cancelQuiz:this.cancelQuiz.bind(this),
       matchAllquiz:this.matchAllquiz.bind(this),
       matchAllquizData:this.matchAllquizData.bind(this),
@@ -96,59 +96,9 @@ class quizController {
     
   async FinalViewQuiz(req, res, next) {
     try {
-      let pipeline = [];
-      pipeline.push({
-        $group: {
-          _id: "$contestId",
-        },
-      })
-      pipeline.push({
-        $lookup: {
-          from: "stock_contests",
-          let: {
-            id: "$_id",
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $eq: ["$_id", "$$id"],
-                },
-              },
-            },
-            {
-              $project: {
-                contest_name: 1,
-              },
-            },
-          ],
-          as: "stock_contests",
-        },
-      })
-
-      pipeline.push({
-        $addFields: {
-          contestname: {
-            $getField: {
-              field: "contest_name",
-              input: {
-                $arrayElemAt: ["$stock_contests", 0],
-              },
-            },
-          },
-        },
-      })
-
-      pipeline.push({
-        $project: {
-          _id: 1,
-          contestname: 1,
-        },
-      })
-      let listmatch = await stockQuizModel.aggregate(pipeline);
       res.locals.message = req.flash();
-      const { match_name,question } = req.query;
-        res.render("stockQuiz/final_quiz", { sessiondata: req.session.data,question:question, listmatch,Question:req.query.question,contest:req.query.contest});
+      const {question } = req.query;
+        res.render("stockQuiz/final_quiz", { sessiondata: req.session.data,question:question,Question:req.query.question,contest:req.query.contest});
     } catch (error) {
         console.log(error)
         req.flash('error','something is wrong please try again later');
@@ -178,6 +128,11 @@ class quizController {
         stockQuizModel.aggregate(condition).exec((err, rows1) => {
           rows1.forEach(async (doc) => {
             
+            let answer = "";
+            if (doc.answer !== "Please Give Answer") {
+              answer = doc.answer
+            }
+
             let dateFormat = moment(`${doc.start_date}`, "YYYY-MM-DD HH:mm:ss");
             let day = dateFormat.format("dddd");
             let date = dateFormat.format("YYYY-MM-DD");
@@ -188,14 +143,14 @@ class quizController {
               if (doc.final_status == "pending") {
                 stock_quiz_status = `<div class="row">
                                                 <div class="col-12 my-1">
-                                                    <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc._id}?status=IsAbandoned', 'Are you sure you want to Abandoned this Stock Quiz?')">
+                                                    <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockQuiz/${doc._id}?status=IsAbandoned', 'Are you sure you want to Abandoned this Stock Quiz?')">
                                                         Is Abandoned
                                                         &nbsp;
                                                         <i class="fad fa-caret-right"></i>
                                                     </a>
                                                 </div>
                                                 <div class="col-12 my-1">
-                                                    <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc._id}?status=IsCanceled', 'Are you sure you want to cancel this Stock Quiz?')">
+                                                    <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockQuiz/${doc._id}?status=IsCanceled', 'Are you sure you want to cancel this Stock Quiz?')">
                                                         Is Canceled
                                                         &nbsp;
                                                         <i class="fad fa-caret-right"></i>
@@ -219,14 +174,14 @@ class quizController {
                                             </a>
                                         </div>
                                         <div class="col-12 my-1">
-                                            <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc._id}?status=IsAbandoned', 'Are you sure you want to Abandoned this Stock Quiz?')">
+                                            <a class="text-info text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockQuiz/${doc._id}?status=IsAbandoned', 'Are you sure you want to Abandoned this Stock Quiz?')">
                                                 Is Abandoned
                                                 &nbsp;
                                                 <i class="fad fa-caret-right"></i>
                                             </a>
                                         </div>
                                         <div class="col-12 my-1">
-                                            <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc._id}?status=IsCanceled', 'Are you sure you want to cancel this Stock Quiz ?')">
+                                            <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockQuiz/${doc._id}?status=IsCanceled', 'Are you sure you want to cancel this Stock Quiz ?')">
                                                 Is Canceled
                                                 &nbsp;
                                                 <i class="fad fa-caret-right"></i>
@@ -238,11 +193,11 @@ class quizController {
                                 <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable  w-100 h-100">
                                     <div class="modal-content">
                                     <div class="modal-header">
-                                        <h4 class="modal-title">Quiz WinnerDeclared</h4>
+                                        <h4 class="modal-title">Stock Quiz WinnerDeclared</h4>
                                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                                     </div>
                                     <div class="modal-body abcd">
-                                        <form action="/updateMatchQuizStatus/${doc._id}/winnerdeclared" method="post">
+                                        <form action="/updateStockQuizStatus/${doc._id}/winnerdeclared" method="post">
                                         <div class="col-md-12 col-sm-12 form-group">
                                         <label> Enter Your Master Password </label>
                                         
@@ -283,7 +238,7 @@ class quizController {
                                 </div>
                             </div>
                             <div class="col-12 my-1">
-                                            <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelQuiz/${doc._id}?status=IsCanceled', 'Are you sure you want to cancel this Stock Quiz?')">
+                                            <a class="text-danger text-decoration-none font-weight-600" onclick="delete_sweet_alert('/cancelStockQuiz/${doc._id}?status=IsCanceled', 'Are you sure you want to cancel this Stock Quiz?')">
                                                 Is Canceled
                                                 &nbsp;
                                                 <i class="fad fa-caret-right"></i>
@@ -321,6 +276,37 @@ class quizController {
                                     </span>
                                 </div>
                             </div>`,
+                admin_answer: `${answer}`|| `<a href="#" class="btn btn-sm text-uppercase btn-success text-white" data-toggle="modal" data-target="#key${count}"><span data-toggle="tooltip" title="Give Answer">&nbsp; ${doc.answer}</span></a>
+                <div class="modal fade" id="key${count}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog col-6">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Answer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/stock/quiz_give_answer/${doc._id}" method="post">
+                            <div class="col-md-12 col-sm-12 form-group">
+                                <label>Give Your Answer</label>
+                                <select class="form-control" style="text-align:center;" name="answer">
+                                <option value="${doc.option_1}">${doc.option_1}</option>
+                                <option value="${doc.option_2}">${doc.option_2}</option>
+                                <option value="${doc.option_3}">${doc.option_3}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 col-sm-12 form-group">
+                                <input type="submit" class="btn btn-info btn-sm text-uppercase" value="Submit">
+                            </div>
+                            </form>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm text-uppercase" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+                </div>
+                </div>`,
               stock_quiz_status:stock_quiz_status,
             });
             count++;
@@ -734,24 +720,21 @@ class quizController {
   }
   
   async QuizGIveAnswer(req,res,next){
-    try{
-        res.locals.message = req.flash();
+    try {
+      console.log("hello")
+       res.locals.message = req.flash();
        const data = await stockQuizService.QuizGIveAnswer(req);
         if(data.status == true){
           req.flash('success', data.message)
-          if (req.query.quiz) {
-            res.redirect(`/allquiz/${data.data?.matchkey}`);
-          } else {
-            res.redirect(`/view_quiz`);
-          }
+          res.redirect(`/stock/final_quiz`);
         }else{
             req.flash('error',data.message)
-            res.redirect(`/view_quiz`);
+            res.redirect(`/stock/final_quiz`);
         }
-    }catch(error){
-        //  next(error);
+    } catch (error) {
+        console.log(error);
         req.flash('error','Something went wrong please try again');
-        res.redirect("/view_quiz");
+        res.redirect("/stock/final_quiz");
     }
   }
   async quizRefundAmount(req, res) {
@@ -763,7 +746,7 @@ class quizController {
     }
   }
 
-  async updateMatchQuizStatus(req, res, next) {
+  async updateStockQuizStatus(req, res, next) {
     try {
       res.locals.message = req.flash();
       if (req.params.status == "winnerdeclared") {
@@ -771,21 +754,21 @@ class quizController {
           req.body.masterpassword &&
           req.body.masterpassword == req.session.data.masterpassword
         ) {
-          const getResult = await stockQuizService.quizdistributeWinningAmountWithAnswerMatch(req);//need to check becouse crown is remove
+          const getResult = await stockQuizService.stockquizdistributeWinningAmountWithAnswerMatch(req);//need to check becouse crown is remove
 
-          let updatestatus = await listMatchModel.updateOne(
+          let updatestatus = await stockQuizModel.updateOne(
             { _id: mongoose.Types.ObjectId(req.params.id) },
             {
               $set: {
-                quiz_status: req.params.status,
+                final_status: req.params.status,
               },
             }
           );
           req.flash("success", `Match ${req.params.status} successfully`);
-          return res.redirect(`/match-details/${req.body.series}`);
+          return res.redirect(`/stock/final_quiz`);
         } else {
           req.flash("error", "Incorrect masterpassword");
-          res.redirect(`/match-details/${req.body.series}`);
+          res.redirect(`/stock/final_quiz}`);
         }
       } else if (
         req.params.status == "IsAbandoned" ||
@@ -793,23 +776,22 @@ class quizController {
       ) {
         let reason = "";
         if (req.params.status == "IsAbandoned") {
-          reason = "Quiz abandoned";
+          reason = "Stock Quiz abandoned";
         } else {
-          reason = "Quiz canceled";
+          reason = "Stock Quiz canceled";
         }
-        const getResult = await stockQuizService.quizallRefundAmount(req, reason);
-        await listMatchModel.updateOne(
+        const getResult = await stockQuizService.stockquizallRefundAmount(req, reason);
+        await stockQuizModel.updateOne(
           { _id: mongoose.Types.ObjectId(req.params.id) },
           {
             $set: {
-              quiz_status: req.params.status,
+              final_status: req.params.status,
             },
           }
         );
-        req.flash("success", `Quiz ${req.params.status} successfully`);
+        req.flash("success", `Stock Quiz ${req.params.status} successfully`);
       }
-
-      res.redirect(`/match-details/${req.body.series}`);
+      res.redirect(`/stock/final_quiz`);
       // res.send({status:true});
     } catch (error) {
       console.log(error)
@@ -1375,10 +1357,10 @@ class quizController {
       let dataResponse = await stockQuizService.cancelStockQuiz(req);
       if (dataResponse.status == true) {
         req.flash("success", dataResponse.message);
-        res.redirect(`/stock/view_quiz`);
+        res.redirect(`/stock/final_quiz`);
       } else if (dataResponse.status == false) {
         req.flash("error", dataResponse.message);
-        res.redirect(`/stock/view_quiz`);
+        res.redirect(`/stock/final_quiz`);
       }
     } catch (error) {
       req.flash('error', 'something is wrong please try again letter');
