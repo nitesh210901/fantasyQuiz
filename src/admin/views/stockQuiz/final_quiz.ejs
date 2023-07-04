@@ -63,6 +63,7 @@ include("../../partials/sideNav") %>
                 <tr>
                   <th>Sno.</th>
                   <th>Question</th>
+                  <th>Admin Answer</th>
                   <th>Stock Quiz Status</th>
                 </tr>
               </thead>
@@ -70,6 +71,7 @@ include("../../partials/sideNav") %>
                 <tr>
                   <th>Sno.</th>
                   <th>Question</th>
+                  <th>Admin Answer</th>
                   <th>Stock Quiz Status</th>
                 </tr>
               </tfoot>
@@ -81,9 +83,6 @@ include("../../partials/sideNav") %>
       <script type="text/javascript">
         $(document).ready(function () {
           $.fn.dataTable.ext.errMode = "none";
-          let seriesID = $("#seriesID").val();
-          console.log(`"${seriesID}"`)
-          let fantasy_type = $("#matchkey_id").val();
           $("#match_details").DataTable({
             language: {
               zeroRecords: "No records to display",
@@ -102,6 +101,9 @@ include("../../partials/sideNav") %>
               },
               {
                 data: "question",
+              },
+              {
+                data: "admin_answer",
               },
               {
                 data: "stock_quiz_status",

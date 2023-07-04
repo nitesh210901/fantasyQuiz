@@ -49,7 +49,11 @@ let quizSchema = new Schema({
     final_status: {
         type: String,
         default: "pending"
-    }
+    },
+    answer: {
+        type: String,
+        default:"Please Give Answer"
+    },
 }, {
     timestamps: true,
     versionKey: false
