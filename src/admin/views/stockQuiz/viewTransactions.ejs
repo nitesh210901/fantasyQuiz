@@ -191,9 +191,9 @@ include("../../partials/sideNav") %>
               >
                 <input
                   type="hidden"
-                  id="quizId"
-                  name="quizId"
-                  value="<%= quizId %>"
+                  id="stockquizId"
+                  name="stockquizId"
+                  value="<%= stockquizId %>"
                 />
                 <thead>
                   <tr>
@@ -353,7 +353,7 @@ include("../../partials/sideNav") %>
           var ID = $("#findID").val();
           var start_date = $("#start_date").val();
           var end_date = $("#end_date").val();
-          var quizId = $("#quizId").val();
+          var stockquizId = $("#stockquizId").val();
           // var fantasy_type = $('#fantasy_type').val();
           $.fn.dataTable.ext.errMode = "none";
           $("#viewtransactions_table").DataTable({
@@ -362,7 +362,7 @@ include("../../partials/sideNav") %>
               zeroRecords: "No records to display",
             },
             ajax: {
-              url: `/stock/quizviewTransactions-Data-Table/${ID}?start_date=${start_date}&end_date=${end_date}&quizId=${quizId}`,
+              url: `/stockquizviewTransactions-Data-Table/${ID}?start_date=${start_date}&end_date=${end_date}&stockquizId=${stockquizId}`,
               type: "post",
             },
             lengthMenu: [

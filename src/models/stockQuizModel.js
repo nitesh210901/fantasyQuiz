@@ -38,6 +38,10 @@ let quizSchema = new Schema({
         type: Boolean,
         default: false
     },
+    status:{
+        type: String,
+        default:'notstarted'
+    },
     joinedusers: {
         type: Number,
         default: 0

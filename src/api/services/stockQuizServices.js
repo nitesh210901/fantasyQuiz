@@ -89,7 +89,6 @@ class quizfantasyServices {
 
     async getStockQuiz(req) {
         try {
-
             let date = moment().format('YYYY-MM-DD HH:mm:ss');
             let EndDate = moment().add(25, 'days').format('YYYY-MM-DD HH:mm:ss');
             let pipeline = []
@@ -105,7 +104,7 @@ class quizfantasyServices {
                   }
             })
             let data = await stockQuizModel.aggregate(pipeline)
-            console.log(data)
+
             if (data.length === 0) {
                 return {
                     status: false,
@@ -144,7 +143,7 @@ class quizfantasyServices {
                   }
             })
             let data = await stockQuizModel.aggregate(pipeline)
-            if (!data) {
+            if (data.length === 0) {
                 return {
                     status: false,
                     message: "Stock Quiz  Not Found",
@@ -2949,11 +2948,11 @@ class quizfantasyServices {
                       '$stockQuizData.final_status', ''
                     ]
                   }, 
-                  'joinedcontest': {
-                    '$ifNull': [
-                      '$count', 0
-                    ]
-                  }
+                //   'joinedcontest': {
+                //     '$ifNull': [
+                //       '$count', 0
+                //     ]
+                //   }
                 }
             }
         ]);
@@ -3112,11 +3111,11 @@ class quizfantasyServices {
                       '$stockQuizData.final_status', ''
                     ]
                   }, 
-                  'joinedcontest': {
-                    '$ifNull': [
-                      '$count', 0
-                    ]
-                  }
+                //   'joinedcontest': {
+                //     '$ifNull': [
+                //       '$count', 0
+                //     ]
+                //   }
                 }
               }
           ]

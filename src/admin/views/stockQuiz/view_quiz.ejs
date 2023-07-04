@@ -16,7 +16,7 @@
 
                                 <div class="page-header-icon"><i class="fad fa-at text-white"></i></div>
                                 <span class=" text-capitalize">
-                                       Stock Quiz Manager
+                                        Stock Quiz Manager
                                 </span>
                             </h1>
                             <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
@@ -40,7 +40,7 @@
           <div class="card mb-3">
             <div class="card-heading p-3">
               <form method="get" action="/stock/view_quiz">
-                        <div class="sbp-preview position-relative">
+                                      <div class="sbp-preview position-relative">
                         <div class="form-group">
                             <div class="row mx-0 align-items-end">
                                 <div class="col-md">
@@ -81,11 +81,11 @@
 
       <th class="myclass">Sno.</th>
       <th class="myclass1">Question</th>
-      <th class="myclass1">Option 1</th>
-      <th class="myclass1">Option 2</th>
-      <th class="myclass1">Option 3</th>
-      <th class="myclass1">Stock Quiz Status</th>
-      <th class="myclass1">Entryfee</th>
+      <th class="myclass3">Option 1</th>
+      <th class="myclass3">Option 2</th>
+      <th class="myclass3">Option 3</th>
+      <th class="myclass2">EntryFee</th>
+      <th class="myclass2">Quiz Enable/Disable</th>
       <th class="myclass4">Action</th>
     </tr>
     </thead>
@@ -98,8 +98,8 @@
           <th>Option 1</th>
           <th>Option 2</th>
           <th>Option 3</th>
-          <th>Entryfee</th>
-          <th>Stock Quiz Status</th>
+          <th>EntryFee</th>
+          <th>Quiz Enable/Disable</th>
           <th>Action</th>
       </tr>
   </tfoot>
@@ -110,6 +110,7 @@
 <script type="text/javascript">
 $(document).ready(function() {
   var Question = $('#Question').val();
+    // var fantasy_type = $('#fantasy_type').val();
     $.fn.dataTable.ext.errMode = 'none';
     $('#view_quiz_datatable').DataTable({
         searching: false,
@@ -117,11 +118,11 @@ $(document).ready(function() {
               zeroRecords: "No records to display",
             },
         ajax: {
-            url: `/stock/quiz-Data-Table?Question=${Question}`,
+            url: `/Stock-Quiz-Data-Table?Question=${Question}`,
             type: 'post',
             dataSrc: 'data',
             error: function() {
-                console.log(error)
+                // console.log(error)
             }
         },
         "lengthMenu": [
@@ -133,8 +134,7 @@ $(document).ready(function() {
         },
         {
             data: "question"
-        },
-        {
+        },{
             data: "option_1"
         },
         {
@@ -144,10 +144,10 @@ $(document).ready(function() {
             data: "option_3"
         },
         {
-            data: "is_enabled"
+          data:"entryfee"
         },
         {
-            data: "entryfee"
+          data: "quiz_enable_disable",
         },
         {
             data: "Action",orderable: false

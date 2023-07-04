@@ -585,13 +585,13 @@ class stockContestController {
         try {
           const findTransactions = await stockContestService.stockviewtransactions(req);
           if (findTransactions.status == true) {
-            const { start_date, end_date, contestId } = req.query;
+            const { start_date, end_date, stockquizId } = req.query;
             res.render("stockManager/viewTransactions", {
               sessiondata: req.session.data,
               findTransactionsId: findTransactions.data.userid,
               start_date: start_date,
               end_date: end_date,
-              contestId: contestId,
+              stockquizId: stockquizId,
             }); 
           }
         } catch (error) {
