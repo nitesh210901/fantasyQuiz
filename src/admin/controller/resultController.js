@@ -71,6 +71,7 @@ class resultController {
        console.log('error',error);
     }
   }
+
   async update_results_of_matches_refresh(req, res, next) {
     try {console.log("req.query.real_matchkey",req.query.real_matchkey,"req.query.matchkey",req.query.matchkey)
       const getResult = await resultServices.getScoresUpdates(req.query.real_matchkey,req.query.matchkey);
@@ -90,10 +91,6 @@ class resultController {
     }
   }
 
-  /**
-   * @description Get Match Result Page
-   * @route GET /match-result
-   */
   async matchResult(req, res, next) {
     try {
       res.locals.message = req.flash();
