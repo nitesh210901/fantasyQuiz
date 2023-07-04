@@ -350,9 +350,9 @@ router.get('/getStockQuiz', auth, stockQuizController.getStockQuiz);
 router.get('/getStockSingleQuiz', auth, stockQuizController.getStockSingleQuiz);
 router.get('/stockquizGetUsableBalance', auth, stockQuizController.stockquizgetUsableBalance);
 router.post('/joinStockQuiz', auth, stockQuizController.joinStockQuiz);
-
-
-
+router.get('/newjoinedStockQuiz', auth, stockQuizController.NewjoinedStockQuiz);
+router.get('/newjoinedStockQuizlive', auth, stockQuizController.NewjoinedStockQuizLive);
+router.get('/all-completed-Stock_Quiz', auth, stockQuizController.AllCompletedStockQuiz);
 
 
 //stockManager

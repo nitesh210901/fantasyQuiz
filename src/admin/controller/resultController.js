@@ -567,7 +567,7 @@ class resultController {
                                     </a>
                                 </div>
                                 <div class="col-12 my-1">
-                                    <a class="text-decoration-none text-secondary font-weight-600" href="/allquiz/${doc._id}">
+                                    <a class="text-decoration-none text-secondary font-weight-600" href="/allquiz/${doc._id}?seriesId=${doc.series}">
                                         Total Quiz ${doc.quizData.length} 
                                         &nbsp; 
                                         <i class="fad fa-caret-right"></i>

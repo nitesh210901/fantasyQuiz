@@ -13,11 +13,11 @@ include("../../partials/sideNav") %>
               <h1 class="page-header-title fs-md-35 fs-20">
                 <div class="page-header-icon">
                   <i class="fad fa-at text-white"></i>
-                </div>
-                <span class="text-capitalize"> Full Series Detail </span>
+                </div> 
+                <span class="text-capitalize"> Stock Quiz Manager </span>
               </h1>
               <div class="page-header-subtitle fs-md-19 fs-14 text-capitalize">
-                View All Quiz Detail
+               Stock Quiz - All Quiz
               </div>
             </div>
           </div>
@@ -25,68 +25,52 @@ include("../../partials/sideNav") %>
         </div>
       </div>
     </div>
+    
+    <!-- end -->
     <div class="container-fluid mt-n10">
+      <script>
+        $(window).on("load", function () {
+          var success = "";
+          var danger = "";
+          var error = "";
+          var warning = "";
+
+          if (success) {
+            $("#toastBasic4").toast("show");
+          }
+
+          if (danger || error) {
+            $("#toastBasic3").toast("show");
+          }
+
+          if (warning) {
+            $("#toastBasic2").toast("show");
+          }
+        });
+      </script>
+
       <div class="card mb-4">
-        <div class="card-header">View All Quiz</div>
+        <div class="card-header">Stock Quiz Listing - All Quiz</div>
         <div class="card-body">
-          <script>
-            $(window).on("load", function () {
-              var success = "";
-              var danger = "";
-              var error = "";
-              var warning = "";
-
-              if (success) {
-                $("#toastBasic4").toast("show");
-              }
-
-              if (danger || error) {
-                $("#toastBasic3").toast("show");
-              }
-
-              if (warning) {
-                $("#toastBasic2").toast("show");
-              }
-            });
-          </script>
-
-          <div class="datatable table-responsive overflow-auto">
+          <div class="datatable table-responsive">
             <table
               class="table table-bordered table-hover text-nowrap"
-              id="match_all_contest"
+              id="match_details"
               width="100%"
               cellspacing="0"
             >
-              <input
-                type="hidden"
-                id="matchID"
-                name="matchID"
-                value="<%= matchID %>"
-              />
-              <input
-                type="hidden"
-                id="seriesId"
-                name="seriesId"
-                value="<%= seriesId %>"
-              />
               <thead>
                 <tr>
-                  <th data-toggle="tooltip" title="Serial Number">#</th>
-                  <th data-toggle="tooltip">Question></th>
-                  <th data-toggle="tooltip">Admin Answer</th>
-                  <th data-toggle="tooltip">Entry Fee</th>
-                  <th>Joined Users</th>
-                  <th class="text-center">Action</th>
+                  <th>Sno.</th>
+                  <th>Question</th>
+                  <th>Stock Quiz Status</th>
                 </tr>
               </thead>
               <tfoot>
                 <tr>
-                    <th data-toggle="tooltip" title="Serial Number">#</th>
-                    <th data-toggle="tooltip">Question></th>
-                    <th data-toggle="tooltip">Admin Answer</th>
-                    <th data-toggle="tooltip">Entry Fee</th>
-                    <th>Joined Users</th>
-                    <th class="text-center">Action</th>
+                  <th>Sno.</th>
+                  <th>Question</th>
+                  <th>Stock Quiz Status</th>
                 </tr>
               </tfoot>
             </table>
@@ -97,21 +81,20 @@ include("../../partials/sideNav") %>
       <script type="text/javascript">
         $(document).ready(function () {
           $.fn.dataTable.ext.errMode = "none";
-          let matchID = $("#matchID").val();
-          console.log()
-          let seriesId = $("#seriesId").val();
-          $("#match_all_contest").DataTable({
-            searching: false,
+          let seriesID = $("#seriesID").val();
+          console.log(`"${seriesID}"`)
+          let fantasy_type = $("#matchkey_id").val();
+          $("#match_details").DataTable({
             language: {
               zeroRecords: "No records to display",
             },
             ajax: {
-              url: `/allquiz-table/${matchID}?seriesId=${seriesId}`,
+              url: `/stock/quiz-Data-Table`,
               type: "POST",
             },
             lengthMenu: [
-              [10, 20, 30],
-              [10, 20, 30],
+              [10, 25, 50],
+              [10, 25, 50],
             ],
             columns: [
               {
@@ -121,17 +104,8 @@ include("../../partials/sideNav") %>
                 data: "question",
               },
               {
-                data: "admin_answer",
-              },
-              {
-                data: "entryfee",
-              },
-              {
-                data: "joined_user",
-              },
-              {
-                data: "action",
-              },
+                data: "stock_quiz_status",
+              }
             ],
           });
         });
@@ -144,7 +118,7 @@ include("../../partials/sideNav") %>
 
       <script>
         $(document).ready(function () {
-          var table = $("#match_all_contest").DataTable({
+          var table = $("#match_details").DataTable({
             responsive: true,
           });
 
@@ -506,7 +480,7 @@ include("../../partials/sideNav") %>
           if (result.isConfirmed) {
             swalWithBootstrapButtons.fire("", "Successfully Done", "success");
 
-            window.location.href = url;
+            window.location.href = url ;
           } else if (
             /* Read more about handling dismissals below */
             result.dismiss === Swal.DismissReason.cancel
