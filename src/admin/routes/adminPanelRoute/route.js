@@ -567,17 +567,13 @@ router.get("/delete-stock-category", auth, getUrl, stockCategoryController.delet
 
 // ---------------------------------Stock Quiz Manager-----------------------------------------
 router.get("/stock/add_quiz", auth, getUrl,stockQuizController.AddQuizPage);
-router.post("/stock/add_quiz", auth, getUrl, stockQuizController.AddQuiz);
+router.post("/stock/add_quiz", auth, getUrl,stockQuizController.AddQuiz);
 router.get("/stock/view_quiz", auth, getUrl, stockQuizController.ViewQuiz);
-router.post("/Stock-Quiz-Data-Table", auth, stockQuizController.StockQuizDataTable);
-// router.get("/stock/view_quiz", auth, getUrl, stockQuizController.ViewQuiz);
-router.get("/stock/final_quiz", auth, getUrl, stockQuizController.FinalViewQuiz);
 router.post("/stock/quiz-Data-Table", auth, stockQuizController.QuizDataTable);
 router.post("/stock/quiz_give_answer/:id", auth, stockQuizController.QuizGIveAnswer);
 router.get("/stock/edit-quiz/:id", auth, getUrl, stockQuizController.editQuiz);
 router.post("/stock/edit-quiz-data/:id", auth,stockQuizController.editQuizData);
 router.get("/stock/deletequiz", auth, stockQuizController.deletequiz);
-
 router.get("/stock/enable_quiz", auth, getUrl, stockQuizController.EnableStockQuiz);
 router.get("/cancelStockQuiz/:id", auth, stockQuizController.cancelStockQuiz);
 router.get('/total-stock-quiz-joined-user/:stockquizId', auth, getUrl, stockQuizController.totalStockQuizJoinedUsers);
@@ -585,7 +581,6 @@ router.post('/total-stock-quiz-user-details-table', auth, stockQuizController.to
 router.get('/stockquizviewtransactions/:id', auth, getUrl, stockQuizController.stockquizviewtransactions);
 router.post('/stockquizviewTransactions-Data-Table/:id', auth, stockQuizController.stockquizviewTransactionsDataTable);
 router.post("/updateStockQuizStatus/:id/:status", auth, stockQuizController.updateStockQuizStatus);
-
 
 router.get("/stock/view-all-global-questions", auth, stockQuizController.ViewallGlobalQuestions_page);
 router.post("/stock/global-questions-datatable", auth, stockQuizController.globalQuestionsDatatable);
@@ -599,7 +594,7 @@ router.get("/stock/Import-global-questions", auth, stockQuizController.importGlo
 router.get("/stock/importmatchQuestion/:matchKey", auth, getUrl, stockQuizController.importQuestionData);
 router.get("/stock/Import-global-contest", auth, getUrl, stockQuizController.importGlobalContestPage);
 router.get("/stock/quizimportmatchData/:matchKey", auth, getUrl, stockQuizController.quizimportchallengersData);
-
+router.get("stockquiz-update-result", auth, stockQuizController.stockQuizUpdateResult)
 
 
 module.exports = router;

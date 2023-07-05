@@ -264,6 +264,7 @@ class matchServices {
             return result
             // else return [];
         } catch (error) {
+            console.log(error);
             throw error;
         }
     }

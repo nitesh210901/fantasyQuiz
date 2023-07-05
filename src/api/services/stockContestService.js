@@ -107,6 +107,7 @@ class overfantasyServices {
         }
       }
     } catch (error) {
+      console.log(error);
       throw error;
     }
 
@@ -326,6 +327,7 @@ class overfantasyServices {
         }
       }
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
@@ -1471,163 +1473,7 @@ class overfantasyServices {
     }
   }
 
-  async getSockScoresUpdates(listContest) {
-    try {
-      const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
-      const constedleaugeData = await joinStockLeagueModel.aggregate([
-        {
-          '$lookup': {
-            'from': 'stock_contests',
-            'localField': 'contestId',
-            'foreignField': '_id',
-            'as': 'contestData'
-          }
-        }, {
-          '$match': {
-            'contestData': {
-              '$elemMatch': {
-                'launch_status': 'launched',
-                'final_status': {
-                  '$nin': [
-                    'winnerdeclared', 'IsCanceled'
-                  ]
-                },
-                'fantasy_type': {
-                  '$ne': 'CRICKET'
-                },
-                'status': {
-                  '$ne': 'completed'
-                }, 'start_date': { $gte: currentDate },
-              }
-            }
-          }
-        }, {
-          '$lookup': {
-            'from': 'joinstockteams',
-            'localField': 'teamid',
-            'foreignField': '_id',
-            'as': 'teamData'
-          }
-        }, {
-          '$addFields': {
-            'stock': {
-              '$getField': {
-                'field': 'stock',
-                'input': {
-                  '$arrayElemAt': [
-                    '$teamData', 0
-                  ]
-                }
-              }
-            }
-          }
-        }, {
-          '$unwind': {
-            'path': '$stock'
-          }
-        }, {
-          '$lookup': {
-            'from': 'stocks',
-            'let': {
-              'id': '$stock.stockId'
-            },
-            'pipeline': [
-              {
-                '$match': {
-                  '$expr': {
-                    '$eq': [
-                      '$_id', '$$id'
-                    ]
-                  }
-                }
-              }
-            ],
-            'as': 'stockTeam'
-          }
-        }, {
-          '$addFields': {
-            'stockTeam': {
-              '$arrayElemAt': [
-                '$stockTeam', 0
-              ]
-            }
-          }
-        }, {
-          '$addFields': {
-            'stockTeam.percentage': '$stock.percentage'
-          }
-        }, {
-          '$project': {
-            'stock': 0,
-            'teamData': 0,
-            'leaugestransaction': 0
-          }
-        }, {
-          '$group': {
-            '_id': '$_id',
-            'transaction_id': {
-              '$first': '$transaction_id'
-            },
-            'userid': {
-              '$first': '$userid'
-            },
-            'teamid': {
-              '$first': '$teamid'
-            },
-            'contestId': {
-              '$first': '$contestId'
-            },
-            'contestData': {
-              '$first': '$contestData'
-            },
-            'stockTeam': {
-              '$push': '$stockTeam'
-            }
-          }
-        }, {
-          '$addFields': {
-            'invested': {
-              '$getField': {
-                'field': 'investment',
-                'input': {
-                  '$arrayElemAt': [
-                    '$contestData', 0
-                  ]
-                }
-              }
-            },
-            'start_date': {
-              '$getField': {
-                'field': 'start_date',
-                'input': {
-                  '$arrayElemAt': [
-                    '$contestData', 0
-                  ]
-                }
-              }
-            },
-            'end_date': {
-              '$getField': {
-                'field': 'end_date',
-                'input': {
-                  '$arrayElemAt': [
-                    '$contestData', 0
-                  ]
-                }
-              }
-            }
-          }
-        }
-      ]);
-
-      return constedleaugeData;
-    } catch (error) {
-      console.log("error" + error);
-      throw error;
-    }
-
-
-  }
+  
 
  
 
