@@ -43,14 +43,15 @@ class StockquizServices {
             quizcreateCustomContest: this.quizcreateCustomContest.bind(this),
             quizimportchallengersData: this.quizimportchallengersData.bind(this),
             quizRefundAmount: this.quizRefundAmount.bind(this),
-            quizrefundprocess: this.quizrefundprocess.bind(this),
+            stockquizrefundprocess: this.stockquizrefundprocess.bind(this),
             cancelQuiz: this.cancelQuiz.bind(this),
-            quizdistributeWinningAmountWithAnswerMatch: this.quizdistributeWinningAmountWithAnswerMatch.bind(this),
+            stockquizdistributeWinningAmountWithAnswerMatch: this.stockquizdistributeWinningAmountWithAnswerMatch.bind(this),
             quizCancel: this.quizCancel.bind(this),
             viewtransactions: this.viewtransactions.bind(this),
             EnableStockQuiz: this.EnableStockQuiz.bind(this),
             cancelStockQuiz: this.cancelStockQuiz.bind(this),
             stockquizviewtransactions: this.stockquizviewtransactions.bind(this),
+            stockquizallRefundAmount: this.stockquizallRefundAmount.bind(this),
         }
     }
 
@@ -348,36 +349,32 @@ class StockquizServices {
         }
     }
 
-    async quizdistributeWinningAmountWithAnswerMatch(req) {
+    async stockquizdistributeWinningAmountWithAnswerMatch(req) {
         try {
             let { id, status } = req.params;
-            let joinData = await QuizJoinLeaugeModel.find({ matchkey: id })
-            let quizData = await stockQuizModel.find({ matchkey: id })
+            let joinData = await StockQuizJoinLeaugeModel.find({ stockquizId: id })
+            let quizData = await stockQuizModel.findOne({ _id: id })
             if (joinData.length == 0) {
                 return {
-                    message: "Quiz Answer Not Found",
+                    message: "Stock Quiz Answer Not Found",
                     status: false,
                     data: {}
                 }
             }
-            if (quizData.length == 0) {
+            if (!quizData) {
                 return {
-                    message: " Quiz not found",
+                    message: " Stock Quiz not found",
                     status: false,
                     data: {}
                 }
             }
             let data;
-            if (joinData.length > 0 && quizData.length > 0) {
+            if (joinData.length > 0 && quizData) {
                 for (let join_data of joinData) {
-                    for (let quiz_data of quizData) {
-                        if (quiz_data._id.toString() === join_data.quizId.toString() && quiz_data.matchkey.toString() === join_data.matchkey.toString()) {
-                            let keys = Object.keys(quiz_data.options[0])
-                            for (let res of keys) {
-                                if (res === quiz_data.answer) {
-                                    if (quiz_data.options[0][res] === join_data.answer) {
+                        if (quizData._id.toString() === join_data.stockquizId.toString()) {
+                                    if (quizData.answer === join_data.answer) {
                                         const user = await userModel.findOne({ _id: join_data.userid }, { userbalance: 1, totalwinning: 1 });
-                                        data = await QuizJoinLeaugeModel.findOneAndUpdate({ matchkey: join_data.matchkey, quizId: join_data.quizId ,userid:join_data.userid}, { winamount: quiz_data.winning_amount }, { new: true })
+                                        data = await StockQuizJoinLeaugeModel.findOneAndUpdate({ stockquizId: join_data.stockquizId,userid:join_data.userid}, { winamount: quizData.winning_amount }, { new: true })
                                         const bonus = parseFloat(user.userbalance.bonus.toFixed(2));
                                         const balance = parseFloat(user.userbalance.balance.toFixed(2));
                                         const winning = parseFloat(user.userbalance.winning.toFixed(2));
@@ -392,30 +389,28 @@ class StockquizServices {
                                         const userObj = {
                                             'userbalance.balance': balance,
                                             'userbalance.bonus': bonus,
-                                            'userbalance.winning': winning + quiz_data.winning_amount,
-                                            'totalwinning': totalwinning + quiz_data.winning_amount
+                                            'userbalance.winning': winning + quizData.winning_amount,
+                                            'totalwinning': totalwinning + quizData.winning_amount
                                         };
                                         const transactiondata = {
-                                            type: 'Quiz Winning Amount',
-                                            amount: quiz_data.winning_amount,
-                                            total_available_amt: totalBalance + quiz_data.winning_amount,
+                                            type: 'Stock Quiz Winning Amount',
+                                            amount: quizData.winning_amount,
+                                            total_available_amt: totalBalance + quizData.winning_amount,
                                             transaction_by: constant.APP_SHORT_NAME,
-                                            quizId: join_data.quizId,
+                                            stockquizId: join_data.stockquizId,
                                             userid: join_data.userid,
                                             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                                             bal_bonus_amt: bonus,
-                                            bal_win_amt: winning + quiz_data.winning_amount,
+                                            bal_win_amt: winning + quizData.winning_amount,
                                             bal_fund_amt: balance,
-                                            win_amt: quiz_data.winning_amount,
+                                            win_amt: quizData.winning_amount,
                                             transaction_id: transactionidsave
                                         }
                                           
                                         let finalResult = {
                                             userid: join_data.userid,
-                                            amount: quiz_data.winning_amount,
-                                            matchkey: join_data.matchkey,
-                                            quizId: join_data.quizId,
-                                            seriesid: join_data.seriesid,
+                                            amount: quizData.winning_amount,
+                                            quizId: join_data.stockquizId,
                                             transaction_id: transactionidsave,
                                             joinedid: join_data._id
                                         };
@@ -429,18 +424,16 @@ class StockquizServices {
                                             await finalQuizResultModel.create(finalResult);
                                         }
                                         await Promise.all([
-                                            stockQuizModel.findOneAndUpdate({ _id:join_data.quizId},{quiz_status:status},{new:true}),
+                                            stockQuizModel.findOneAndUpdate({ _id:join_data.stockquizId},{final_status:status},{new:true}),
                                             userModel.findOneAndUpdate({ _id: join_data.userid }, userObj, { new: true }),
                                             TransactionModel.create(transactiondata),
                                         ])
                                     }
-                                }
-                            }
                         }
-                    }
+                    
                 }
                 return {
-                    message: "Quiz Amount distribute successfully",
+                    message: "Stock Quiz Amount distribute successfully",
                     status: true,
                     data: joinData
                 }
@@ -927,17 +920,17 @@ class StockquizServices {
         return true;
     }
 
-    async quizallRefundAmount(req, reason) {
-        console.log("-------------------------------------quizallRefundAmount-------------------------")
+    async stockquizallRefundAmount(req, reason) {
+        console.log("-------------------------------------stockquizallRefundAmount-------------------------")
         let { id, status } = req.params;
-        let quizData = await stockQuizModel.find({ matchkey: mongoose.Types.ObjectId(id) });
+        let quizData = await stockQuizModel.find({ _id: mongoose.Types.ObjectId(id) });
         if (quizData.length > 0) {
             for (let quiz of quizData) {
-                let getresponse = await this.quizrefundprocess(quiz._id, quiz.entryfee, id, reason);
+                let getresponse = await this.stockquizrefundprocess(quiz._id, quiz.entryfee, id, reason);
                 if (getresponse == true) {
                     await stockQuizModel.updateOne({ _id: mongoose.Types.ObjectId(quiz._id) }, {
                         $set: {
-                            quiz_status: 'canceled'
+                            final_status: status
                         }
                     });
                 }
@@ -1364,12 +1357,12 @@ class StockquizServices {
             if (!data) {
                 return {
                     status:false,
-                    message:'quiz not found'
+                    message:'stock quiz not found'
                 } 
             }
             return {
                 status:true,
-                message: 'quiz answer update successfully',
+                message: 'stock quiz answer update successfully',
                 data:data
             }
         } catch (error) {
@@ -1377,11 +1370,10 @@ class StockquizServices {
         }
     }
 
-    async quizrefundprocess(quizId, entryfee, matchkey, reason) {
-        console.log("-------------------------------------quizrefundprocess-----------------------------")
-        let joinLeagues = await QuizJoinLeaugeModel.find({
-            matchkey: mongoose.Types.ObjectId(matchkey),
-            quizId: mongoose.Types.ObjectId(quizId),
+    async stockquizrefundprocess(stockquizId, entryfee, matchkey, reason) {
+        console.log("-------------------------------------stockquizrefundprocess-----------------------------")
+        let joinLeagues = await StockQuizJoinLeaugeModel.find({
+            stockquizId: mongoose.Types.ObjectId(stockquizId),
         });
         if (joinLeagues.length > 0) {
             for (let league of joinLeagues) {
@@ -1410,8 +1402,7 @@ class StockquizServices {
                             userid: leaugestransaction.user_id,
                             amount: entryfee,
                             joinid: league._id,
-                            quizId: league.quizId,
-                            matchkey: matchkey,
+                            stockquizId: league.stockquizId,
                             reason: reason,
                             transaction_id: transaction_id
                         };
@@ -1420,7 +1411,7 @@ class StockquizServices {
                             amount: entryfee,
                             total_available_amt: totalBalance + entryfee,
                             transaction_by: constant.APP_SHORT_NAME,
-                            quizId: quizId,
+                            stockquizId: stockquizId,
                             userid: leaugestransaction.user_id,
                             paymentstatus: constant.PAYMENT_STATUS_TYPES.CONFIRMED,
                             bal_bonus_amt: bonus + leaugestransaction.bonus,

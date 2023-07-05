@@ -575,7 +575,12 @@ router.get("/stock/edit-quiz/:id", auth, getUrl, stockQuizController.editQuiz);
 router.post("/stock/edit-quiz-data/:id", auth,stockQuizController.editQuizData);
 router.get("/stock/deletequiz", auth, stockQuizController.deletequiz);
 router.get("/stock/enable_quiz", auth, getUrl, stockQuizController.EnableStockQuiz);
-
+router.get("/cancelStockQuiz/:id", auth, stockQuizController.cancelStockQuiz);
+router.get('/total-stock-quiz-joined-user/:stockquizId', auth, getUrl, stockQuizController.totalStockQuizJoinedUsers);
+router.post('/total-stock-quiz-user-details-table', auth, stockQuizController.totalStockQuizUserDetailsData);
+router.get('/stockquizviewtransactions/:id', auth, getUrl, stockQuizController.stockquizviewtransactions);
+router.post('/stockquizviewTransactions-Data-Table/:id', auth, stockQuizController.stockquizviewTransactionsDataTable);
+router.post("/updateStockQuizStatus/:id/:status", auth, stockQuizController.updateStockQuizStatus);
 
 router.get("/stock/view-all-global-questions", auth, stockQuizController.ViewallGlobalQuestions_page);
 router.post("/stock/global-questions-datatable", auth, stockQuizController.globalQuestionsDatatable);
