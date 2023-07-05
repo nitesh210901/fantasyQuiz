@@ -1,8 +1,11 @@
 const res = require('express/lib/response');
 const mongoose = require('mongoose');
+const axios = require('axios');
+
 const moment = require('moment');
 const randomstring = require("randomstring");
 const stockContestModel = require('../../models/stockContestModel');
+const stockModel = require('../../models/stockModel');
 const joinStockLeagueModel = require('../../models/joinStockLeagueModel');
 const stockPriceCardModel = require('../../models/stockPriceCardModel');
 const contestCategoryModel = require('../../models/contestcategoryModel');
