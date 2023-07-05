@@ -201,6 +201,7 @@ class challengersService {
         }
     }
 
+
     async deleteMultiStockContest(req) {
         try {
             let { deletedId } = req.body
@@ -1616,8 +1617,7 @@ class challengersService {
           throw error;
         }
     }
-
-    async stockQuizUpdateResult(req) {
+    async updateResultStocks(req) {
         try {
           console.log('nitesh______+++++++++');
           const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
@@ -1694,7 +1694,6 @@ class challengersService {
               }
     
             }
-    
           }
     
           return {
@@ -1707,6 +1706,91 @@ class challengersService {
           throw error;
         }
     }
+
+    async rankUpdateInMatch1(contestId){
+        try {
+            let agePipe = [];
+            agePipe.push({
+                $match: {
+                    _id:mongoose.Types.ObjectId(contestId)
+                }
+            });
+          
+            agePipe.push({
+                $lookup: {
+                    from: "stockfinalresults",
+                    let: {
+                      contestId: "$_id",
+                    },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              {
+                                $eq: ["$contestId", "$$contestId"],
+                              },
+                            ],
+                          },
+                        },
+                      },
+                      {
+                        $setWindowFields: {
+                          partitionBy: "",
+                          sortBy: {
+                            finalvalue: -1,
+                          },
+                          output: {
+                            rank: {
+                              $rank: {},
+                            },
+                          },
+                        },
+                      },
+                      {
+                        $project: {
+                          _id: 1,
+                          rank: 1,
+                          finalvalue: 1,
+                        },
+                      },
+                    ],
+                    as: "leaderboards",
+                }
+            });
+            agePipe.push({
+                $project: {
+                    _id: 1,
+                    status: 1,
+                    leaderboards: 1,
+                    start_date: 1
+                }
+            })
+            let getLiveMatches = await stockContestModel.aggregate(agePipe);
+    
+          
+          if (getLiveMatches.length > 0) {
+            if (getLiveMatches[0].leaderboards.length > 0) {
+                    const bulkUpdateOperations = [];
+                      for (let leaderboard of getLiveMatches[0].leaderboards) {
+                            bulkUpdateOperations.push({
+                                updateMany: {
+                                    filter: { _id: leaderboard._id },
+                                    update: { $set: { rank: leaderboard.rank } }
+                                }
+                            });
+              }
+                        if (bulkUpdateOperations.length > 0) {
+                            await stockFinalResult.bulkWrite(bulkUpdateOperations);
+                        }
+                    }
+                }
+            return { message: "Done", status: 200, data: [] };
+        }
+        catch (error) {
+            console.log("error", error)
+        }
+      }
 
     async getSockScoresUpdates(listContest) {
         try {
@@ -1856,14 +1940,11 @@ class challengersService {
               }
             }
           ]);
-    
           return constedleaugeData;
         } catch (error) {
           console.log("error" + error);
           throw error;
         }
-    
-    
     }
 }
 module.exports = new challengersService();

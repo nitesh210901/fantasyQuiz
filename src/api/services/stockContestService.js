@@ -1386,8 +1386,6 @@ class overfantasyServices {
     }
   }
 
-
-
   async rankUpdateInMatch1(contestId){
     try {
         let agePipe = [];
@@ -1472,11 +1470,6 @@ class overfantasyServices {
         console.log("error", error)
     }
   }
-
-  
-
- 
-
   // async liveStockRanksLeaderboard(req) {
   //   try {
   //     let skip = Number(req.query?.skip ?? 0);

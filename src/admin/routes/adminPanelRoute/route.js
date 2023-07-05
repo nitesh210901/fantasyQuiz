@@ -594,7 +594,6 @@ router.get("/stock/Import-global-questions", auth, stockQuizController.importGlo
 router.get("/stock/importmatchQuestion/:matchKey", auth, getUrl, stockQuizController.importQuestionData);
 router.get("/stock/Import-global-contest", auth, getUrl, stockQuizController.importGlobalContestPage);
 router.get("/stock/quizimportmatchData/:matchKey", auth, getUrl, stockQuizController.quizimportchallengersData);
-router.get("stockquiz-update-result", auth, stockQuizController.stockQuizUpdateResult)
 
 
 module.exports = router;

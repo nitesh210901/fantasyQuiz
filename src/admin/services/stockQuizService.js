@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const moment = require("moment");
 
 const stockQuizModel = require('../../models/stockQuizModel');
+const stockQuizFinalResult = require('../../models/stockQuizFinalResult');
 const QuizJoinLeaugeModel = require('../../models/QuizJoinLeaugeModel');
 const refundMatchModel = require('../../models/refundModel');
 const listMatchesModel = require('../../models/listMatchesModel');
@@ -52,6 +53,8 @@ class StockquizServices {
             cancelStockQuiz: this.cancelStockQuiz.bind(this),
             stockquizviewtransactions: this.stockquizviewtransactions.bind(this),
             stockquizallRefundAmount: this.stockquizallRefundAmount.bind(this),
+            updateResultOfStocksQuiz: this.updateResultOfStocksQuiz.bind(this),
+            getStockQuizUpdates: this.getStockQuizUpdates.bind(this),
         }
     }
 
@@ -1903,283 +1906,28 @@ class StockquizServices {
         }
     }
 
-    async updateResultStocks(req) {
+    async updateResultOfStocksQuiz(req) {
         try {
-          console.log('nitesh______+++++++++');
-          const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
-          let newData;
-          const listContest = await stockContestModel.find({
-            fantasy_type: { $ne: 'CRICKET' },
-            start_date: { $gte: currentDate },
-            launch_status: 'launched',
-            final_status: { $nin: ['winnerdeclared', 'IsCanceled'] },
-            status: { $ne: 'completed' }
-          });
-          if (listContest.length > 0) {
-            for (let index of listContest) {
-              let matchTimings = index.start_date;
-              const currentDate1 = moment().format('YYYY-MM-DD+HH:mm:ss');
-    
-              if (currentDate1 >= matchTimings) {
-                const result = await this.getSockScoresUpdates(listContest);
-    
-                const headers = {
-                  "Authorization": `token ${process.env.KITE_Api_kEY}:${process.env.KITE_ACCESS_TOKEN}`
-                };
-    
-                await Promise.all(result.map(async (ele) => {
-                  const insertData = {
-                    userId: ele.userid,
-                    teamid: ele.teamid,
-                    contestId: ele.contestId,
-                    joinId: ele._id,
-                  };
-    
-                  const investment = +ele.invested;
-                  const startDate = ele.start_date;
-                  const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
-                  const dateFormat = moment().format('YYYY/MM/DD HH:mm');
-                  let matchStatus = {};
-                  if (dateFormat >= ele.start_date) {
-                    matchStatus['status'] = 'started';
-                    matchStatus['final_status'] = 'IsReviewed';
-                  }
-                  await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, matchStatus);
-                
-                  const chkSave = await stockContestModel.findOneAndUpdate({ _id: ele.contestId }, matchStatus, { upsert: true });
-                  let total = 0;
-    
-                  await Promise.all(ele.stockTeam.map(async (stock) => {
-                    try {
-                      const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}&to=${formattedDate}`, {
-                        headers: headers
-                      });
-    
-                      total += resp.data.data.candles.reduce((acc, candle) => {
-                        const openPrice = candle[1];
-                        const closePrice = candle[4];
-                        return acc + (investment * closePrice / openPrice);
-                      }, 0);
-                    } catch (err) {
-                      console.log(err);
-                      console.error(err);
-                    }
-                  }));
-    
-                  insertData.finalvalue = total;
-                  await this.rankUpdateInMatch1(ele.contestId);  
-    
-                  newData = await stockFinalResult.findOneAndUpdate(
-                    { userId: ele.userid, teamid: ele.teamid, contestId: ele.contestId },
-                    insertData,
-                    { upsert: true }
-                  );
-                }));
-    
-    
-              }
-    
-            }
-    
-          }
-    
-          return {
-            "message": "League Data",
-            data: newData || {}
-          };
-    
-        } catch (error) {
-          console.log(error);
-          throw error;
-        }
-    }
-
-    async getSockScoresUpdates(listContest) {
-        try {
-          const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
-          const constedleaugeData = await joinStockLeagueModel.aggregate([
-            {
-              '$lookup': {
-                'from': 'stock_contests',
-                'localField': 'contestId',
-                'foreignField': '_id',
-                'as': 'contestData'
-              }
-            }, {
-              '$match': {
-                'contestData': {
-                  '$elemMatch': {
-                    'launch_status': 'launched',
-                    'final_status': {
-                      '$nin': [
-                        'winnerdeclared', 'IsCanceled'
-                      ]
-                    },
-                    'fantasy_type': {
-                      '$ne': 'CRICKET'
-                    },
-                    'status': {
-                      '$ne': 'completed'
-                    }, 'start_date': { $gte: currentDate },
-                  }
-                }
-              }
-            }, {
-              '$lookup': {
-                'from': 'joinstockteams',
-                'localField': 'teamid',
-                'foreignField': '_id',
-                'as': 'teamData'
-              }
-            }, {
-              '$addFields': {
-                'stock': {
-                  '$getField': {
-                    'field': 'stock',
-                    'input': {
-                      '$arrayElemAt': [
-                        '$teamData', 0
-                      ]
-                    }
-                  }
-                }
-              }
-            }, {
-              '$unwind': {
-                'path': '$stock'
-              }
-            }, {
-              '$lookup': {
-                'from': 'stocks',
-                'let': {
-                  'id': '$stock.stockId'
-                },
-                'pipeline': [
-                  {
-                    '$match': {
-                      '$expr': {
-                        '$eq': [
-                          '$_id', '$$id'
-                        ]
-                      }
-                    }
-                  }
-                ],
-                'as': 'stockTeam'
-              }
-            }, {
-              '$addFields': {
-                'stockTeam': {
-                  '$arrayElemAt': [
-                    '$stockTeam', 0
-                  ]
-                }
-              }
-            }, {
-              '$addFields': {
-                'stockTeam.percentage': '$stock.percentage'
-              }
-            }, {
-              '$project': {
-                'stock': 0,
-                'teamData': 0,
-                'leaugestransaction': 0
-              }
-            }, {
-              '$group': {
-                '_id': '$_id',
-                'transaction_id': {
-                  '$first': '$transaction_id'
-                },
-                'userid': {
-                  '$first': '$userid'
-                },
-                'teamid': {
-                  '$first': '$teamid'
-                },
-                'contestId': {
-                  '$first': '$contestId'
-                },
-                'contestData': {
-                  '$first': '$contestData'
-                },
-                'stockTeam': {
-                  '$push': '$stockTeam'
-                }
-              }
-            }, {
-              '$addFields': {
-                'invested': {
-                  '$getField': {
-                    'field': 'investment',
-                    'input': {
-                      '$arrayElemAt': [
-                        '$contestData', 0
-                      ]
-                    }
-                  }
-                },
-                'start_date': {
-                  '$getField': {
-                    'field': 'start_date',
-                    'input': {
-                      '$arrayElemAt': [
-                        '$contestData', 0
-                      ]
-                    }
-                  }
-                },
-                'end_date': {
-                  '$getField': {
-                    'field': 'end_date',
-                    'input': {
-                      '$arrayElemAt': [
-                        '$contestData', 0
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          ]);
-    
-          return constedleaugeData;
-        } catch (error) {
-          console.log("error" + error);
-          throw error;
-        }
-    }
-
-    async stockQuizUpdateResult(req) {
-        try {
-          console.log('nitesh______+++++++++');
           const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
           let newData;
           const listContest = await stockQuizModel.find({
             start_date: { $gte: currentDate },
-            launch_status: 'launched',
+            is_enabled: true,
             final_status: { $nin: ['winnerdeclared', 'IsCanceled'] },
             status: { $ne: 'completed' }
           });
           if (listContest.length > 0) {
             for (let index of listContest) {
-              let matchTimings = index.start_date;
+              let stockQuizTimings = index.start_date;
               const currentDate1 = moment().format('YYYY-MM-DD+HH:mm:ss');
-    
-              if (currentDate1 >= matchTimings) {
-                const result = await this.getSockScoresUpdates(listContest);
-    
-              
-    
+              if (currentDate1 >= stockQuizTimings) {
+                const result = await this.getStockQuizUpdates(listContest);
                 await Promise.all(result.map(async (ele) => {
                   const insertData = {
                     userId: ele.userid,
-                    teamid: ele.teamid,
-                    contestId: ele.contestId,
+                    stockquizId: ele.stockquizId,
                     joinId: ele._id,
                   };
-    
-                  const investment = +ele.invested;
                   const startDate = ele.start_date;
                   const formattedDate = moment(startDate, 'YYYY/MM/DD HH:mm').format('YYYY-MM-DD+HH:mm:ss');
                   const dateFormat = moment().format('YYYY/MM/DD HH:mm');
@@ -2188,47 +1936,24 @@ class StockquizServices {
                     matchStatus['status'] = 'started';
                     matchStatus['final_status'] = 'IsReviewed';
                   }
-                  await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, matchStatus);
+                //   await stockContestModel.findByIdAndUpdate({_id:ele.contestId}, matchStatus);
                 
-                  const chkSave = await stockContestModel.findOneAndUpdate({ _id: ele.contestId }, matchStatus, { upsert: true });
+                  const chkSave = await stockQuizModel.findOneAndUpdate({ _id: ele.stockquizId }, matchStatus, { upsert: true });
                   let total = 0;
-    
-                  await Promise.all(ele.stockTeam.map(async (stock) => {
-                    try {
-                      const resp = await axios.get(`https://api.kite.trade/instruments/historical/${stock.instrument_token}/minute?from=${formattedDate}&to=${formattedDate}`, {
-                        headers: headers
-                      });
-    
-                      total += resp.data.data.candles.reduce((acc, candle) => {
-                        const openPrice = candle[1];
-                        const closePrice = candle[4];
-                        return acc + (investment * closePrice / openPrice);
-                      }, 0);
-                    } catch (err) {
-                      console.log(err);
-                      console.error(err);
-                    }
-                  }));
-    
-                  insertData.finalvalue = total;
-                  await this.rankUpdateInMatch1(ele.contestId);  
-    
-                  newData = await stockFinalResult.findOneAndUpdate(
-                    { userId: ele.userid, teamid: ele.teamid, contestId: ele.contestId },
+
+                  newData = await stockQuizFinalResult.findOneAndUpdate(
+                    { userId: ele.userid, stockquizId: ele.stockquizId },
                     insertData,
                     { upsert: true }
                   );
                 }));
-    
-    
               }
     
             }
-    
           }
     
           return {
-            "message": "League Data",
+            "message": "Stock Quiz League Data",
             data: newData || {}
           };
     
@@ -2238,79 +1963,86 @@ class StockquizServices {
         }
     }
 
-    async getSockScoresUpdates(listContest) {
+    async getStockQuizUpdates(listContest) {
         try {
           const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
-          const constedleaugeData = await QuizJoinLeaugeModel.aggregate([
+          const stockQuizleaugeData = await StockQuizJoinLeaugeModel.aggregate([
             {
-              '$lookup': {
-                'from': 'stockquizzes',
-                'localField': 'stockquizId',
-                'foreignField': '_id',
-                'as': 'contestData'
-              }
-            }, {
-              '$match': {
-                'contestData': {
-                  '$elemMatch': {
-                    'launch_status': 'launched',
-                    'final_status': {
-                      '$nin': [
-                        'winnerdeclared', 'IsCanceled'
-                      ]
-                    },
-                    'status': {
-                      '$ne': 'completed'
-                    }, 'start_date': { $gte: currentDate },
-                  }
+                '$lookup': {
+                  'from': 'stockquizzes', 
+                  'localField': 'stockquizId', 
+                  'foreignField': '_id', 
+                  'as': 'stockQuizData'
                 }
-              }
-            },{
-              '$group': {
-                '_id': '$_id',
-                'transaction_id': {
-                  '$first': '$transaction_id'
-                },
-                'userid': {
-                  '$first': '$userid'
-                },
-                'quizid': {
-                  '$first': '$stockquizId'
-                }
-              }
-            }, {
-              '$addFields': {
-                'start_date': {
-                  '$getField': {
-                    'field': 'start_date',
-                    'input': {
-                      '$arrayElemAt': [
-                        '$contestData', 0
-                      ]
-                    }
-                  }
-                },
-                'end_date': {
-                  '$getField': {
-                    'field': 'end_date',
-                    'input': {
-                      '$arrayElemAt': [
-                        '$contestData', 0
-                      ]
+              }, {
+                '$match': {
+                  'stockQuizData': {
+                    '$elemMatch': {
+                      'is_enabled': true, 
+                      'final_status': {
+                        '$nin': [
+                          'winnerdeclared', 'IsCanceled'
+                        ]
+                      }, 
+                      'status': {
+                        '$ne': 'completed'
+                      }, 
+                      'start_date': {
+                        '$gte': currentDate
+                      }
                     }
                   }
                 }
+              }, {
+                '$addFields': {
+                  'start_date': {
+                    '$getField': {
+                      'field': 'start_date', 
+                      'input': {
+                        '$arrayElemAt': [
+                          '$stockQuizData', 0
+                        ]
+                      }
+                    }
+                  }, 
+                  'end_date': {
+                    '$getField': {
+                      'field': 'end_date', 
+                      'input': {
+                        '$arrayElemAt': [
+                          '$stockQuizData', 0
+                        ]
+                      }
+                    }
+                  }
+                }
+              }, {
+                '$group': {
+                  '_id': '$_id', 
+                  'transaction_id': {
+                    '$first': '$transaction_id'
+                  }, 
+                  'userid': {
+                    '$first': '$userid'
+                  }, 
+                  'stockquizId': {
+                    '$first': '$stockquizId'
+                  }, 
+                  'start_date': {
+                    '$first': '$start_date'
+                  }, 
+                  'end_date': {
+                    '$first': '$end_date'
+                  }
+                }
               }
-            }
-          ]);
+        ]);
     
-          return constedleaugeData;
+          return stockQuizleaugeData;
         } catch (error) {
           console.log("error" + error);
           throw error;
         }
-    
-    
     }
 }
 module.exports = new StockquizServices();
