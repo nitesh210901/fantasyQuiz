@@ -1,5 +1,5 @@
 const mongoose=require("mongoose");
-const stockContestService = require('../services/stockPortfolioService');
+const stockPortfolioService = require('../services/stockPortfolioService');
 const stockContestModel = require('../../models/stockContestModel');
 const stockCategoryModel = require("../../models/stockcategoryModel")
 const stockContestCategoryModel = require('../../models/stockContestCategory');
@@ -17,7 +17,7 @@ class stockPortfolioController {
    
     async getStocklistInPortfolio(req, res, next) {
         try {
-            const data = await stockContestService.getStocklistInPortfolio(req);
+            const data = await stockPortfolioService.getStocklistInPortfolio(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
@@ -30,7 +30,7 @@ class stockPortfolioController {
 
     async createPortfolio(req, res, next) {
         try {
-            const data = await stockContestService.createPortfolio(req);
+            const data = await stockPortfolioService.createPortfolio(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
@@ -43,7 +43,7 @@ class stockPortfolioController {
 
     async updatePortfolio(req, res, next) {
         try {
-            const data = await stockContestService.updatePortfolio(req);
+            const data = await stockPortfolioService.updatePortfolio(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {
@@ -56,7 +56,7 @@ class stockPortfolioController {
 
     async deletePortfolio(req, res, next) {
         try {
-            const data = await stockContestService.deletePortfolio(req);
+            const data = await stockPortfolioService.deletePortfolio(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {

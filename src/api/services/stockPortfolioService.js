@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const stockModel = require('../../models/stockModel');
 const myPortfolioModel = require('../../models/myPortfolioModel');
 
-class overfantasyServices {
+class stockPortfolioServices {
     constructor() {
         return {
 
@@ -17,9 +17,8 @@ class overfantasyServices {
     async getStocklistInPortfolio(req){
         try {
             const { stockCat } = req.query;
-            const aggPipe = [];
-
-            if(stockCat === 'STOCKS'){
+            let aggPipe = [];
+            if (stockCat === 'STOCKS') {
                 aggPipe.push({
                     $match: {
                         type:{
@@ -28,16 +27,26 @@ class overfantasyServices {
                         isEnable:true
                     }
                 })
-            }else{
+            } else {
                 aggPipe.push({
                     $match: {
-                        type:stockCat
+                        type:stockCat,
+                        isEnable:true,
                     },
-                    isEnable:true,
                 })
             }
             const data = await stockModel.aggregate(aggPipe);
-            return data;
+            if (data.length === 0) {
+                return {
+                    status: false,
+                    message:"stock listing not found in portfolio",
+                }
+            }
+            return{
+                status:true,
+                message: 'stock listing in portfolio',
+                data: data
+            }
         } catch (error) {
             console.log(error);
             throw error;
@@ -46,9 +55,15 @@ class overfantasyServices {
   
     async createPortfolio(req){
         try {
-            const { stock, userid, portfolioCat } = req;
-            const existingPortfolio = await myPortfolioModel.findOne({ userid });
-
+            const { stocks, portfolioCat } = req.body;
+            const userId = req.user._id;
+            if (stocks.length === 0) {
+                return {
+                    status: false,
+                    message:"stock not found in portfolio"
+                }
+            }
+            const existingPortfolio = await myPortfolioModel.findOne({ userId ,portfolioCat});
             if (existingPortfolio) {
             return {
                 message: 'Portfolio already exists for this user.',
@@ -56,17 +71,14 @@ class overfantasyServices {
                 data: [],
             };
             } else {
-            const updatedPortfolio = new myPortfolioModel({
-                stock,
-                userid,
-                portfolioCat,
-            });
-
-            await updatedPortfolio.save();
-
-            return updatedPortfolio;
+                stocks.map(async (stock) => {
+                  await myPortfolioModel.insertMany({stockId:stock,portfolioCat,userId})
+                })
+            return{
+                status:true,
+                message: 'portfolio created successfully',
+            }
         }
-
         } catch (error) {
             console.log(error);
             throw error;
@@ -75,14 +87,17 @@ class overfantasyServices {
 
     async updatePortfolio(req){
         try {
-            const { stock, userid, portfolioCat } = req;
-            const existingPortfolio = await myPortfolioModel.findOne({ userid, portfolioCat});
+            const { _id ,stockId,portfolioCat} = req.body;
+            let userId = req.user._id
+            const existingPortfolio = await myPortfolioModel.findOne({ _id});
 
             if (existingPortfolio) {
-                
-                await myPortfolioModel.findOneAndUpdate({userid, portfolioCat}, req.body);
+                await myPortfolioModel.findOneAndUpdate({_id},{stockId,portfolioCat});
     
-                return myPortfolioModel;
+                return {
+                    status: true,
+                    message: 'portfolio updated successfully'
+                }
             } else {
                 return {
                     message: 'No Portfolio found for this user.',
@@ -90,7 +105,6 @@ class overfantasyServices {
                     data: [],
                 };
             }
-
         } catch (error) {
             console.log(error);
             throw error;
@@ -99,12 +113,12 @@ class overfantasyServices {
 
     async deletePortfolio(req){
         try {
-            const { userid, portfolioCat } = req.query;
-
-            const deletedPortfolio = await myPortfolioModel.findOneAndDelete({ userid, portfolioCat });
-            
-            return deletedPortfolio;
-
+            const {id } = req.query;
+            const deletedPortfolio = await myPortfolioModel.findOneAndDelete({ _id: id })
+            return {
+                status: true,
+                message:"Portfolio deleted"
+            }
         } catch (error) {
             console.log(error);
             throw error;
@@ -112,4 +126,4 @@ class overfantasyServices {
     }
 }
 
-module.exports = new overfantasyServices();
+module.exports = new stockPortfolioServices();
