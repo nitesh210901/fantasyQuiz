@@ -54,6 +54,7 @@ class quizController {
       stockquizviewTransactionsDataTable:this.stockquizviewTransactionsDataTable.bind(this),
       FinalViewQuiz:this.FinalViewQuiz.bind(this),
       StockQuizDataTable:this.StockQuizDataTable.bind(this),
+      stockQuizUpdateResult:this.stockQuizUpdateResult.bind(this),
     //   view_youtuber_dataTable: this.view_youtuber_dataTable.bind(this)
     };
   }
@@ -1784,6 +1785,15 @@ class quizController {
     } catch (error) {
       
     }
+    }
+
+    async stockQuizUpdateResult(req, res, next) {
+      try {
+          const data = await stockQuizService.stockQuizUpdateResult(req);
+          return res.status(200).json(Object.assign({ success: true }, data));
+      } catch (error) {
+          next(error);
+      } 
     }
 }
 module.exports = new quizController();

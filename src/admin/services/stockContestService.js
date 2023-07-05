@@ -872,7 +872,8 @@ class challengersService {
                             const deletepriceCard = await stockPriceCardModel.deleteMany({ stockcontestId: stockcontestData._id });
                         }
                     }
-                    let image = `/${req.body.typename}/${req.file?.filename}` || "";
+                    let image = `/${req.body.typename}/${req.file ? req.file.filename : ""}`;
+
                     if (req.file) {
                         data.image = image;
                     }
@@ -1616,7 +1617,7 @@ class challengersService {
         }
     }
 
-    async updateResultStocks(req) {
+    async stockQuizUpdateResult(req) {
         try {
           console.log('nitesh______+++++++++');
           const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
