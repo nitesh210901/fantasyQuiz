@@ -103,12 +103,17 @@ class quizfantasyServices {
                     $and: [{ start_date: { $gt: date } }, { start_date: { $lt: EndDate } }]
                   }
             })
+            pipeline.push({
+                $project: {
+                    answer:0
+                }
+            })
             let data = await stockQuizModel.aggregate(pipeline)
 
             if (data.length === 0) {
                 return {
                     status: false,
-                    message: " Stock Quiz  not Found",
+                    message: "Stock Quiz  not Found",
                     data: []
                 }
             }
@@ -141,6 +146,11 @@ class quizfantasyServices {
                 $match: {
                     $and: [{ start_date: { $gt: date } }, { start_date: { $lt: EndDate } }]
                   }
+            })
+            pipeline.push({
+                $project: {
+                    answer:0
+                }
             })
             let data = await stockQuizModel.aggregate(pipeline)
             if (data.length === 0) {
