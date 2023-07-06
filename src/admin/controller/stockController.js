@@ -73,7 +73,8 @@ class stockCategory {
           let start = req.query.start;
           let rows;
           let stockCategory = req.query.stockcategory;
-          let stockType = req.query.stockType;
+           let stockType = req.query.stockType;
+        console.log(stockType,"helooooooooooooooooooooooo")
           if(stockCategory != 'null') {
               let stockcategory = req.query.stockcategory;
               rows = await stockCategoryModel.aggregate(
@@ -129,12 +130,17 @@ class stockCategory {
             let conditions
               if(stockType != 'null'){
                 conditions = {"exchange" : stockType}
-              } else{
+              } else {
+                console.log("hello")
                 conditions = {}
-              }
-              rows = await stockModel.countDocuments(conditions);
+            }
+             console.log("stockCategory")
+            rows = await stockModel.countDocuments(conditions);
+            console.log(conditions,"==========>")
               rows = await stockModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 });
-          }
+        }
+        
+        console.log(rows,"llllllllllllllll");
               let totalFiltered = rows;
               let data = [];
               let count = 1;
@@ -152,9 +158,9 @@ class stockCategory {
                       else btnStatus = 'Enable'
 
                       data.push({
-                          's_no': `<div class="custom-control custom-checkbox">
-                          <input type="checkbox" class="custom-control-input checkbox" name="checkCat" id="check${index._id}" value="${index._id}">
-                          <label class="custom-control-label" for="check${index._id}"></label></div>`,
+                          // 's_no': `<div class="custom-control custom-checkbox">
+                          // <input type="checkbox" class="custom-control-input checkbox" name="checkCat" id="check${index._id}" value="${index._id}">
+                          // <label class="custom-control-label" for="check${index._id}"></label></div>`,
                           'count': count,
                           'instrument_token': index.instrument_token,
                           'exchange_token': index.exchange_token,

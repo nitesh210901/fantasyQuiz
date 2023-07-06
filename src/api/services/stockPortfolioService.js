@@ -9,7 +9,8 @@ class stockPortfolioServices {
             getStocklistInPortfolio: this.getStocklistInPortfolio.bind(this),
             createPortfolio: this.createPortfolio.bind(this),
             updatePortfolio: this.updatePortfolio.bind(this),
-            deletePortfolio: this.deletePortfolio.bind(this)
+            deletePortfolio: this.deletePortfolio.bind(this),
+            myPortfolioData: this.myPortfolioData.bind(this)
 
         }
     }
@@ -118,6 +119,48 @@ class stockPortfolioServices {
             return {
                 status: true,
                 message:"Portfolio deleted"
+            }
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    async myPortfolioData(req){
+        try {
+            const { portfolioCat } = req.query;
+            let aggPipe = [{
+                '$match': {
+                  'portfolioCat': portfolioCat
+                }
+              }, {
+                '$lookup': {
+                  'from': 'stocks', 
+                  'localField': 'stockId', 
+                  'foreignField': '_id', 
+                  'as': 'stock'
+                }
+              }, {
+                '$unwind': {
+                  'path': '$stock', 
+                  'preserveNullAndEmptyArrays': true
+                }
+              }, {
+                '$replaceRoot': {
+                  'newRoot': '$stock'
+                }
+              }];
+            const data = await myPortfolioModel.aggregate(aggPipe);
+            if (data.length === 0) {
+                return {
+                    status: false,
+                    message:"Portfolio is empty",
+                }
+            }
+            return{
+                status:true,
+                message: 'Portfolio Listing',
+                data: data
             }
         } catch (error) {
             console.log(error);
