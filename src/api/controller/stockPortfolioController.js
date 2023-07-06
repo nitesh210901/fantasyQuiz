@@ -11,7 +11,8 @@ class stockPortfolioController {
             getStocklistInPortfolio: this.getStocklistInPortfolio.bind(this),
             createPortfolio: this.createPortfolio.bind(this),
             updatePortfolio: this.updatePortfolio.bind(this),
-            deletePortfolio: this.deletePortfolio.bind(this)
+            deletePortfolio: this.deletePortfolio.bind(this),
+            myPortfolioData: this.myPortfolioData.bind(this),
         }
     }
    
@@ -57,6 +58,19 @@ class stockPortfolioController {
     async deletePortfolio(req, res, next) {
         try {
             const data = await stockPortfolioService.deletePortfolio(req);
+            if (data.status === false) {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            } else {
+                return res.status(200).json(Object.assign({ success: true }, data));
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async myPortfolioData(req, res, next) {
+        try {
+            const data = await stockPortfolioService.myPortfolioData(req);
             if (data.status === false) {
                 return res.status(200).json(Object.assign({ success: true }, data));
             } else {

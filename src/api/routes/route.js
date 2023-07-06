@@ -387,5 +387,5 @@ router.get("/get-portfolio-stocks", auth, stockPortfolioController.getStocklistI
 router.post("/create-portfolio-stocks", auth, stockPortfolioController.createPortfolio);
 router.post("/update-portfolio-stocks", auth, stockPortfolioController.updatePortfolio);
 router.delete("/delete-portfolio-stocks", auth, stockPortfolioController.deletePortfolio);
-
+router.get("/my-portfolio-data", auth, stockPortfolioController.myPortfolioData);
 module.exports = router;
