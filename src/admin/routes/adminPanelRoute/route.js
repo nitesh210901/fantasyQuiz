@@ -500,8 +500,6 @@ router.post("/quiz_give_answer/:id", auth, QuizController.QuizGIveAnswer);
 router.get("/edit-quiz/:id", auth, getUrl, QuizController.editQuiz);
 router.post("/edit-quiz-data/:id", auth, upload.single("image"),QuizController.editQuizData);
 router.get("/deletequiz", auth, QuizController.deletequiz);
-router.get("/view-all-global-questions", auth, QuizController.ViewallGlobalQuestions_page);
-router.post("/global-questions-datatable", auth, QuizController.globalQuestionsDatatable);
 router.get("/add-global-question", auth, QuizController.addGlobalQuestionPage);
 router.post("/add-global-question", auth, QuizController.addGlobalQuestion);
 router.get("/edit-global-question/:id", auth, getUrl, QuizController.editglobalquestion_page);

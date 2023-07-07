@@ -22,8 +22,6 @@ class quizController {
       deletequiz: this.deletequiz.bind(this),
       quizautoupdateMatchFinalStatus: this.quizautoupdateMatchFinalStatus.bind(this),
       quizupdateMatchFinalStatus: this.quizupdateMatchFinalStatus.bind(this),
-      ViewallGlobalQuestions_page: this.ViewallGlobalQuestions_page.bind(this),
-      globalQuestionsDatatable: this.globalQuestionsDatatable.bind(this),
       addGlobalQuestionPage: this.addGlobalQuestionPage.bind(this),
       addGlobalQuestion: this.addGlobalQuestion.bind(this),
       editglobalquestion_page: this.editglobalquestion_page.bind(this),
@@ -405,70 +403,6 @@ class quizController {
           res.redirect("/");
         }
       }
-      
-  async ViewallGlobalQuestions_page(req, res, next) {
-    try {
-        res.locals.message = req.flash();
-        res.render("quiz/viewallglobalquestions", { sessiondata: req.session.data });
-      } catch (error) {
-        req.flash('error','something is wrong please try again later');
-        res.redirect("/");
-    }
-  }
-  async globalQuestionsDatatable(req, res, next) {
-    try {
-        let limit1 = req.query.length;
-        let start = req.query.start;
-        let sortObject = {},
-            dir, join
-        let conditions = {};
-        if(req.query.fantasy_type){
-            conditions.fantasy_type = req.query.fantasy_type 
-        }
-        globalQuizModel.countDocuments(conditions).exec((err, rows) => {
-            let totalFiltered = rows;
-            let data = [];
-            let count = 1;
-            globalQuizModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').exec((err, rows1) => {
-             
-                if (err) console.log(err);
-                    rows1.forEach(async(index)=>{
-                    data.push({
-                        's_no': `<div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input checkbox" name="checkCat" id="check${index._id}" value="${index._id}">
-                        <label class="custom-control-label" for="check${index._id}"></label></div>`,
-                        "count" :count,
-                        "question" :`${index.question}`,
-                        "answer":`${index.answer}`,
-                         "action":`<div class="btn-group dropdown">
-                         <button class="btn btn-primary text-uppercase rounded-pill btn-sm btn-active-pink dropdown-toggle dropdown-toggle-icon" data-toggle="dropdown" type="button" aria-expanded="true" style="padding:5px 11px">
-                             Action <i class="dropdown-caret"></i>
-                         </button>
-                         <ul class="dropdown-menu" style="opacity: 1;">
-                             <li><a class="dropdown-item waves-light waves-effect" href="/edit-global-question/${index._id}">Edit</a></li>
-                             <li> <a class="dropdown-item waves-light waves-effect" onclick="delete_sweet_alert('/delete-global-question?globelQuestionId=${index._id}', 'Are you sure you want to delete this data?')">Delete</a></li>
-                         </ul>
-                       </div>`,
-                    });
-                    count++;
-
-                    if (count > rows1.length) {
-                        let json_data = JSON.stringify({
-                            "recordsTotal": rows,
-                            "recordsFiltered": totalFiltered,
-                            "data": data
-                        });
-                        res.send(json_data);
-                    }
-                });
-            });
-        });
-
-    } catch (error) {
-        throw error;
-    }
-
-  }
   
       async addGlobalQuestionPage(req, res, next) {
         try { 

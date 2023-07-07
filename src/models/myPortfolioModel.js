@@ -2,9 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 let myPortFolioSchema = new Schema({
-    stockId: {
-        type:mongoose.Types.ObjectId
-    },
+    stocks: [mongoose.Types.ObjectId],
     portfolioCat:{
         type:String
     },

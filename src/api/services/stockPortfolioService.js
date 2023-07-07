@@ -64,20 +64,19 @@ class stockPortfolioServices {
                     message:"stock not found in portfolio"
                 }
             }
-            const existingPortfolio = await myPortfolioModel.findOne({ userId ,portfolioCat});
+            const existingPortfolio = await myPortfolioModel.findOne({ portfolioCat});
             if (existingPortfolio) {
             return {
-                message: 'Portfolio already exists for this user.',
+                message: 'Portfolio Category already exists for this user.',
                 status: true,
                 data: [],
             };
             } else {
-                stocks.map(async (stock) => {
-                  await myPortfolioModel.insertMany({stockId:stock,portfolioCat,userId})
-                })
+                let data = await myPortfolioModel.create({stocks,portfolioCat,userId})
             return{
                 status:true,
                 message: 'portfolio created successfully',
+                data:data
             }
         }
         } catch (error) {
@@ -88,13 +87,12 @@ class stockPortfolioServices {
 
     async updatePortfolio(req){
         try {
-            const { _id ,stockId,portfolioCat} = req.body;
+            const { _id ,stocks, portfolioCat} = req.body;
             let userId = req.user._id
             const existingPortfolio = await myPortfolioModel.findOne({ _id});
 
             if (existingPortfolio) {
-                await myPortfolioModel.findOneAndUpdate({_id},{stockId,portfolioCat});
-    
+                await myPortfolioModel.findOneAndUpdate({_id},{stocks,portfolioCat});
                 return {
                     status: true,
                     message: 'portfolio updated successfully'
@@ -131,23 +129,35 @@ class stockPortfolioServices {
             const { portfolioCat } = req.query;
             let aggPipe = [{
                 '$match': {
-                  'portfolioCat': portfolioCat
+                  'portfolioCat': 'STOCKS'
                 }
               }, {
                 '$lookup': {
                   'from': 'stocks', 
-                  'localField': 'stockId', 
-                  'foreignField': '_id', 
-                  'as': 'stock'
+                  'let': {
+                    'id': '$stocks'
+                  }, 
+                  'pipeline': [
+                    {
+                      '$match': {
+                        '$expr': {
+                          '$in': [
+                            '$_id', '$$id'
+                          ]
+                        }
+                      }
+                    }
+                  ], 
+                  'as': 'stocks'
                 }
               }, {
                 '$unwind': {
-                  'path': '$stock', 
+                  'path': '$stocks', 
                   'preserveNullAndEmptyArrays': true
                 }
               }, {
                 '$replaceRoot': {
-                  'newRoot': '$stock'
+                  'newRoot': '$stocks'
                 }
               }];
             const data = await myPortfolioModel.aggregate(aggPipe);
