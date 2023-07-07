@@ -74,7 +74,7 @@ class stockCategory {
           let rows;
           let stockCategory = req.query.stockcategory;
            let stockType = req.query.stockType;
-        console.log(stockType,"helooooooooooooooooooooooo")
+           console.log(stockType,"helooooooooooooooooooooooo")
           if(stockCategory != 'null') {
               let stockcategory = req.query.stockcategory;
               rows = await stockCategoryModel.aggregate(
@@ -139,8 +139,6 @@ class stockCategory {
             console.log(conditions,"==========>")
               rows = await stockModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 });
         }
-        
-        console.log(rows,"llllllllllllllll");
               let totalFiltered = rows;
               let data = [];
               let count = 1;
