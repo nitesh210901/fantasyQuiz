@@ -405,8 +405,6 @@ router.get('/quiz-user-details/:matchkey', auth, getUrl, QuizController.quizUser
 router.post('/quiz-user-details-table/:matchkey', auth, QuizController.quizUserDetailsData);
 router.get('/quizviewtransactions/:id', auth, getUrl, QuizController.quizviewtransactions);
 router.post('/quizviewTransactions-Data-Table/:id', auth, QuizController.quizviewTransactionsDataTable);
-router.get("/quizcancel/:QuidId",auth,QuizController.quizCancel);
-
 // -----------------------edit user teams by admin  ----------------------
 router.get("/edit-user-teams",auth,resultController.editUserTeams)
 router.post("/edit-user-teams-tabled",auth,resultController.editUserTeamsTable)

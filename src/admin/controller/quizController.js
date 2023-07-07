@@ -39,7 +39,6 @@ class quizController {
       cancelQuiz:this.cancelQuiz.bind(this),
       matchAllquiz:this.matchAllquiz.bind(this),
       matchAllquizData:this.matchAllquizData.bind(this),
-      quizCancel:this.quizCancel.bind(this),
       quizUserDetails:this.quizUserDetails.bind(this),
       quizUserDetailsData:this.quizUserDetailsData.bind(this),
       quizviewtransactions:this.quizviewtransactions.bind(this),
@@ -767,7 +766,6 @@ class quizController {
   async matchAllquizData(req, res, next) {
     try {
       let series_id = req.query.seriesId
-      console.log(series_id,"999")
       let limit = req.query.length;
       let start = req.query.start;
       let sortObj = {},
@@ -853,21 +851,6 @@ class quizController {
           });
         });
       });
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  async quizCancel(req, res, next) {
-    try {
-      const isCancelQuiz = await quizServices.quizCancel(req);
-      if (isCancelQuiz.status == true) {
-        req.flash("success", isCancelQuiz.message);
-        res.redirect(`/allquiz/${req.query.matchkey}`);
-      } else if (isCancelQuiz.status == false) {
-        req.flash("error", isCancelQuiz.message);
-        res.redirect(`/allquiz/${req.query.matchkey}`);
-      }
     } catch (error) {
       console.log(error);
     }
