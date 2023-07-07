@@ -31,8 +31,6 @@ class matchController {
             launchMatchPlayerUpdateData: this.launchMatchPlayerUpdateData.bind(this),
             matchPlayerDelete: this.matchPlayerDelete.bind(this),
             unlaunchMatch: this.unlaunchMatch.bind(this),
-            //sahil quiz
-            quiz: this.quiz.bind(this),
 
         }
     }
@@ -316,29 +314,6 @@ class matchController {
             res.redirect("/view_AllUpcomingMatches");
         }
     }
-
-
-
-// sahil overfantsy work
-async quiz(req, res, next) {
-    try {
-        const updatelistmatch = await matchServices.quiz(req);
-        if (updatelistmatch.status) {
-            req.flash('success', updatelistmatch.message);
-            res.redirect(`/launch-match/${req.params.id}`);
-        } else if (updatelistmatch.status == false) {
-            req.flash('error', updatelistmatch.message);
-            res.redirect(`/launch-match/${req.params.id}`);
-        }
-    } catch (error) {
-        console.log("--", error);
-        req.flash('error', "Something wrong please try again letter");
-        res.redirect(`/launch-match/${req.body.matchId}`);
-    }
-}
-//
-
-
 
     // async edit_match_data(req, res, next) {
     //     try {

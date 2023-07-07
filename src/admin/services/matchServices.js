@@ -37,8 +37,6 @@ class matchServices {
             matchPlayerDelete: this.matchPlayerDelete.bind(this),
             unlaunchMatch: this.unlaunchMatch.bind(this),
             getUser: this.getUser.bind(this),
-            //sahil overfantasy
-            quiz: this.quiz.bind(this),
         }
     }
 
@@ -46,50 +44,6 @@ class matchServices {
         try {
             // await userModel.updateMany({},{$set:{app_key:''}})
             return await userModel.find(query).limit(69);
-        } catch (error) {
-            throw error;
-        }
-    }
-    //sahil overfantasy
-    async quiz(req) {
-        try {
-            let matchId = req.params.id;
-            const getMatch = await listMatchModel.findOne({ _id: mongoose.Types.ObjectId(matchId) });
-            let saveMatch
-            // if (getMatch.format != "t20") {
-            //     return {
-            //         status: false,
-            //         message: `format is Not t20`
-            //     }
-            // }
-
-            // if (getMatch.fantasy_type == "quiz") {
-            //     return {
-            //         status: false,
-            //         message: `..quiz already exists..`
-            //     }
-            // } else {
-                saveMatch = await listMatchModel.findOneAndUpdate({ _id: mongoose.Types.ObjectId(matchId) }, { isQuiz: 1 },{new:true})
-                // let obj2 = { ...getMatch._doc, _id: undefined, cricketid: getMatch._id }
-                // obj2['fantasy_type'] = 'quiz';
-                // obj2['launch_status'] = 'launched';
-                // let datainsert = await listMatchModel.create(getMatch);
-                // let datainsert = new listMatchModel(obj2);
-                // saveMatch = await datainsert.save();
-                //var saveMatch=datainsert
-            // }
-            if (saveMatch) {
-                return {
-                    status: true,
-                    message: `${getMatch.name} Match quiz Status is true successfully..`
-                }
-
-            } else {
-                return {
-                    status: false,
-                    message: `..Match quiz Status not change..`
-                }
-            }
         } catch (error) {
             throw error;
         }

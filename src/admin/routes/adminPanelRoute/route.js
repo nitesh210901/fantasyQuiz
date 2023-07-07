@@ -502,8 +502,6 @@ router.get("/deletequiz", auth, QuizController.deletequiz);
 
 router.get("/listMatches", cricketApiController.listOfMatches_entity);
 router.get("/importPlayers/:matchkey", cricketApiController.fetchPlayerByMatch_entity);
-router.get('/quiz/:id', auth,matchController.quiz);
-
 
 // ---------------------------------Winner Declare manager----------------
 router.get("/quizautoupdateMatchFinalStatus", QuizController.quizautoupdateMatchFinalStatus);

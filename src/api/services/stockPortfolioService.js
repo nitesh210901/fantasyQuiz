@@ -65,15 +65,16 @@ class stockPortfolioServices {
                 }
             }
             const existingPortfolio = await myPortfolioModel.findOne({ portfolioCat});
-            if (existingPortfolio) {
-            return {
-                message: 'Portfolio Category already exists for this user.',
-                status: true,
-                data: [],
-            };
+             if (existingPortfolio) {
+                let data = await myPortfolioModel.findOneAndUpdate({ portfolioCat }, { stocks },{new:true});
+                return {
+                    status:true,
+                    message: 'portfolio updated successfully',
+                    data:data
+                }
             } else {
                 let data = await myPortfolioModel.create({stocks,portfolioCat,userId})
-            return{
+             return{
                 status:true,
                 message: 'portfolio created successfully',
                 data:data
@@ -129,7 +130,7 @@ class stockPortfolioServices {
             const { portfolioCat } = req.query;
             let aggPipe = [{
                 '$match': {
-                  'portfolioCat': 'STOCKS'
+                  'portfolioCat': portfolioCat
                 }
               }, {
                 '$lookup': {
