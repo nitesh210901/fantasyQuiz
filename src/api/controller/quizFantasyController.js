@@ -190,18 +190,6 @@ class matchController {
             console.log(error);
         }
     }
-    // async quiz_refund_amount(req, res, next) {
-    //     try {
-            // const data = await quizfantasyServices.quiz_refund_amount(req);
-    //         if (data.status === false) {
-    //             return res.status(200).json(Object.assign({ success: true }, data));
-    //         } else {
-    //             return res.status(200).json(Object.assign({ success: data.status }, data));
-    //         }
-    //       } catch (error) {
-    //         console.log('error',error);
-    //      }
-    // }
     async joinQuizContest(req, res, next) {
         try {
             const data = await quizfantasyServices.joinQuizContest(req);

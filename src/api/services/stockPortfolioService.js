@@ -87,19 +87,19 @@ class stockPortfolioServices {
 
     async updatePortfolio(req){
         try {
-            const { _id ,stocks, portfolioCat} = req.body;
+            const { stocks, portfolioCat} = req.body;
             let userId = req.user._id
-            const existingPortfolio = await myPortfolioModel.findOne({ _id});
+            const existingPortfolio = await myPortfolioModel.findOne({ portfolioCat});
 
             if (existingPortfolio) {
-                await myPortfolioModel.findOneAndUpdate({_id},{stocks,portfolioCat});
+                await myPortfolioModel.findOneAndUpdate({portfolioCat},{stocks});
                 return {
                     status: true,
                     message: 'portfolio updated successfully'
                 }
             } else {
                 return {
-                    message: 'No Portfolio found for this user.',
+                    message: 'No Portfolio found for this Category.',
                     status: true,
                     data: [],
                 };

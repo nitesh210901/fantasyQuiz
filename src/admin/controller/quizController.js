@@ -22,16 +22,6 @@ class quizController {
       deletequiz: this.deletequiz.bind(this),
       quizautoupdateMatchFinalStatus: this.quizautoupdateMatchFinalStatus.bind(this),
       quizupdateMatchFinalStatus: this.quizupdateMatchFinalStatus.bind(this),
-      addGlobalQuestionPage: this.addGlobalQuestionPage.bind(this),
-      addGlobalQuestion: this.addGlobalQuestion.bind(this),
-      editglobalquestion_page: this.editglobalquestion_page.bind(this),
-      editGlobalQuestionData: this.editGlobalQuestionData.bind(this),
-      deleteGlobalQuestion: this.deleteGlobalQuestion.bind(this),
-      globalQuestionMuldelete: this.globalQuestionMuldelete.bind(this),
-      importGlobalQuestionPage: this.importGlobalQuestionPage.bind(this),
-      importQuestionData:this.importQuestionData.bind(this),
-      importGlobalContestPage:this.importGlobalContestPage.bind(this),
-      quizimportchallengersData:this.quizimportchallengersData.bind(this),
       quizRefundAmount:this.quizRefundAmount.bind(this),
       updateMatchQuizStatus:this.updateMatchQuizStatus.bind(this),
       cancelQuiz:this.cancelQuiz.bind(this),
@@ -404,186 +394,6 @@ class quizController {
         }
       }
   
-      async addGlobalQuestionPage(req, res, next) {
-        try { 
-        res.locals.message = req.flash();
-        res.render("quiz/addglobalquestion", {
-          sessiondata: req.session.data,
-          data: undefined,
-          msg: undefined
-        });
-      } catch (error) {
-        req.flash("error", "Something went wrong please try again");
-        res.redirect("/");
-      }
-  }
-  
-  async addGlobalQuestion(req, res, next) {
-    try {
-        const data = await quizServices.addGlobalQuestion(req);
-        if (data.status) {
-            req.flash('success',data.message)
-            res.redirect("/add-global-question");
-        }else if (data.status == false) {
-            req.flash('error',data.message)
-            res.redirect("/add-global-question");
-        }
-    } catch (error) {
-        req.flash('error','something is wrong please try again later');
-        res.redirect('/add-global-question');
-    }
-  }
-  async editglobalquestion_page(req, res, next) {
-    try {
-        res.locals.message = req.flash();
-        const getdata = await quizServices.editglobalquestion(req);
-        if (getdata.status== true) {
-            res.render('quiz/editGlobelQuestion',{ sessiondata: req.session.data, data:getdata.data});
-        }else if(getdata.status == false){
-            req.flash('warning',getdata.message);
-            res.redirect('/view-all-global-questions');
-        }
-
-    } catch (error) {
-        //  next(error);
-        req.flash('error','Something went wrong please try again');
-        res.redirect("/view-all-global-questions");
-    }
-  }
-  async editGlobalQuestionData(req, res, next) {
-    try {
-        res.locals.message = req.flash();
-        const editQuestionData=await quizServices.editGlobalQuestionData(req);
-        if(editQuestionData.status == true){
-            req.flash('success',editQuestionData.message);
-            res.redirect(`/edit-global-question/${req.body.globelQuestionId}`);
-        }else if(editQuestionData.status == false){
-            req.flash('error',editQuestionData.message);
-            res.redirect(`/edit-global-question/${req.body.globelQuestionId}`);
-        }
-    } catch (error) {
-        //  next(error);
-        req.flash('error','Something went wrong please try again');
-        res.redirect("/view-all-global-questions");
-    }
-  }
-  
-  async deleteGlobalQuestion(req,res,next){
-    try {
-        const deleteQuestions=await quizServices.deleteGlobalQuestion(req);
-        if(deleteQuestions){
-            res.redirect("/view-all-global-questions")
-        }
-    } catch (error) {
-        //  next(error);
-        req.flash('error','Something went wrong please try again');
-        res.redirect("/view-all-global-questions");
-}
-  }
-  
-  async globalQuestionMuldelete(req,res,next){
-    try {
-        const deleteManyQuestions=await quizServices.globalQuestionMuldelete(req);
-        res.send({data:deleteManyQuestions});
-    } catch (error) {
-        //  next(error);
-        req.flash('error','Something went wrong please try again');
-        res.redirect("/view-all-global-questions");
-}
-  }
-  
-  async importGlobalQuestionPage(req, res, next) {
-    try {
-      res.locals.message = req.flash();
-      const getlunchedMatches=await quizServices.createCustomQuestions(req);
-      if (getlunchedMatches.status == true) {
-          let mkey=req.query.matchkey
-          res.render("quiz/importGlobalQuestion",{ sessiondata: req.session.data, listmatches:getlunchedMatches.data,matchkey:mkey,quizData:getlunchedMatches.quizData});
-
-      }else if(getlunchedMatches.status == false){
-
-          req.flash('error',getlunchedMatches.message);
-          res.redirect('/');
-      }
-
-    } catch (error) {
-      console.log(error);
-        //  next(error);
-        req.flash('error','Something went wrong please try again');
-        res.redirect("/");
-    }
-  }
-
-
-  async importQuestionData(req,res,next){
-    try{
-        res.locals.message = req.flash();
-        const data=await quizServices.importQuestionData(req);
-        if(data.status == true){
-            req.flash('success',data.message)
-            res.redirect(`/Import-global-questions?matchkey=${req.params.matchKey}`);
-        }else{
-            req.flash('error',data.message)
-            res.redirect(`/Import-global-questions?matchkey=${req.params.matchKey}`);
-        }
-    }catch(error){
-        //  next(error);
-        req.flash('error','Something went wrong please try again');
-        res.redirect("/Import-global-questions");
-    }
-  }
-  
-  async importGlobalContestPage(req,res,next){
-    try {
-        res.locals.message = req.flash();
-        const getlunchedMatches=await quizServices.quizcreateCustomContest(req);
-
-        if (getlunchedMatches.status == true) {
-            let mkey=req.query.matchkey
-            let fantasy_type=req.query.fantasy_type;
-            let objfind={};
-               if(req.query.entryfee && req.query.entryfee != ""){
-                objfind.entryfee= req.query.entryfee
-                }
-                if(req.query.win_amount && req.query.win_amount != ""){
-                objfind.win_amount= req.query.win_amount
-                }
-                if(req.query.team_limit && req.query.team_limit != ""){
-                objfind.team_limit= req.query.team_limit
-                }
-            res.render("quiz/quizcreateCustomContest",{ sessiondata: req.session.data, listmatches:getlunchedMatches.data,matchkey:mkey,matchData:getlunchedMatches.matchData,dates:getlunchedMatches.dates,fantasy_type,objfind});
-
-        }else if(getlunchedMatches.status == false){
-
-            req.flash('error',getlunchedMatches.message);
-            res.redirect('/');
-        }
-
-    }catch(error){
-        //  next(error);
-        req.flash('error','Something went wrong please try again');
-        res.redirect("/");
-    }
-  }
-  
-  async quizimportchallengersData(req,res,next){
-    try{
-        res.locals.message = req.flash();
-        const data=await quizServices.quizimportchallengersData(req);
-        if(data.status == true){
-            req.flash('success',data.message)
-            res.redirect(`/Import-global-contest?matchkey=${req.params.matchKey}`);
-        }else{
-            req.flash('error',data.message)
-            res.redirect(`/Import-global-contest?matchkey=${req.params.matchKey}`);
-        }
-    }catch(error){
-        //  next(error);
-        req.flash('error','Something went wrong please try again');
-        res.redirect("/Import-global-contest");
-    }
-  }
-  
   async QuizGIveAnswer(req,res,next){
     try{
         res.locals.message = req.flash();
@@ -734,7 +544,7 @@ class quizController {
               actions +=  'No Users | '
             }
             
-              if(doc.quiz_status != 'canceled'){
+              if(doc.quiz_status != 'IsCanceled'){
                 actions += `<a href="/cancelQuiz/${series_id}?matchkey=${doc.matchkey}&status=IsCanceled" class="btn btn-sm btn-secondary w-35px h-35px" data-toggle="tooltip" title="Cancel Quiz" data-original-title="Cancel Contest" aria-describedby="tooltip768867"><i class="fas fa-window-close"></i></a></div>`
               }else{
                 actions += " | <tagname style='color:red;'>Canceled"

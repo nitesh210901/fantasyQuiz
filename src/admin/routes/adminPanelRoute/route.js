@@ -108,7 +108,6 @@ router.post("/add-series", auth, seriesController.addSeries);
 router.get("/view-series", auth, getUrl, seriesController.viewSeries);
 router.post("/series-Data-Table", auth, seriesController.seriesDataTable);
 router.get("/edit-series/:id", auth, getUrl, seriesController.edit_Series);
-router.post("/edit-series-data/:id", auth, seriesController.editSeriesData);
 router.get("/update-series-status/:id", auth, getUrl, seriesController.updateStatusforSeries);
 
 // ---TEAM MODULE----//
@@ -500,16 +499,6 @@ router.post("/quiz_give_answer/:id", auth, QuizController.QuizGIveAnswer);
 router.get("/edit-quiz/:id", auth, getUrl, QuizController.editQuiz);
 router.post("/edit-quiz-data/:id", auth, upload.single("image"),QuizController.editQuizData);
 router.get("/deletequiz", auth, QuizController.deletequiz);
-router.get("/add-global-question", auth, QuizController.addGlobalQuestionPage);
-router.post("/add-global-question", auth, QuizController.addGlobalQuestion);
-router.get("/edit-global-question/:id", auth, getUrl, QuizController.editglobalquestion_page);
-router.post("/edit-global-question-data", auth, QuizController.editGlobalQuestionData);
-router.get("/delete-global-question", auth, getUrl, QuizController.deleteGlobalQuestion);
-router.post("/delete-multi-global-question", auth, QuizController.globalQuestionMuldelete);
-router.get("/Import-global-questions", auth, QuizController.importGlobalQuestionPage);
-router.get("/importmatchQuestion/:matchKey", auth, getUrl, QuizController.importQuestionData);
-router.get("/Import-global-contest", auth, getUrl, QuizController.importGlobalContestPage);
-router.get("/quizimportmatchData/:matchKey", auth, getUrl, QuizController.quizimportchallengersData);
 
 router.get("/listMatches", cricketApiController.listOfMatches_entity);
 router.get("/importPlayers/:matchkey", cricketApiController.fetchPlayerByMatch_entity);
