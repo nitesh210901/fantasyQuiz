@@ -334,15 +334,6 @@ router.get('/getSingleQuiz', auth, quizFantasyController.getSingleQuiz);
 router.post('/quiz_give_answer', auth, quizFantasyController.quizGiveAnswer);
 router.get('/quizGetUsableBalance', auth, quizFantasyController.quizgetUsableBalance);
 router.post('/joinQuiz', auth, quizFantasyController.joinQuiz);
-router.get('/quizAnswerMatch', auth, quizFantasyController.quizAnswerMatch);
-
-
-
-router.post('/quiz-create-team', auth, quizFantasyController.quizCreateTeam);
-router.get('/getAllContestQuiz', auth, quizFantasyController.getAllNewContests);
-router.get('/getQuizTeam', auth, quizFantasyController.quizGetMyTeams);
-router.post('/joinQuizContest', auth, quizFantasyController.joinQuizContest);
-router.get('/my-joined-quiz-contest', auth, quizFantasyController.getMyQuizJoinedContest)
 
 
 // Stock Quiz

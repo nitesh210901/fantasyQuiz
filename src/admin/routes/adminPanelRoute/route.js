@@ -503,10 +503,6 @@ router.get("/deletequiz", auth, QuizController.deletequiz);
 router.get("/listMatches", cricketApiController.listOfMatches_entity);
 router.get("/importPlayers/:matchkey", cricketApiController.fetchPlayerByMatch_entity);
 
-// ---------------------------------Winner Declare manager----------------
-router.get("/quizautoupdateMatchFinalStatus", QuizController.quizautoupdateMatchFinalStatus);
-router.post("/quizupdateMatchFinalStatus/:id/:status", auth, QuizController.quizupdateMatchFinalStatus);
-
 // ---------------------------------Stock Contest manager----------------
 router.get("/viewStockContest", auth, stockContestController.viewStockContestPage);
 router.get("/add-stock-contest-page", auth, stockContestController.viewAddStockContestPage);
