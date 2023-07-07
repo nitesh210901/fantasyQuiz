@@ -56,7 +56,6 @@
                                     </select>                       
                                 </div>
                                 <% }else{
-                                  console.log("iiiiii")
                                   %>
                                   <div class="form-group my-3">
                                     <label for="Match" class="control-label text-bold ">Match</label>
@@ -134,7 +133,6 @@
 $(document).ready(function() {
   var Question = $('#Question').val();
     var matchkey = $('#matchName').val();
-    // var fantasy_type = $('#fantasy_type').val();
     $.fn.dataTable.ext.errMode = 'none';
     $('#view_quiz_datatable').DataTable({
         searching: false,
@@ -194,7 +192,6 @@ $(document).ready(function(){
 if ($('#accordionSidenavPages a').hasClass('active')){
   $('#accordionSidenavPages a.active').parent().parent().prev('a').removeClass('collapsed');
   $('#accordionSidenavPages a.active').parent().parent().addClass('show');
-  // console.log(id);
 } else {
   $('#takeonebar').addClass('slamdown');
 }
