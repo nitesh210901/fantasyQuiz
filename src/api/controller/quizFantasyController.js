@@ -13,7 +13,6 @@ class QuizController {
             quizGiveAnswer:this.quizGiveAnswer.bind(this),
             quizgetUsableBalance:this.quizgetUsableBalance.bind(this),
             joinQuiz:this.joinQuiz.bind(this),
-            quizAnswerMatch: this.quizAnswerMatch.bind(this),
         }
     }
 
@@ -52,35 +51,6 @@ class QuizController {
             }
         } catch (error) {
             next(error);
-        }
-    }
-    async quizAnswerMatch(req, res, next) {
-        try {
-            const currentDate = moment().format('YYYY-MM-DD 00:00:00');
-            const listmatches = await listMatchesModel.find({
-                fantasy_type: "Cricket",
-                start_date: { $gte: currentDate },
-                launch_status: 'launched',
-                final_status: { $nin: ['winnerdeclared','IsCanceled'] },
-                status: { $ne: 'completed' },
-            })
-            let data;
-            if (listmatches.length > 0) {
-                for (let index of listmatches) {
-                    let matchkey = index._id
-                    // let userId = req.user._id
-                     data = await quizfantasyServices.quizAnswerMatch(matchkey);
-                }
-            }
-            if (data) {
-                if (data.status === false) {
-                    return res.status(200).json(Object.assign({ success: true }, data));
-                } else {
-                    return res.status(200).json(Object.assign({ success: data.status }, data));
-                }
-            }
-        } catch (error) {
-            console.log(error);
         }
     }
     async quizgetUsableBalance(req, res, next) {

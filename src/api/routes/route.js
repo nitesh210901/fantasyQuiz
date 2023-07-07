@@ -334,7 +334,6 @@ router.get('/getSingleQuiz', auth, quizFantasyController.getSingleQuiz);
 router.post('/quiz_give_answer', auth, quizFantasyController.quizGiveAnswer);
 router.get('/quizGetUsableBalance', auth, quizFantasyController.quizgetUsableBalance);
 router.post('/joinQuiz', auth, quizFantasyController.joinQuiz);
-router.get('/quizAnswerMatch', auth, quizFantasyController.quizAnswerMatch);
 
 
 // Stock Quiz

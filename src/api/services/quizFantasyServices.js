@@ -35,14 +35,11 @@ const {
 class quizfantasyServices {
     constructor() {
         return {
-            updateIsViewedForBoatTeam: this.updateIsViewedForBoatTeam.bind(this),
             getQuiz: this.getQuiz.bind(this),
             getSingleQuiz: this.getSingleQuiz.bind(this),
             quizGiveAnswer: this.quizGiveAnswer.bind(this),
             quizgetUsableBalance: this.quizgetUsableBalance.bind(this),
             joinQuiz: this.joinQuiz.bind(this),
-            findArrayIntersection: this.findArrayIntersection.bind(this),
-            quizAnswerMatch: this.quizAnswerMatch.bind(this),
             quizrefundprocess: this.quizrefundprocess.bind(this),
             getMatchTime: this.getMatchTime.bind(this),
             quizfindJoinLeaugeExist: this.quizfindJoinLeaugeExist.bind(this),
@@ -313,21 +310,6 @@ class quizfantasyServices {
         }
     }
 
-    async findArrayIntersection(quizArray, previousQuiz) {
-        const c = [];
-        let j = 0,
-            i = 0;
-        let data = previousQuiz.map((value) => value.questionId.toString())
-        for (i = 0; i < quizArray.length; ++i) {
-            if (data.indexOf(quizArray[i]) != -1) {
-                c[j++] = quizArray[i];
-            }
-        }
-        if (i >= quizArray.length) {
-            return c;
-        }
-    }
-
     async getMatchTime(start_date) {
         const currentdate = new Date();
         const currentOffset = currentdate.getTimezoneOffset();
@@ -337,73 +319,6 @@ class quizfantasyServices {
             return false;
         } else {
             return true;
-        }
-    }
-
-
-    async updateIsViewedForBoatTeam(jointeamid) {
-        try {
-            await JoinQuizTeamModel.findOneAndUpdate({
-                _id: mongoose.Types.ObjectId(jointeamid),
-                user_type: 1,
-                is_viewed: false
-            }, {
-                is_viewed: true
-            });
-            return true;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async quizAnswerMatch(matchkey) {
-        try {
-            let joinData = await QuizJoinLeaugeModel.find({
-                matchkey
-            })
-            let quizData = await quizModel.find({
-                matchkey: matchkey
-            })
-            if (joinData.length == 0) {
-                return {
-                    message: "Quiz Answer Not Found",
-                    status: false,
-                    data: {}
-                }
-            }
-            if (quizData.length == 0) {
-                return {
-                    message: " Quiz not found",
-                    status: false,
-                    data: {}
-                }
-            }
-            let data;
-            if (joinData.length > 0 && quizData.length > 0) {
-                for (let join_data of joinData) {
-                    for (let quiz_data of quizData) {
-                        if (quiz_data._id.toString() === join_data.quizId.toString() && quiz_data.matchkey.toString() === join_data.matchkey.toString()) {
-                            if (join_data.answer === quiz_data.answer) {
-                                data = await QuizJoinLeaugeModel.findOneAndUpdate({
-                                    matchkey: join_data.matchkey,
-                                    quizId: join_data.quizId
-                                }, {
-                                    winamount: quiz_data.multiply
-                                }, {
-                                    new: true
-                                })
-                            }
-                        }
-                    }
-                    return {
-                        message: "Quiz Amount added successfully",
-                        status: true,
-                        data: joinData
-                    }
-                }
-            }
-        } catch (error) {
-            throw error;
         }
     }
 
