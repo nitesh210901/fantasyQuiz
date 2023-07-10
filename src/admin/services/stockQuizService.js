@@ -1908,6 +1908,7 @@ class StockquizServices {
 
     async updateResultOfStocksQuiz(req) {
         try {
+          console.log('punit______+++++++++');
           const currentDate = moment().subtract(2, 'days').format('YYYY-MM-DD 00:00:00');
           let newData;
           const listContest = await stockQuizModel.find({
@@ -1969,73 +1970,70 @@ class StockquizServices {
           const stockQuizleaugeData = await StockQuizJoinLeaugeModel.aggregate([
             {
                 '$lookup': {
-                  'from': 'stockquizzes', 
-                  'localField': 'stockquizId', 
-                  'foreignField': '_id', 
-                  'as': 'stockQuizData'
+                    'from': 'stockquizzes', 
+                    'localField': 'stockquizId', 
+                    'foreignField': '_id', 
+                    'as': 'stockQuizData'
                 }
-              }, {
+            }, {
                 '$match': {
-                  'stockQuizData': {
-                    '$elemMatch': {
-                      'is_enabled': true, 
-                      'final_status': {
-                        '$nin': [
-                          'winnerdeclared', 'IsCanceled'
-                        ]
-                      }, 
-                      'status': {
-                        '$ne': 'completed'
-                      }, 
-                      'start_date': {
-                        '$gte': currentDate
-                      }
+                    'stockQuizData': {
+                        '$elemMatch': {
+                            'is_enabled': true, 
+                            'final_status': {
+                                '$nin': [
+                                    'winnerdeclared', 'IsCanceled'
+                                ]
+                            }, 
+                            'status': {
+                                '$ne': 'completed'
+                            }, 
+                            'start_date': {
+                                '$gte': currentDate
+                            }
+                        }
                     }
-                  }
                 }
-              }, {
-                '$addFields': {
-                  'start_date': {
-                    '$getField': {
-                      'field': 'start_date', 
-                      'input': {
-                        '$arrayElemAt': [
-                          '$stockQuizData', 0
-                        ]
-                      }
-                    }
-                  }, 
-                  'end_date': {
-                    '$getField': {
-                      'field': 'end_date', 
-                      'input': {
-                        '$arrayElemAt': [
-                          '$stockQuizData', 0
-                        ]
-                      }
-                    }
-                  }
-                }
-              }, {
+            }, {
                 '$group': {
-                  '_id': '$_id', 
-                  'transaction_id': {
-                    '$first': '$transaction_id'
-                  }, 
-                  'userid': {
-                    '$first': '$userid'
-                  }, 
-                  'stockquizId': {
-                    '$first': '$stockquizId'
-                  }, 
-                  'start_date': {
-                    '$first': '$start_date'
-                  }, 
-                  'end_date': {
-                    '$first': '$end_date'
-                  }
+                    '_id': '$_id', 
+                    'transaction_id': {
+                        '$first': '$transaction_id'
+                    }, 
+                    'userid': {
+                        '$first': '$userid'
+                    }, 
+                    'stockquizId': {
+                        '$first': '$stockquizId'
+                    }, 
+                    'stockQuizData': {
+                        '$first': '$stockQuizData'
+                    }
                 }
-              }
+            }, {
+                '$addFields': {
+                    'start_date': {
+                        '$getField': {
+                            'field': 'start_date', 
+                            'input': {
+                                '$arrayElemAt': [
+                                    '$stockQuizData', 0
+                                ]
+                            }
+                        }
+                    }, 
+                    'end_date': {
+                        '$getField': {
+                            'field': 'end_date', 
+                            'input': {
+                                '$arrayElemAt': [
+                                    '$stockQuizData', 0
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
         ]);
     
           return stockQuizleaugeData;
