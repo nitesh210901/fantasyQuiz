@@ -39,26 +39,63 @@
                       <div class="sbp-preview position-relative">
                         <div class="form-group">
                           <div class="row mx-0">
-                            <div class="col-md-6">
-                              <div class="form-group">
-                                <select class="form-control mt-4" id="catId"
-                                    data-container="body" data-live-search="true"
-                                    title="Select Category" data-hide-disabled="true"
-                                    name="category" >
-                                    <option disabled selected> Select Category
-                                    </option>
-                                        <% if(categories) {%>
-                                            <%for(let i of categories) {
-                                                %>
-                                                <option value="<%= i._id%>" <%= catName === i._id.toString()?'selected':"" %>>
-                                                    <%=i.name%> 
-                                                </option>
-                                            <%}%>
-                                        <% }%>
-                                </select>
-                              </div>
-                              </div>
+                            <%if(catName){%>
                               <div class="col-md-6">
+                                <div class="form-group">
+                                  <select class="form-control mt-4" id="catId"
+                                      data-container="body" data-live-search="true"
+                                      title="Select Category" data-hide-disabled="true"
+                                      name="category" >
+                                      </option>
+                                          <% if(categories) {%>
+                                              <%for(let i of categories) {
+                                                  %>
+                                                  <option value="<%= i._id%>" <%= catName === i._id.toString()?'selected':"" %>>
+                                                      <%=i.name%> 
+                                                  </option>
+                                              <%}%>
+                                          <% }%>
+                                  </select>
+                                </div>
+                                </div>
+                              <%}else{%>
+                                <div class="col-md-6">
+                                  <div class="form-group">
+                                    <select class="form-control mt-4" id="catId"
+                                        data-container="body" data-live-search="true"
+                                        title="Select Category" data-hide-disabled="true"
+                                        name="category" >
+                                        <option disabled selected> Select Category
+                                        </option>
+                                            <% if(categories) {%>
+                                                <%for(let i of categories) {
+                                                    %>
+                                                    <option value="<%= i._id%>">
+                                                        <%=i.name%> 
+                                                    </option>
+                                                <%}%>
+                                            <% }%>
+                                    </select>
+                                  </div>
+                                  </div>
+
+                                <%}%>
+                            
+                             <% if(stockType) {%>
+                              <div class="col-md-6">
+                                <div class="form-group">
+                                  <select class="form-control mt-4" id="stockType"
+                                      data-container="body" data-live-search="true"
+                                      title="Select Stock Type" data-hide-disabled="true"
+                                      name="stockType" >
+                                          <option value="NSE" <%= stockType==="NSE"?"selected":"" %>>NSE</option>
+                                          <option value="MCX" <%= stockType==="MCX"?"selected":"" %>>MCX</option>
+                                          <option value="COMMODITIES"  <%= stockType==="COMMODITIES"?"selected":"" %>>COMMODITIES</option>
+                                  </select>
+                              </div>
+                            </div>
+                              <%}else{%>
+                            <div class="col-md-6">
                                 <div class="form-group">
                                   <select class="form-control mt-4" id="stockType"
                                       data-container="body" data-live-search="true"
@@ -72,7 +109,7 @@
                                   </select>
                               </div>
                             </div>
-
+                            <%}%>
                             <div class="col-12 text-right mt-4 mb-2">
                               <button class="btn btn-sm btn-success text-uppercase"><i class="far fa-check-circle"
                                   type="submit"></i>&nbsp;Submit</button>
@@ -151,7 +188,6 @@
               $(document).ready(function () {
                 const elem = $('#catId').val();
                 const elem2 = $('#stockType').val();
-                console.log(elem2,";;;;;")
                 $.fn.dataTable.ext.errMode = 'none';
                 $('#stockTable').DataTable({
                   language: {
