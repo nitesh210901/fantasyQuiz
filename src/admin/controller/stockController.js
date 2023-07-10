@@ -57,7 +57,7 @@ class stockCategory {
           let name = req.query.name;
           let catName = req.query.category;
           let stockType = req.query.stockType;
-          const categories = await stockCategoryModel.find({}, {name:1});
+          const categories = await stockCategoryModel.find({}, { name: 1 });
           res.render("stockManager/viewStock", { sessiondata: req.session.data, name , categories, catName, stockType});
 
       } catch (error) {
@@ -74,10 +74,8 @@ class stockCategory {
           let rows;
           let stockCategory = req.query.stockcategory;
           let stockType = req.query.stockType;
-           console.log(stockCategory,"helooooooooooooooooooooooo")
-        if (stockCategory != 'null') {
-            console.log("llll")
-              // let stockcategory = req.query.stockcategory;
+            if (stockCategory != 'null') {
+
               rows = await stockCategoryModel.aggregate(
                 [
                   {
