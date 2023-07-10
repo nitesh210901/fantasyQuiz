@@ -379,7 +379,7 @@ class quizServices {
         }
         return true;
     }
-    
+
     async quizRefundAmount(req) {
         try {
         console.log("-------------------------------------quizrefundAmount-------------------------")
@@ -461,40 +461,6 @@ class quizServices {
         let listmatches = await listMatchesModel.aggregate(pipeline);
         if (listmatches.length > 0) {
             for (let match of listmatches) {
-                // if (match.matchChallengesData.length > 0) {
-                //     for (let value1 of match.matchChallengesData) {
-                //         let data = {};
-                //         if (value1.maximum_user > value1.joinedusers) {
-                //             if (value1.confirmed_challenge == 0) {
-                //                 let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match._id, 'challenge cancel');
-                //                 if (getresponse == true) {
-                //                     await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-                //                         $set: {
-                //                             status: 'canceled'
-                //                         }
-                //                     });
-                //                 }
-                //             }
-                //         }
-                //         if (value1.pricecard_type == 'Percentage') {
-                //             let joinedUsers = await JoinLeaugeModel.find({
-                //                 matchkey: mongoose.Types.ObjectId(match.matchkey),
-                //                 challengeid: mongoose.Types.ObjectId(value1._id),
-                //             }).count();
-                //             if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
-                //                 let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
-                //                 if (getresponse == true) {
-                //                     data['status'] = 'canceled';
-                //                     await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-                //                         $set: {
-                //                             status: 'canceled'
-                //                         }
-                //                     });
-                //                 }
-                //             }
-                //         }
-                //     }
-                // }
                 if (match.quizData.length > 0) {
                     for (let value1 of match.quizData) {
                         let data = {};
@@ -507,24 +473,6 @@ class quizServices {
                                 }
                             });
                         }
-                            
-                        // if (value1.pricecard_type == 'Percentage') {
-                        //     let joinedUsers = await JoinLeaugeModel.find({
-                        //         matchkey: mongoose.Types.ObjectId(match.matchkey),
-                        //         challengeid: mongoose.Types.ObjectId(value1._id),
-                        //     }).count();
-                        //     if (value1.confirmed_challenge == 1 && joinedUsers == 1) {
-                        //         let getresponse = await this.quizrefundprocess(value1._id, value1.entryfee, match.matchkey, 'challenge cancel');
-                        //         if (getresponse == true) {
-                        //             data['status'] = 'canceled';
-                        //             await matchchallengesModel.updateOne({ _id: mongoose.Types.ObjectId(value1._id) }, {
-                        //                 $set: {
-                        //                     status: 'canceled'
-                        //                 }
-                        //             });
-                        //         }
-                        //     }
-                        // }
                     }
                 }
             }

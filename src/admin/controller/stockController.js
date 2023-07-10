@@ -56,7 +56,7 @@ class stockCategory {
           res.locals.message = req.flash();
           let name = req.query.name;
           let catName = req.query.category;
-          let stockType = req.query.stocktype;
+          let stockType = req.query.stockType;
           const categories = await stockCategoryModel.find({}, {name:1});
           res.render("stockManager/viewStock", { sessiondata: req.session.data, name , categories, catName, stockType});
 
@@ -73,15 +73,16 @@ class stockCategory {
           let start = req.query.start;
           let rows;
           let stockCategory = req.query.stockcategory;
-           let stockType = req.query.stockType;
-           console.log(stockType,"helooooooooooooooooooooooo")
-          if(stockCategory != 'null') {
-              let stockcategory = req.query.stockcategory;
+          let stockType = req.query.stockType;
+           console.log(stockCategory,"helooooooooooooooooooooooo")
+        if (stockCategory != 'null') {
+            console.log("llll")
+              // let stockcategory = req.query.stockcategory;
               rows = await stockCategoryModel.aggregate(
                 [
                   {
                     '$match': {
-                      '_id': new mongoose.Types.ObjectId(stockcategory),
+                      '_id': new mongoose.Types.ObjectId(stockCategory),
                     }
                   },
                   {
@@ -131,12 +132,9 @@ class stockCategory {
               if(stockType != 'null'){
                 conditions = {"exchange" : stockType}
               } else {
-                console.log("hello")
                 conditions = {}
             }
-             console.log("stockCategory")
-            rows = await stockModel.countDocuments(conditions);
-            console.log(conditions,"==========>")
+              rows = await stockModel.countDocuments(conditions);
               rows = await stockModel.find(conditions).skip(Number(start) ? Number(start) : '').limit(Number(limit1) ? Number(limit1) : '').sort({ Order: -1 });
         }
               let totalFiltered = rows;
