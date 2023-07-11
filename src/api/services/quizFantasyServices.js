@@ -367,7 +367,7 @@ class quizfantasyServices {
                             transaction_id: transaction_id
                         };
                         const transactiondata = {
-                            type: 'Refund',
+                            type: ' Quiz Refund',
                             amount: entryfee,
                             total_available_amt: totalBalance + entryfee,
                             transaction_by: constant.APP_SHORT_NAME,
@@ -723,11 +723,6 @@ class quizfantasyServices {
                     'userbalance.balance': balance - mainbal,
                     'userbalance.bonus': bonus - mainbonus,
                     'userbalance.winning': winning - mainwin,
-                    $inc: {
-                        totalchallenges: totalchallenges,
-                        totalmatches: totalmatches,
-                        totalseries: totalseries,
-                    },
                 };
                 let randomStr = randomstring.generate({
                     length: 4,
@@ -775,7 +770,6 @@ class quizfantasyServices {
             tranid = `${constant.APP_SHORT_NAME}-${Date.now()}-${randomStr}`;
             let referCode = `${constant.APP_SHORT_NAME}-${Date.now()}${coupon}`;
             if (result == 1) {
-                console.log("oooo")
                 let joinedQuiz = await QuizJoinLeaugeModel.find({
                     matchkey: listmatchId,
                     userid: req.user._id
@@ -839,11 +833,6 @@ class quizfantasyServices {
                 'userbalance.balance': balance - mainbal,
                 'userbalance.bonus': bonus - mainbonus,
                 'userbalance.winning': winning - mainwin,
-                $inc: {
-                    totalchallenges: totalchallenges,
-                    totalmatches: totalmatches,
-                    totalseries: totalseries,
-                },
             };
             let randomStrr = randomstring.generate({
                 length: 4,

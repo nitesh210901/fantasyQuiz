@@ -423,7 +423,7 @@ class overfantasyServices {
             });
 
             const transactiondata = {
-              type: 'Contest Joining Fee',
+              type: 'Stock Contest Joining Fee',
               contestdetail: `${chkContest.entryfee}-${count}`,
               amount: chkContest.entryfee * count,
               total_available_amt: totalBalance - chkContest.entryfee * count,
@@ -470,7 +470,7 @@ class overfantasyServices {
                 capitalization: 'uppercase'
               });
               const transactiondata = {
-                type: 'Contest Joining Fee',
+                type: 'Stock Contest Joining Fee',
                 contestdetail: `${chkContest.entryfee}-${count}`,
                 amount: chkContest.entryfee * count,
                 total_available_amt: totalBalance - chkContest.entryfee * count,
@@ -511,7 +511,7 @@ class overfantasyServices {
               });
 
               const transactiondata = {
-                type: 'Contest Joining Fee',
+                type: 'Stock Contest Joining Fee',
                 contestdetail: `${chkContest.entryfee}-${count}`,
                 amount: chkContest.entryfee * count,
                 total_available_amt: totalBalance - chkContest.entryfee * count,
@@ -562,7 +562,7 @@ class overfantasyServices {
                 capitalization: 'uppercase'
               });
               const transactiondata = {
-                type: 'Contest Joining Fee',
+                type: 'Stock Contest Joining Fee',
                 contestdetail: `${chkContest.entryfee}-${count}`,
                 amount: chkContest.entryfee * count,
                 total_available_amt: totalBalance - chkContest.entryfee * count,
@@ -647,18 +647,12 @@ class overfantasyServices {
               status: 'notstarted',
               joinedusers: joinedLeaugesCount,
             }, { new: true });
-          console.log('======================', i, jointeamId.length);
           if (i == stockTeamIds.length) {
             console.log(`---------------------9TH IF--------${i}---------`);
             const userObj = {
               'userbalance.balance': balance - mainbal,
               'userbalance.bonus': bonus - mainbonus,
               'userbalance.winning': winning - mainwin,
-              $inc: {
-                totalchallenges: totalchallenges,
-                totalmatches: totalmatches,
-                totalseries: totalseries,
-              },
             };
             let randomStr = randomstring.generate({
               length: 4,
@@ -666,7 +660,7 @@ class overfantasyServices {
               capitalization: 'uppercase'
             });
             const transactiondata = {
-              type: 'Contest Joining Fee',
+              type: 'Stock Contest Joining Fee',
               contestdetail: `${chkContest.entryfee}-${count}`,
               amount: chkContest.entryfee * count,
               total_available_amt: totalBalance - chkContest.entryfee * count,

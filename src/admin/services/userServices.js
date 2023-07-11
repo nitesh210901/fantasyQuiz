@@ -129,7 +129,6 @@ class UserServices {
                                 };
                                 dataObj.image = `${process.env.BASE_URL}${req.body.typename}/${req.file?.filename}`;
                             };
-                            console.log(':::::::::::', dataObj)
                             let updatedUser = await userModel.updateOne({ _id: dataObj.Uid }, { $set: dataObj });
                             if (updatedUser.modifiedCount > 0) {
                                 return {
