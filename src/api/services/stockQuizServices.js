@@ -2658,11 +2658,6 @@ class quizfantasyServices {
                     'userbalance.balance': balance - mainbal,
                     'userbalance.bonus': bonus - mainbonus,
                     'userbalance.winning': winning - mainwin,
-                    $inc: {
-                        totalchallenges: totalchallenges,
-                        totalmatches: totalmatches,
-                        totalseries: totalseries,
-                    },
                 };
                 let randomStr = randomstring.generate({
                     length: 4,
@@ -2772,11 +2767,6 @@ class quizfantasyServices {
                 'userbalance.balance': balance - mainbal,
                 'userbalance.bonus': bonus - mainbonus,
                 'userbalance.winning': winning - mainwin,
-                $inc: {
-                    totalchallenges: totalchallenges,
-                    totalmatches: totalmatches,
-                    totalseries: totalseries,
-                },
             };
             let randomStrr = randomstring.generate({
                 length: 4,
